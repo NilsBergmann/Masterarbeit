@@ -1,0 +1,9 @@
+grammar org.xtext.example.mydsl.MonitorDSL with org.eclipse.xtext.common.Terminals
+
+generate monitorDSL "http://www.xtext.org/example/mydsl/MonitorDSL"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
