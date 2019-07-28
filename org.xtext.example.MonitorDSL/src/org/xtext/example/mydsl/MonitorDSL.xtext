@@ -14,11 +14,11 @@ Import:
 ;
 
 UserVariable:
-	"def" name=ID ":=" expr=Expression	
+	"def" "var" name=ID ":=" expr=Expression	
 ;
 
 Assertion: 
-	'assertion' name=ID ':=' expr=Expression
+	"def" "assertion" name=ID ':=' expr=Expression
 ;
 
 Expression:
