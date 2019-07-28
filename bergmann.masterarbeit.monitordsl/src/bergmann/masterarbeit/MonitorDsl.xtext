@@ -22,15 +22,7 @@ Assertion:
 ;
 
 Expression:
-	LTLInfixExpression
-;
-
-LTLInfixExpression returns Expression:
-	LTLUnaryExpression ({LTL_Binary.left=current} op=BINARY_LTL_OPERATOR right=LTLUnaryExpression)*
-;
-
-LTLUnaryExpression returns Expression:
-	ImplicationExpr | {LTL_Unary} op=UNARY_LTL_OPERATOR expr=ImplicationExpr
+	ImplicationExpr
 ;
 
 ImplicationExpr returns Expression:
@@ -42,7 +34,15 @@ OrExpr returns Expression:
 ;
 
 AndExpr returns Expression:
-	RelExpr ({And.left=current} op=('and'|'&'|'&&') right=RelExpr)*
+	LTLInfixExpression ({And.left=current} op=('and'|'&'|'&&') right=LTLInfixExpression)*
+;
+
+LTLInfixExpression returns Expression:
+	LTLUnaryExpression ({LTL_Binary.left=current} op=BINARY_LTL_OPERATOR right=LTLUnaryExpression)*
+;
+
+LTLUnaryExpression returns Expression:
+	RelExpr | {LTL_Unary} op=UNARY_LTL_OPERATOR expr=RelExpr
 ;
 
 RelExpr returns Expression:
