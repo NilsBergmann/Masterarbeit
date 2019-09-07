@@ -1,0 +1,9 @@
+grammar bergmann.masterarbeit.mappingdsl.MappingDSL with org.eclipse.xtext.common.Terminals
+
+generate mappingDSL "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL"
+
+Model:
+    definitions+=Definition*;
+ 
+Definition:
+    'define' name=ID;

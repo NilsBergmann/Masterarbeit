@@ -2,12 +2,16 @@ grammar bergmann.masterarbeit.MonitorDsl with org.eclipse.xtext.common.Terminals
 
 generate monitorDsl "http://www.masterarbeit.bergmann/MonitorDsl"
 
-import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore 
+import "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL" as mapping
+
 
 Prog:
 	(imports+=Import)*
 	ops+=(Assertion | UserVariable)*
 ;
+
+
 
 Import:
 	'import' path=STRING 'as' name=ID
@@ -67,12 +71,10 @@ AtomExpr returns Expression:
 	| {IntLiteral} value=INT
 	| {FloatLiteral} value=FLOAT
 	| {BoolLiteral} value=("true" | "false")	
-	// Imported Variables
-	| {IntVarAtom} intvar=INT_VAR
-	| {FloatVarAtom} intvar=FLOAT_VAR
-	| {BoolVarAtom} boolvar=BOOL_VAR
 	// User Variable
-	| {UserVarAtom} var=[UserVariable]
+	| {UserVarAtom} ref=[UserVariable]
+	// MappingVariable
+	| {MappingTest} importScope=[Import] '.' ref=[mapping::Definition]
 ;
 
 terminal UNARY_LTL_OPERATOR:
@@ -93,16 +95,6 @@ terminal BINARY_LTL_OPERATOR:
 	| 'weak_since' | 'B'
 ;
 
-terminal FLOAT_VAR:
-	'tmp_float_var'
-;
-terminal INT_VAR: 
-	'tmp_int_var'
-;
-
-terminal BOOL_VAR: 
-    'tmp_bool_var'
-;
-
 terminal FLOAT returns ecore::EFloat: INT '.' INT;
+
 	
