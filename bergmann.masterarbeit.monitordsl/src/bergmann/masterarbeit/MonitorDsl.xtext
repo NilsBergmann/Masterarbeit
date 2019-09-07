@@ -42,11 +42,11 @@ AndExpr returns Expression:
 ;
 
 LTLInfixExpression returns Expression:
-	LTLUnaryExpression ({LTL_Binary.left=current} op=BINARY_LTL_OPERATOR right=LTLUnaryExpression)*
+	LTLUnaryExpression ({LTL_Binary.left=current} op=BINARY_LTL_OPERATOR (constraint=TimeIntervalConstraint)? right=LTLUnaryExpression)*
 ;
 
 LTLUnaryExpression returns Expression:
-	RelExpr | {LTL_Unary} op=UNARY_LTL_OPERATOR expr=RelExpr
+	RelExpr | {LTL_Unary} op=UNARY_LTL_OPERATOR (constraint=TimeIntervalConstraint)? expr=RelExpr
 ;
 
 RelExpr returns Expression:
@@ -68,13 +68,32 @@ UnExpr returns Expression:
 AtomExpr returns Expression: 
 	{Subexpression} '(' expr=Expression ')'
 	// Literals
-	| {IntLiteral} value=INT
+	| {IntLiteral} value=INT 
 	| {FloatLiteral} value=FLOAT
 	| {BoolLiteral} value=("true" | "false")	
 	// User Variable
 	| {UserVarAtom} ref=[UserVariable]
 	// MappingVariable
-	| {MappingTest} importScope=[Import] '.' ref=[mapping::Definition]
+	| {MappingTest} importScope=[Import] '.' ref=[mapping::Definition] 
+;
+
+TimeIntervalConstraint:
+	{TimeIntervalSimple} left=('['|'(') start=TimeAtom ',' end=TimeAtom right=(']'|')')
+	| {TimeIntervalSingleton} '[' value=TimeAtom ']'
+	| {TimeIntervalInequalityNotation} '[' op=('<'|'<='|'>'|'>=') value=TimeAtom ']'
+	
+;
+
+TimeAtom:
+	value=INT unit=TIME_UNIT
+	| "infinity"
+;
+
+terminal TIME_UNIT:
+	"ms" | 'millisec' | 'millisecond' | 'milliseconds'
+	| "s" | 'sec' | 'second' | 'seconds'
+	| "m" | 'min' | 'minute' | 'minutes'
+	| "h" | 'hour' | 'hours'
 ;
 
 terminal UNARY_LTL_OPERATOR:
