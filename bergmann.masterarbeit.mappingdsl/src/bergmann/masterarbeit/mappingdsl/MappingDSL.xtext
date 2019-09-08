@@ -6,4 +6,37 @@ Model:
     definitions+=Definition*;
  
 Definition:
-    'define' name=ID;
+    'define' name=ID unit=Unit?;
+
+Unit:
+ 	UnitDivision
+;
+
+UnitDivision returns Unit:
+	UnitMultiplication ({Div.left=current} "/" right=UnitMultiplication)*
+;
+
+UnitMultiplication returns Unit:
+	UnitExponent ({Mult.left=current} "*" right=UnitExponent)*
+;
+
+UnitExponent returns Unit:
+	{UnitExponent} (value=UnitAtom '^' exponent=INT)
+	| UnitAtom
+;
+
+UnitAtom returns Unit:
+	{SubUnit} '(' unit=Unit ')'
+	| {UnitLiteral} value=UnitLiteral
+;
+
+UnitLiteral:
+	LENGTH_UNIT  | TIME_UNIT
+;
+
+terminal LENGTH_UNIT:
+	"mm" | 'cm' | 'm' | 'km'
+;
+terminal TIME_UNIT:
+	"ms" | "s" 	| "m" | "h" 
+;

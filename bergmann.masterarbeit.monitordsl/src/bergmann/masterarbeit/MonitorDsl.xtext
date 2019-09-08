@@ -62,14 +62,15 @@ MultExpr returns Expression:
 ;
 
 UnExpr returns Expression: 
-	{Negation} op=('!'|"-"|'not') exprAtom=AtomExpr | AtomExpr
+	{Negation} op=('!'|"-"|'not') exprAtom=AtomExpr 
+	| AtomExpr
 ;
 
 AtomExpr returns Expression: 
 	{Subexpression} '(' expr=Expression ')'
 	// Literals
-	| {IntLiteral} value=INT 
-	| {FloatLiteral} value=FLOAT
+	| {IntLiteral} value=INT unit=Unit?
+	| {FloatLiteral} value=FLOAT unit=Unit?
 	| {BoolLiteral} value=("true" | "false")	
 	// User Variable
 	| {UserVarAtom} ref=[UserVariable]
@@ -89,12 +90,7 @@ TimeAtom:
 	| "infinity"
 ;
 
-terminal TIME_UNIT:
-	"ms" | 'millisec' | 'millisecond' | 'milliseconds'
-	| "s" | 'sec' | 'second' | 'seconds'
-	| "m" | 'min' | 'minute' | 'minutes'
-	| "h" | 'hour' | 'hours'
-;
+
 
 terminal UNARY_LTL_OPERATOR:
 	  'next' | 'X' 
@@ -112,6 +108,40 @@ terminal BINARY_LTL_OPERATOR:
 	| 'strong_release' | 'M' 
 	| 'since' | 'S' 
 	| 'weak_since' | 'B'
+;
+
+
+Unit:
+ 	UnitDivision
+;
+
+UnitDivision returns Unit:
+	UnitMultiplication ({Div.left=current} "/" right=UnitMultiplication)*
+;
+
+UnitMultiplication returns Unit:
+	UnitExponent ({Mult.left=current} "*" right=UnitExponent)*
+;
+
+UnitExponent returns Unit:
+	{UnitExponent} (value=UnitAtom '^' exponent=INT)
+	| UnitAtom
+;
+
+UnitAtom returns Unit:
+	{SubUnit} '(' unit=Unit ')'
+	| {UnitLiteral} value=UnitLiteral
+;
+
+UnitLiteral:
+	LENGTH_UNIT  | TIME_UNIT
+;
+
+terminal LENGTH_UNIT:
+	"mm" | 'cm' | 'm' | 'km'
+;
+terminal TIME_UNIT:
+	"ms" | "s" 	| "m" | "h" 
 ;
 
 terminal FLOAT returns ecore::EFloat: INT '.' INT;
