@@ -11,8 +11,6 @@ Prog:
 	ops+=(Assertion | UserVariable)*
 ;
 
-
-
 Import:
 	'import' path=STRING 'as' name=ID
 ;
@@ -86,8 +84,8 @@ TimeIntervalConstraint:
 ;
 
 TimeAtom:
-	value=INT unit=TIME_UNIT
-	| "infinity"
+	{TimeLiteral} value=INT unit=TIME_UNIT
+	| {InfinityTimeAtom} "infinity"
 ;
 
 
@@ -116,11 +114,11 @@ Unit:
 ;
 
 UnitDivision returns Unit:
-	UnitMultiplication ({Div.left=current} "/" right=UnitMultiplication)*
+	UnitMultiplication ({UnitDiv.left=current} "/" right=UnitMultiplication)*
 ;
 
 UnitMultiplication returns Unit:
-	UnitExponent ({Mult.left=current} "*" right=UnitExponent)*
+	UnitExponent ({UnitMult.left=current} "*" right=UnitExponent)*
 ;
 
 UnitExponent returns Unit:
@@ -129,7 +127,7 @@ UnitExponent returns Unit:
 ;
 
 UnitAtom returns Unit:
-	{SubUnit} '(' unit=Unit ')'
+	{UnitBraces} '(' unit=Unit ')'
 	| {UnitLiteral} value=UnitLiteral
 ;
 
