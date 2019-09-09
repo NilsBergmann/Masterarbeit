@@ -3,7 +3,7 @@
  */
 package bergmann.masterarbeit.mappingdsl.tests
 
-import bergmann.masterarbeit.mappingdsl.mappingDSL.Model
+import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
 import com.google.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
 @InjectWith(MappingDSLInjectorProvider)
 class MappingDSLParsingTest {
 	@Inject
-	ParseHelper<Model> parseHelper
+	ParseHelper<Domain> parseHelper
 	
 	@Test
 	def void loadModel() {

@@ -2,11 +2,55 @@ grammar bergmann.masterarbeit.mappingdsl.MappingDSL with org.eclipse.xtext.commo
 
 generate mappingDSL "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL"
 
-Model:
-    definitions+=Definition*;
- 
-Definition:
-    'define' name=ID unit=Unit?;
+Domain:
+	"domain:" "{" 
+	(
+		("name:" name=ID)? &
+		elems+=DomainElement*
+	)
+	"}"
+;
+
+DomainElement:
+	DataType | Value
+;
+
+DataType:
+	"datatype:" "{"
+	 	(
+	 		("name:" name=ID) &
+	 		(values+=Value* )
+	 	)
+	"}"
+;
+
+Value:
+	"value:" "{"
+	(
+		("name:" name=ID) &
+		("type:" type=ValueType) &
+		("unit:" unit=Unit)? &
+		("description:" description=STRING)? &
+		("source:" source=DataSource)? 
+	)
+	"}"
+;
+
+DataSource:
+	DataSourceJavaReference | DataSourceDatabaseValue
+;
+
+DataSourceJavaReference:
+	"WIP_DataSourceJavaReference"
+;
+
+DataSourceDatabaseValue:
+	"WIP_DataSourceDatabaseValue"
+;
+
+terminal ValueType:
+	"number" | "string" | "boolean"
+;
 
 Unit:
  	UnitDivision

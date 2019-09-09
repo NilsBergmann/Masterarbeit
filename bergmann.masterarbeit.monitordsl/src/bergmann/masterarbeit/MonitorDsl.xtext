@@ -73,7 +73,7 @@ AtomExpr returns Expression:
 	// User Variable
 	| {UserVarAtom} ref=[UserVariable]
 	// MappingVariable
-	| {MappingTest} importScope=[Import] '.' ref=[mapping::Definition] 
+	| {MappingTest} importScope=[Import] '.' ref=[mapping::Value] 
 ;
 
 TimeIntervalConstraint:
