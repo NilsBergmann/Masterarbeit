@@ -40,11 +40,11 @@ AndExpr returns Expression:
 ;
 
 LTLInfixExpression returns Expression:
-	LTLUnaryExpression ({LTL_Binary.left=current} op=BINARY_LTL_OPERATOR (constraint=TimeIntervalConstraint)? right=LTLUnaryExpression)*
+	LTLUnaryExpression ({LTL_Binary.left=current} op=BINARY_LTL_OPERATOR (time=TimeInterval)? right=LTLUnaryExpression)*
 ;
 
 LTLUnaryExpression returns Expression:
-	RelExpr | {LTL_Unary} op=UNARY_LTL_OPERATOR (constraint=TimeIntervalConstraint)? expr=RelExpr
+	RelExpr | {LTL_Unary} op=UNARY_LTL_OPERATOR (time=TimeInterval)? expr=RelExpr
 ;
 
 RelExpr returns Expression:
@@ -74,9 +74,11 @@ AtomExpr returns Expression:
 	| {UserVarAtom} ref=[UserVariable]
 	// MappingVariable
 	| {MappingTest} importScope=[Import] '.' ref=[mapping::DomainValue] 
+	| {AggregateExpression} op=("avg"|"average"|"min"|"minimum"|"max"|"maximum") time=TimeInterval "("expr=Expression")"
 ;
 
-TimeIntervalConstraint:
+
+TimeInterval:
 	{TimeIntervalSimple} left=('['|'(') start=TimeAtom ',' end=TimeAtom right=(']'|')')
 	| {TimeIntervalSingleton} '[' value=TimeAtom ']'
 	| {TimeIntervalInequalityNotation} '[' op=('<'|'<='|'>'|'>=') value=TimeAtom ']'
