@@ -3,7 +3,7 @@
  */
 package bergmann.masterarbeit.tests
 
-import bergmann.masterarbeit.monitorDsl.Prog
+import bergmann.masterarbeit.monitorDsl.Monitors
 import com.google.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
 @InjectWith(MonitorDslInjectorProvider)
 class MonitorDslParsingTest {
 	@Inject
-	ParseHelper<Prog> parseHelper
+	ParseHelper<Monitors> parseHelper
 	
 	@Test
 	def void loadModel() {

@@ -3,32 +3,41 @@ grammar bergmann.masterarbeit.mappingdsl.MappingDSL with org.eclipse.xtext.commo
 generate mappingDSL "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL"
 
 Domain:
-	"domain:" "{" 
+	elems+=DomainElement*
+;
+
+DomainElement:
+	DomainDataType | DomainValue
+;
+
+DomainDataType:
+	{DomainDataType}
+	"datatype:" "{"
+	 	(
+	 		("name:" name=ID) &
+	 		(attributes+=DataTypeAttribute* )
+	 	)
+	"}"
+;
+DataTypeAttribute:
+	{DomainTypeAttribute}
+	"attribute:" "{"
 	(
-		("name:" name=ID)? &
-		elems+=DomainElement*
+		("name:" name=ID) &
+		("type:" type=VALUETYPE) &
+		("unit:" unit=Unit)? &
+		("description:" description=STRING)? &
+		("source:" source=DataSource)? 
 	)
 	"}"
 ;
 
-DomainElement:
-	DataType | Value
-;
-
-DataType:
-	"datatype:" "{"
-	 	(
-	 		("name:" name=ID) &
-	 		(values+=Value* )
-	 	)
-	"}"
-;
-
-Value:
+DomainValue:
+	{DomainValue}
 	"value:" "{"
 	(
 		("name:" name=ID) &
-		("type:" type=ValueType) &
+		("type:" type=VALUETYPE) &
 		("unit:" unit=Unit)? &
 		("description:" description=STRING)? &
 		("source:" source=DataSource)? 
@@ -48,7 +57,7 @@ DataSourceDatabaseValue:
 	"WIP_DataSourceDatabaseValue"
 ;
 
-terminal ValueType:
+terminal VALUETYPE:
 	"number" | "string" | "boolean"
 ;
 
