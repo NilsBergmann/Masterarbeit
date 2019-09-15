@@ -27,8 +27,9 @@ Expression:
 	ImplicationExpr
 ;
 
+
 ImplicationExpr returns Expression:
-	OrExpr ({Impl.left=current} op=('->'|'<->'|'implies'|'iff') right=AndExpr)*
+	OrExpr ({Implication.left=current} op=('->'|'<->'|'implies'|'iff') right=AndExpr)*
 ;
 
 OrExpr returns Expression:
@@ -60,7 +61,7 @@ MultExpr returns Expression:
 ;
 
 UnExpr returns Expression: 
-	{Negation} op=('!'|"-"|'not') exprAtom=AtomExpr 
+	{Negation} op=('!'|"-"|'not') expr=AtomExpr 
 	| AtomExpr
 ;
 
@@ -71,9 +72,9 @@ AtomExpr returns Expression:
 	| {FloatLiteral} value=FLOAT unit=Unit?
 	| {BoolLiteral} value=("true" | "false")	
 	// User Variable
-	| {UserVarAtom} ref=[UserVariable]
+	| {UserVarReference} ref=[UserVariable]
 	// MappingVariable
-	| {MappingTest} importScope=[Import] '.' ref=[mapping::DomainValue] 
+	| {MappingReference} importScope=[Import] '.' ref=[mapping::DomainValue] 
 	| {AggregateExpression} op=("avg"|"average"|"min"|"minimum"|"max"|"maximum") time=TimeInterval "("expr=Expression")"
 ;
 
@@ -101,13 +102,13 @@ terminal UNARY_LTL_OPERATOR:
 	| 'historically' | 'H'
 ;
 
-terminal BINARY_LTL_OPERATOR:
-	  'until' | 'U' 
-	| 'release' | 'R' 
-	| 'weak_until' | 'W' 
-	| 'strong_release' | 'M' 
-	| 'since' | 'S' 
-	| 'weak_since' | 'B'
+enum BINARY_LTL_OPERATOR:
+	  UNTIL = 'until' | UNTIL = 'U' 
+	| RELEASE = 'release' | RELEASE = 'R' 
+	| WEAK_UNTIL = 'weak_until' | WEAK_UNTIL = 'W' 
+	| STRONG_RELEASE = 'strong_release' | STRONG_RELEASE = 'M' 
+	| SINCE = 'since' | SINCE = 'S' 
+	| WEAK_SINCE = 'weak_since' | WEAK_SINCE = 'B'
 ;
 
 

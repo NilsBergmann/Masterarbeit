@@ -3,6 +3,8 @@
  */
 package bergmann.masterarbeit.scoping
 
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
 
 /**
  * This class contains custom scoping description.
@@ -12,4 +14,8 @@ package bergmann.masterarbeit.scoping
  */
 class MonitorDslScopeProvider extends AbstractMonitorDslScopeProvider {
 
+	override getScope(EObject context, EReference reference){
+		return super.getScope(context, reference)
+	}
+	
 }
