@@ -7,26 +7,28 @@ import "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL" as mapping
 
 
 Monitors:
-	(imports+=Import)*
-	ops+=(Assertion | UserVariable)*
+	{Monitors} package=PackageDeclaration (imports+=Import)* (assertions+=Assertion | uservars+=UserVariable)*
+;
+
+PackageDeclaration:
+	{PackageDeclaration} "package" package=FQN
 ;
 
 Import:
-	'import' importURI=STRING 'as' name=ID
+	{Import} 'import' importURI=STRING 'as' name=ID
 ;
 
 UserVariable:
-	"def" "var" name=ID ":=" expr=Expression	
+	{UserVariable} "def" "var" name=ID ":=" expr=Expression	
 ;
 
 Assertion: 
-	"def" "assertion" name=ID ':=' expr=Expression
+	{Assertion} "def" "assertion" name=ID ':=' expr=Expression
 ;
 
 Expression:
 	ImplicationExpr
 ;
-
 
 ImplicationExpr returns Expression:
 	OrExpr ({Implication.left=current} op=('->'|'<->'|'implies'|'iff') right=AndExpr)*
@@ -75,7 +77,7 @@ AtomExpr returns Expression:
 	| {UserVarReference} ref=[UserVariable]
 	// MappingVariable
 	| {MappingReference} importScope=[Import] '.' ref=[mapping::DomainValue] 
-	| {AggregateExpression} op=("avg"|"average"|"min"|"minimum"|"max"|"maximum") time=TimeInterval "("expr=Expression")"
+	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
 ;
 
 
@@ -91,24 +93,28 @@ TimeAtom:
 	| {InfinityTimeAtom} "infinity"
 ;
 
+enum AGGREGATE_OPERATOR:
+	AVG = "avg" | AVG = "average"
+	| MIN = "min" | MIN = "minimum"
+	| MAX = "max" | MAX = "maximum"
+;
 
-
-terminal UNARY_LTL_OPERATOR:
-	  'next' | 'X' 
-	| 'finally' | 'F' 
-	| 'globally' | 'G' 
-	| 'previous' | 'Y' 
-	| 'once' | 'O'  
-	| 'historically' | 'H'
+enum UNARY_LTL_OPERATOR:
+	NEXT =  'next' | NEXT = 'X' 
+	| FINALLY = 'finally' | FINALLY = 'F' 
+	| GLOBAL = 'globally' | GLOBAL = 'G' 
+	| PREVIOUS = 'previous' | PREVIOUS = 'Y' 
+	| ONCE = 'once' | ONCE = 'O'  
+	| HISTORICALLY = 'historically' | HISTORICALLY =  'H'
+	| Z = "Z"
 ;
 
 enum BINARY_LTL_OPERATOR:
 	  UNTIL = 'until' | UNTIL = 'U' 
 	| RELEASE = 'release' | RELEASE = 'R' 
 	| WEAK_UNTIL = 'weak_until' | WEAK_UNTIL = 'W' 
-	| STRONG_RELEASE = 'strong_release' | STRONG_RELEASE = 'M' 
 	| SINCE = 'since' | SINCE = 'S' 
-	| WEAK_SINCE = 'weak_since' | WEAK_SINCE = 'B'
+	| TRIGGER = 'trigger' | TRIGGER = 'T'
 ;
 
 
@@ -142,9 +148,10 @@ terminal LENGTH_UNIT:
 	"mm" | 'cm' | 'm' | 'km'
 ;
 terminal TIME_UNIT:
-	"ms" | "s" 	| "m" | "h" 
+	"ms" | "s" 	| "min" | "h" 
 ;
 
 terminal FLOAT returns ecore::EFloat: INT '.' INT;
+FQN: ID ("." ID)*;
 
 	
