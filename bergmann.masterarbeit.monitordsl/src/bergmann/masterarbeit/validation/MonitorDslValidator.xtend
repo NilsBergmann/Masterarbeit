@@ -44,7 +44,7 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 			error("Invalid Assertion. Can not resolve expression to boolean", MonitorDslPackage.Literals.ASSERTION__NAME)
 		} 
 	}
-
+	
 	def markSubexpressions(Expression expr){
 		print("Checking " + expr)
 		if(!expr.isValid){
@@ -60,6 +60,11 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 				error("Expression can't be resolved to a valid type", expr.eContainer, expr.eContainingFeature, -1)
 			}
 		}
+	}
+	
+	@Check
+	def checkTimeIntervals(TimeIntervalSimple t){
+		// TODO: Implement this
 	}
 
 }
