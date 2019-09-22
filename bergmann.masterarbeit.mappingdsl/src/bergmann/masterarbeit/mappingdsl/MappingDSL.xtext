@@ -50,11 +50,15 @@ DataSource:
 ;
 
 DataSourceJavaReference:
+	{JavaDataSource}
 	"WIP_DataSourceJavaReference"
 ;
 
 DataSourceDatabaseValue:
-	"WIP_DataSourceDatabaseValue"
+	{DatabaseDataSource}
+	"database:" "{"
+		"columnLabel:" columnLabel = ID
+	"}"
 ;
 
 enum VALUETYPE:
