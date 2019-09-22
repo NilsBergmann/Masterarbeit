@@ -16,11 +16,11 @@ public class DatabaseWrapper {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url);
+            System.out.println("SUCCESS: Connected to database '" + databaseName + "'");
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
             conn = null;
+            System.err.println("ERROR: " + e.getMessage());
         }
-        System.out.println("Connected to database '" + databaseName + "'");
         return conn;
     }
 
