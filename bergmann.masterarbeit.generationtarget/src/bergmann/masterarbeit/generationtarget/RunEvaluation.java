@@ -14,6 +14,7 @@ class RunEvaluation {
         DataController dataControl = new DataController();
         dataControl.connectToDatabase("test.db");
         ArrayList<Assertion> assertions = new ArrayList<Assertion>();
+
     }
 
 }
