@@ -39,7 +39,7 @@ public class LTL_Global extends UnaryExpression<Boolean, Boolean> {
         }
 
         // TODO: Handle case where an Interval is given and simulation is real time
-        if (dataSource.simulationComplete())
+        if (dataSource.isRealTime())
             return Optional.of(true);
         else
             return Optional.empty();
