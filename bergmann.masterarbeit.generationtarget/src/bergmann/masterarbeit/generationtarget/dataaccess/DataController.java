@@ -9,9 +9,11 @@ import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 public class DataController {
     DatabaseWrapper dbWrapper;
     ArrayList<State> states;
+    boolean isRealTime = false;
 
-    public DataController() {
+    public DataController(boolean isRealTime) {
         states = new ArrayList<State>();
+        this.isRealTime = isRealTime;
     }
 
     public void connectToDatabase(String path) {
@@ -52,10 +54,7 @@ public class DataController {
         // TODO Implement this. Consider open and closed time intervals
     }
 
-    public boolean simulationComplete() {
-        // Todo: add Flag to check if more states will be added later
-        return true;
-    }
+
 
     public State getPreviousState(State state) {
         int index = states.indexOf(state);
@@ -102,5 +101,9 @@ public class DataController {
         // TODO: Implement
         System.out.println("intervalIsInRange(). Not implemented");
         return true;
+    }
+    
+    public boolean isRealTime() {
+        return this.isRealTime;
     }
 }
