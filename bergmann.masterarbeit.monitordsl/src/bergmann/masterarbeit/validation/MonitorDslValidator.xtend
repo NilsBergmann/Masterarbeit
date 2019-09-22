@@ -66,6 +66,10 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 	def checkTimeIntervals(TimeIntervalSimple t){
 		// TODO: Implement this
 	}
-
+	
+	@Check 
+	def checkNamesAreUnique(Monitors monitors){
+		//TODO: Implement this
+	}
 }
 
