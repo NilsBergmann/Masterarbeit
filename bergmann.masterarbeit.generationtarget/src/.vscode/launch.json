@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - RunEvaluation",
+            "request": "launch",
+            "mainClass": "aaaaa.RunEvaluation",
+            "projectName": "Implementierung-Test_e4254118"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - SQLiteJDBC",
+            "request": "launch",
+            "mainClass": "SQLiteJDBC",
+            "projectName": "Implementierung-Test_e4254118"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - DatabaseWrapper",
+            "request": "launch",
+            "mainClass": "DatabaseWrapper",
+            "projectName": "Implementierung-Test_e4254118"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Evaluation",
+            "request": "launch",
+            "mainClass": "Evaluation",
+            "projectName": "Implementierung-Test_e4254118"
+        }
+    ]
+}
