@@ -49,15 +49,15 @@ DataSource:
 	DataSourceJavaReference | DataSourceDatabaseValue
 ;
 
-DataSourceJavaReference:
+DataSourceJavaReference returns DataSource:
 	{JavaDataSource}
 	"WIP_DataSourceJavaReference"
 ;
 
-DataSourceDatabaseValue:
+DataSourceDatabaseValue returns DataSource:
 	{DatabaseDataSource}
 	"database:" "{"
-		"columnLabel:" columnLabel = ID
+		"columnLabel:" columnLabel = STRING
 	"}"
 ;
 

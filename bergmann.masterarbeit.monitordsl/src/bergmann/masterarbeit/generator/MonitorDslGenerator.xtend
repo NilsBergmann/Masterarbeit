@@ -12,6 +12,7 @@ import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import com.ibm.icu.impl.CaseMap.StringContextIterator
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DatabaseDataSource
 
 /**
  * Generates code from your model files on save.
@@ -48,6 +49,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 				 */
 				«FOR userVar : userVars»
 				«userVar.compile»
+				
 				«ENDFOR»
 				
 				/**
@@ -55,6 +57,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 				 */
 				 «FOR assertion : assertions»
 				 «assertion.compile»
+				 
 				 «ENDFOR»
 		}
 		'''
@@ -63,19 +66,15 @@ class MonitorDslGenerator extends AbstractGenerator {
 	def String compile(UserVariable userVar){
 		var javaType = userVar.expr.expressionType.toJavaType
 		return '''
-		// Begin UserVariable: «userVar.name»
 		UserVariable<«javaType»> «userVar.name» = new UserVariable<«javaType»>(«userVar.expr.compile»);
-		// End UserVariable: «userVar.name»
 		'''
 	}
 	
 	def String compile(Assertion assertion){
 		return '''
-		// Begin Assertion: «assertion.name»
 		Expression<Boolean> «assertion.name»_Expression = «assertion.expr.compile»;
 		Assertion «assertion.name» = new Assertion(«assertion.name»_Expression, dataControl);
 		assertions.add(«assertion.name»);
-		// End Assertion: «assertion.name»
 		'''
 	}
 	
@@ -130,7 +129,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 			FloatLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
 			UserVarReference: return expr.ref.name 
-			MappingReference: return expr.ref.compile
+			MappingReference: return compile(expr as MappingReference)
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
 		}
 	}
@@ -166,15 +165,25 @@ class MonitorDslGenerator extends AbstractGenerator {
 		}
 	}
 	
-	def String compile(DomainValue value){
-		return "TODO_Domainvalue"
+	def String compile(MappingReference expr){
+		if(expr.ref.source instanceof DatabaseDataSource){
+			var source = expr.ref.source as DatabaseDataSource
+			if (expr.isBoolean)
+				return '''new BoolDatabaseAccess("«source.columnLabel»");'''
+			else if (expr.isNumber)
+				return '''new NumberDatabaseAccess("«source.columnLabel»")'''
+			else 
+				throw new Exception()	
+		}
+		else
+			return "TODO_JAVACLASS_MAPPING_REFERENCE"
 	}
 	
 	def String compile(TimeInterval interval){
-		return "TODO_interval"
+		return "TODO_INTERVAL"
 	}
 	
 	def String compile(Unit unit){
-		return "TODO_unit"
+		return "TODO_UNIT"
 	}
 }
