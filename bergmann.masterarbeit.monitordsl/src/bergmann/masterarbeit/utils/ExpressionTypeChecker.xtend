@@ -50,6 +50,15 @@ class ExpressionTypeChecker {
 			default: return ExpressionType.UNKNOWN
 		}
 	}
+	
+	def public static String toJavaType(ExpressionType t) {
+		switch(t){
+			case ExpressionType.NUMBER: return "Double"
+			case ExpressionType.BOOLEAN: return "Boolean"
+			case ExpressionType.STRING: return "String"
+			default: throw new Exception()
+		}
+	}
 
 	def public static boolean isValid(Expression expr) {
 		return expr.expressionType != ExpressionType.UNKNOWN

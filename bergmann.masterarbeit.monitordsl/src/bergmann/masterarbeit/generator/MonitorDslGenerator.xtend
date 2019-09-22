@@ -7,6 +7,11 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import bergmann.masterarbeit.monitorDsl.*
+import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
+import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
+import com.ibm.icu.impl.CaseMap.StringContextIterator
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 
 /**
  * Generates code from your model files on save.
@@ -21,5 +26,155 @@ class MonitorDslGenerator extends AbstractGenerator {
 //				.filter(Greeting)
 //				.map[name]
 //				.join(', '))
+		var monitors = resource.contents.head as Monitors
+		fsa.generateFile("RunEvaluation.java", monitors.compile)		
+	}
+	
+	def String compile(Monitors monitors){
+		var packageName = monitors.package.package
+		var assertions = monitors.assertions
+		var userVars = monitors.uservars
+		var databaseFilename = "test.db" //TODO Implement this
+		//TODO: Add imports
+		return '''
+		class RunEvaluation {
+			public static void main(String args[]) {
+				DataController dataControl = new DataController();
+				dataControl.connectToDatabase("«databaseFilename»");
+				ArrayList<Assertion> assertions = new ArrayList<Assertion>();
+				
+				/**
+				 * User Variables 
+				 */
+				«FOR userVar : userVars»
+				«userVar.compile»
+				«ENDFOR»
+				
+				/**
+				 * Assertions
+				 */
+				 «FOR assertion : assertions»
+				 «assertion.compile»
+				 «ENDFOR»
+		}
+		'''
+	}
+	
+	def String compile(UserVariable userVar){
+		var javaType = userVar.expr.expressionType.toJavaType
+		return '''
+		// Begin UserVariable: «userVar.name»
+		UserVariable<«javaType»> «userVar.name» = new UserVariable<«javaType»>(«userVar.expr.compile»);
+		// End UserVariable: «userVar.name»
+		'''
+	}
+	
+	def String compile(Assertion assertion){
+		return '''
+		// Begin Assertion: «assertion.name»
+		Expression<Boolean> «assertion.name»_Expression = «assertion.expr.compile»;
+		Assertion «assertion.name» = new Assertion(«assertion.name»_Expression, dataControl);
+		assertions.add(«assertion.name»);
+		// End Assertion: «assertion.name»
+		'''
+	}
+	
+	def String compile(Expression expr){
+		switch expr{
+			And: return '''new And(«expr.left.compile»,«expr.right.compile»)'''
+			Or: return '''new Or(«expr.left.compile»,«expr.right.compile»)'''
+			Implication: return '''new Implication(«expr.left.compile»,«expr.right.compile»)'''
+			LTL_Unary: {
+				if(expr.time == null)
+					return '''new «expr.op.compile»(«expr.expr.compile»)'''
+				else
+					return  '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
+			}
+			LTL_Binary: {
+				if(expr.time == null)
+					return '''new «expr.op.compile»(«expr.left.compile», «expr.right.compile»)'''
+				else
+					return '''new «expr.op.compile»(«expr.left.compile», «expr.right.compile», «expr.time.compile»)'''
+			}
+			Add: {
+				if(expr.op == "+")
+					return '''new Addition(«expr.left.compile», «expr.right.compile»)'''
+				else
+					return '''new Subtraction(«expr.left.compile», «expr.right.compile»)'''
+			}
+			Mult: {
+				if(expr.op == "*")
+					return '''new Multiplication(«expr.left.compile», «expr.right.compile»)'''
+				else
+					return '''new Division(«expr.left.compile», «expr.right.compile»)'''	
+			}
+			Negation: {
+				if(expr.isBoolean)
+					return '''new BoolNegation(«expr.expr.compile»)'''
+				else if (expr.isNumber)
+					return '''new NumberNegation(«expr.expr.compile»)'''
+				else 
+					throw new Exception()	
+			
+			}
+			Rel:{
+				if(expr.left.isBoolean && expr.right.isBoolean)
+					return '''new BoolEquality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
+				else if (expr.left.isNumber && expr.right.isNumber)
+					return '''new NumberEquality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
+				else 
+					throw new Exception()
+			}
+			Subexpression: return expr.expr.compile
+			IntLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
+			FloatLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
+			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
+			UserVarReference: return expr.ref.name 
+			MappingReference: return expr.ref.compile
+			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
+		}
+	}
+	
+	def String compile(BINARY_LTL_OPERATOR op){
+		switch op{
+			case RELEASE: return "LTL_Release"
+			case SINCE: return "PLTL_Since"
+			case UNTIL: return "LTL_Until"
+			case TRIGGER: return "PLTL_Trigger"
+			case WEAK_UNTIL:  return "LTL_WeakUntil"
+			default: throw new Exception()
+		}
+	}
+	def String compile(UNARY_LTL_OPERATOR op){
+		switch op{
+			case NEXT: return "LTL_Next"
+			case FINALLY: return "LTL_Finally"
+			case GLOBAL: return "LTL_Global"
+			case PREVIOUS: return "PLTL_Previous"
+			case ONCE:  return "PLTL_Once"
+			case Z: return "PLTL_Z"
+			case HISTORICALLY : return "PLTL_Historically"
+			default: throw new Exception()
+		}
+	}
+	def String compile(AGGREGATE_OPERATOR op){
+		switch op{
+			case MIN: return "AggregateMinimum"
+			case MAX: return "AggregateMaximum"
+			case AVG: return "AggregateAverage"
+			default: throw new Exception()
+		}
+	}
+	
+	def String compile(DomainValue value){
+		return "TODO_Domainvalue"
+	}
+	
+	def String compile(TimeInterval interval){
+		return "TODO_interval"
+	}
+	
+	def String compile(Unit unit){
+		return "TODO_unit"
 	}
 }
