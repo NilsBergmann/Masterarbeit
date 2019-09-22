@@ -11,9 +11,15 @@ import javax.print.event.PrintJobListener;
 public class DatabaseWrapper {
     public static String TIMESTAMP_COLUMN_NAME = "Timestamp";
     public Connection conn;
+    public String tableName = null;
 
     public DatabaseWrapper(String databaseName) {
-        conn = connect(databaseName);
+        this.conn = connect(databaseName);
+    }
+
+    public DatabaseWrapper(String databaseName, String tableName) {
+        this(databaseName);
+        this.tableName = tableName;
     }
 
     public Connection connect(String databaseName) {
@@ -30,25 +36,35 @@ public class DatabaseWrapper {
         return conn;
     }
 
-    public Optional<Boolean> getBoolean(State state, String tableName, String columnName) {
+    public void disconnect() {
+        try {
+            this.conn.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        this.conn = null;
+        this.tableName = null;
+    }
+
+    public Optional<Boolean> getBoolean(State state, String columnName) {
         // TODO: Implement this
         return Optional.empty();
     }
 
-    public Optional<Double> getNumber(State state, String tableName, String columnName) {
+    public Optional<Double> getNumber(State state, String columnName) {
         // TODO: Implement this
         return Optional.empty();
     }
 
-    public Optional<String> getString(State state, String tableName, String columnName) {
+    public Optional<String> getString(State state, String columnName) {
         // TODO: Implement this
         return Optional.empty();
     }
 
-    private ResultSet getValue(State state, String tableName, String columnName) {
+    private ResultSet getValue(State state, String columnName) {
         Timestamp timestamp = Timestamp.from(state.timestamp);
         long timeInMillisec = timestamp.getTime();
-        String sql = "SELECT " + columnName + " FROM " + tableName + " WHERE " + TIMESTAMP_COLUMN_NAME + " = "
+        String sql = "SELECT " + columnName + " FROM " + this.tableName + " WHERE " + TIMESTAMP_COLUMN_NAME + " = "
                 + timeInMillisec;
         try {
             Statement stmnt = conn.createStatement();
@@ -61,7 +77,9 @@ public class DatabaseWrapper {
         return null;
     }
 
-    public List<State> getStatesFrom(String tableName) {
+    public List<State> getStates() {
+        if (tableName == null)
+            return null;
         List<State> states = new ArrayList<State>();
         try {
             Statement st = conn.createStatement();
@@ -91,14 +109,9 @@ public class DatabaseWrapper {
         return names;
     }
 
-    public static void main(String[] args) {
-        DatabaseWrapper dbWrap = new DatabaseWrapper("test.db");
-        System.out.println(dbWrap.getTables());
-        List<State> states = dbWrap.getStatesFrom("test");
-        for (State state : states) {
-            System.out.println("State with timestamp:" + state.timestamp);
-        }
-
+    public void setTable(String name) {
+        // TODO: Check if table exists
+        this.tableName = name;
     }
 
 }
