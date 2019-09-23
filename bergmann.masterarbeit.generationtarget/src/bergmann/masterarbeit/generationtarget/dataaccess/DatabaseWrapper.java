@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.print.event.PrintJobListener;
-
 public class DatabaseWrapper {
     public static String TIMESTAMP_COLUMN_NAME = "Timestamp";
     public Connection conn;

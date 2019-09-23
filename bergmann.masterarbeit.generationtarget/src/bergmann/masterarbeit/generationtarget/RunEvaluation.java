@@ -12,6 +12,7 @@ import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
 class RunEvaluation {
+
     public static void main(String args[]) {
         DataController dataControl = new DataController(false);
         dataControl.connectToDatabase("test.db");
