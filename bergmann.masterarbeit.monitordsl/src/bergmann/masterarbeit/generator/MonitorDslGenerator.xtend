@@ -10,6 +10,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import bergmann.masterarbeit.monitorDsl.*
 import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
+import static extension bergmann.masterarbeit.utils.TimeUtils.*
 import com.ibm.icu.impl.CaseMap.StringContextIterator
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DatabaseDataSource
@@ -180,7 +181,32 @@ class MonitorDslGenerator extends AbstractGenerator {
 	}
 	
 	def String compile(TimeInterval interval){
-		return "TODO_INTERVAL"
+		switch interval{
+			TimeIntervalSimple:{
+				var includeLeft = interval.left.equals("[")
+				var includeRight = interval.right.equals("]")
+				var startMillisec = interval.start.toMillisec
+				var endMillisec = interval.end.toMillisec
+				return '''new RelativeTimeInterval(Duration.ofMillis(«startMillisec»9, Duration.ofMillis(«endMillisec»), «includeLeft», «includeRight»)'''
+			}
+			TimeIntervalSingleton:{
+				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
+				return '''new RelativeTimeInterval(«timeString», «timeString», true, true)'''
+			}
+			TimeIntervalInequalityNotation:{
+				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
+				var zeroString = '''Duration.ofMillis(0)'''
+				var infinityString = '''Duration.ofMillis(Long.MAX_VALUE)'''
+				switch interval.op{
+					case "<": return '''new RelativeTimeInterval(«zeroString», «timeString», true, false'''
+					case "<=":return '''new RelativeTimeInterval(«zeroString», «timeString», true, true'''
+					case ">": return '''new RelativeTimeInterval(«timeString», «infinityString», false, true'''
+					case ">=":return '''new RelativeTimeInterval(«timeString», «infinityString», true, true'''
+					default: throw new Exception()
+				}
+			}
+			default: throw new Exception()
+		}
 	}
 	
 	def String compile(Unit unit){
