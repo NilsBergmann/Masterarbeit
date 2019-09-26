@@ -131,24 +131,29 @@ UnitMultiplication returns Unit:
 ;
 
 UnitExponent returns Unit:
-	{UnitExponent} (value=UnitAtom '^' exponent=INT)
+	{UnitExponent} (value=UnitAtom '^' negative?='-' exponent=INT)
 	| UnitAtom
 ;
 
 UnitAtom returns Unit:
 	{UnitBraces} '(' unit=Unit ')'
-	| {UnitLiteral} value=UnitLiteral
+	| {UnitLiteralAtom} unit=(LengthUnitLiteral  | TimeUnitLiteral)
 ;
 
-UnitLiteral:
-	LENGTH_UNIT  | TIME_UNIT
+
+LengthUnitLiteral returns UnitLiteral:
+	{LengthUnitLiteral} unit=LENGTH_UNIT
+;
+TimeUnitLiteral returns UnitLiteral:
+	{TimeUnitLiteral} unit=TIME_UNIT
+;
+
+terminal TIME_UNIT:
+	"ms" | "s"| "min" | "h"
 ;
 
 terminal LENGTH_UNIT:
-	"mm" | 'cm' | 'm' | 'km'
-;
-terminal TIME_UNIT:
-	"ms" | "s" 	| "min" | "h" 
+	'mm' | 'cm' | 'm' | 'km'
 ;
 
 terminal FLOAT returns ecore::EFloat: INT '.' INT;

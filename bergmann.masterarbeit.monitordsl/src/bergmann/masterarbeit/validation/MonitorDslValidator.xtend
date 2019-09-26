@@ -12,6 +12,7 @@ import bergmann.masterarbeit.monitorDsl.*
 import bergmann.masterarbeit.utils.ExpressionTypeChecker
 import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
+import static extension bergmann.masterarbeit.utils.UnitUtils.*
 
 /**
  * This class contains custom validation rules. 
@@ -66,6 +67,14 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 	def checkTimeIntervals(TimeIntervalSimple t){
 		// TODO: Implement this
 	}
+	
+	@Check 
+	def checkUnits(Expression expr){
+		switch expr {
+			// TODO: Check if Units are compatible
+		}
+	}
+	
 	
 	@Check 
 	def checkNamesAreUnique(Monitors monitors){

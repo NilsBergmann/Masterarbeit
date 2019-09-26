@@ -1,49 +1,119 @@
 package bergmann.masterarbeit.utils
 
+import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
+import bergmann.masterarbeit.monitorDsl.Expression
+import javax.measure.quantity.*
 import bergmann.masterarbeit.monitorDsl.*
-import java.util.ArrayList
-import java.util.List
+import javax.measure.unit.Unit
+import javax.measure.unit.SI
+import javax.measure.unit.NonSI
 
 class UnitUtils {
-	
-	def public static double unitConversion(double value, Unit start, Unit target){
-		return 1.2
-	}
-	
-	def public static boolean compatible(Unit unitA, Unit unitB){
-		if(unitA instanceof UnitBraces)
-			return compatible(unitA.unit, unitB)
-		if(unitB instanceof UnitBraces)
-			return compatible(unitA, unitB.unit)
-		if(unitA instanceof UnitLiteral){
-			if(unitB instanceof UnitLiteral)
-				// TODO Fix
-				return true
-			else
-				return false
+
+	def public static Unit<? extends Quantity> getUnit(Expression expr){
+		if (!expr.isNumber)
+			throw new IllegalArgumentException("Non-Number-Expressions don't have units")
+		switch expr{
+			Add: return expr.left.unit
+			Mult: {
+				switch expr.op {
+					case "*": return expr.left.unit.times(expr.right.unit)
+					case "/": return expr.left.unit.divide(expr.right.unit)
+				}
+			}
+			AggregateExpression: return expr.expr.unit
+			IntLiteral: return if (expr.unit != null) expr.unit.toJavaUnit else Unit.ONE
+			FloatLiteral: return if (expr.unit != null) expr.unit.toJavaUnit else Unit.ONE
+			UserVarReference: return expr.ref.expr.unit
+			MappingReference: return if (expr.ref.unit != null) expr.ref.unit.toJavaUnit else Unit.ONE
+			default: throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
-		if(unitA instanceof UnitDiv){
-			if(unitB instanceof UnitDiv)
-				return compatible(unitA.left, unitB.left) && compatible(unitA.right, unitB.right)
-			else
-				return false
+	}
+	
+	def public static boolean isUnitCompatible(Expression expr1, Expression expr2){
+		if (!expr1.isNumber || !expr2.isNumber)
+			throw new IllegalArgumentException("Non-Number-Expressions don't have units")
+		else
+			return expr1.unit.isCompatible(expr2.unit)
+	}
+	
+	/**
+ 	* MonitorDSL Units
+ 	*/
+	def public static Unit<? extends Quantity> toJavaUnit(bergmann.masterarbeit.monitorDsl.Unit unit){
+		switch unit{
+			UnitDiv: return unit.left.toJavaUnit.divide(unit.right.toJavaUnit)
+			UnitMult: return unit.left.toJavaUnit.times(unit.right.toJavaUnit)
+			UnitExponent:
+				if(unit.isNegative)
+					return unit.value.toJavaUnit.root(unit.exponent)
+				else
+					return unit.value.toJavaUnit.pow(unit.exponent)
+			UnitBraces: return unit.unit.toJavaUnit
+			UnitLiteralAtom: return unit.unit.toJavaUnit
+			
+			default: throw new IllegalArgumentException("Can't parse unit: " + unit)
 		}
-		// TODO: Multiplication, Exponent
-		return false
 	}
-	
-	def private static List<Unit> toList(UnitExponent unit){
-		var retVal = new ArrayList<Unit>()
-		for(var i = 0; i<unit.exponent; i++){
-			retVal.add(unit.value)
+	def public static Unit<? extends Quantity> toJavaUnit(UnitLiteral literal){
+		switch literal {
+			LengthUnitLiteral:
+				switch literal.unit {
+					case "mm": return SI.MILLI(SI.METER)
+					case "cm": return SI.CENTI(SI.METER)
+					case "m": return SI.METER
+					case "km": return SI.KILO(SI.METER)
+					default: throw new IllegalArgumentException("Can't parse unit: " + literal.unit)
+				}
+			TimeUnitLiteral:
+				switch literal.unit {
+					case "ms": return SI.MILLI(SI.SECOND) 
+					case "s": return SI.SECOND
+					case "min": return NonSI.MINUTE
+					case "h": return NonSI.HOUR
+					default: throw new IllegalArgumentException("Can't parse unit: " + literal.unit)
+				}
+			default: throw new IllegalArgumentException("Can't parse unit: " + literal)
 		}
-		return retVal
 	}
 	
-	def private static List<Unit> toList(UnitMult unit){
-		var retVal = new ArrayList<Unit>()
-		//TODO
-		return retVal
+	/**
+ 	* MonitorDSL Units
+ 	*/
+	def public static Unit<? extends Quantity> toJavaUnit(bergmann.masterarbeit.mappingdsl.mappingDSL.Unit unit){
+		switch unit{
+			bergmann.masterarbeit.mappingdsl.mappingDSL.UnitDiv: return unit.left.toJavaUnit.divide(unit.right.toJavaUnit)
+			bergmann.masterarbeit.mappingdsl.mappingDSL.UnitMult: return unit.left.toJavaUnit.times(unit.right.toJavaUnit)
+			bergmann.masterarbeit.mappingdsl.mappingDSL.UnitExponent:
+				if(unit.isNegative)
+					return unit.value.toJavaUnit.root(unit.exponent)
+				else
+					return unit.value.toJavaUnit.pow(unit.exponent)
+			bergmann.masterarbeit.mappingdsl.mappingDSL.UnitBraces: return unit.unit.toJavaUnit
+			bergmann.masterarbeit.mappingdsl.mappingDSL.UnitLiteralAtom: return unit.unit.toJavaUnit
+
+			default: throw new IllegalArgumentException("Can't parse unit: " + unit)
+		}
 	}
-	
+	def public static Unit<? extends Quantity> toJavaUnit(bergmann.masterarbeit.mappingdsl.mappingDSL.UnitLiteral literal){
+		switch literal {
+			bergmann.masterarbeit.mappingdsl.mappingDSL.LengthUnitLiteral:
+				switch literal.unit {
+					case "mm": return SI.MILLI(SI.METER)
+					case "cm": return SI.CENTI(SI.METER)
+					case "m": return SI.METER
+					case "km": return SI.KILO(SI.METER)
+					default: throw new IllegalArgumentException("Can't parse unit: " + literal.unit)
+				}
+			bergmann.masterarbeit.mappingdsl.mappingDSL.TimeUnitLiteral:
+				switch literal.unit {
+					case "ms": return SI.MILLI(SI.SECOND) 
+					case "s": return SI.SECOND
+					case "min": return NonSI.MINUTE
+					case "h": return NonSI.HOUR
+					default: throw new IllegalArgumentException("Can't parse unit: " + literal.unit)
+				}
+			default: throw new IllegalArgumentException("Can't parse unit: " + literal)
+		}
+	}
 }
