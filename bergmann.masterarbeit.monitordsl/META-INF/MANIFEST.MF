@@ -28,3 +28,5 @@ Export-Package: bergmann.masterarbeit.monitorDsl.impl,
  bergmann.masterarbeit.parser.antlr,
  bergmann.masterarbeit.services
 Import-Package: org.apache.log4j
+Bundle-ClassPath: .,
+ lib/jscience-4.3.1.jar
