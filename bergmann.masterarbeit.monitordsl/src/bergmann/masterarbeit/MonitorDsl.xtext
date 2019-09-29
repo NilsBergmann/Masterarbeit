@@ -63,8 +63,16 @@ MultExpr returns Expression:
 ;
 
 UnExpr returns Expression: 
-	{Negation} op=('!'|"-"|'not') expr=AtomExpr 
-	| AtomExpr
+	{Negation} op=('!'|"-"|'not') expr=MappingBinary 
+	| MappingBinary
+;
+
+MappingBinary returns Expression:
+	MappingUnary ({MappingBinary.left=current} importScope=[Import] ',,' ref=[mapping::BinaryJava] right=LTLUnaryExpression)*
+;
+
+MappingUnary returns Expression:
+	AtomExpr | {MappingUnary}  importScope=[Import] '.' ref=[mapping::UnaryJava]  expr=AtomExpr
 ;
 
 AtomExpr returns Expression: 
@@ -75,9 +83,10 @@ AtomExpr returns Expression:
 	| {BoolLiteral} value=("true" | "false")	
 	// User Variable
 	| {UserVarReference} ref=[UserVariable]
+	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
 	// MappingVariable
 	| {MappingReference} importScope=[Import] '.' ref=[mapping::DomainValue] 
-	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
+	| {MappingLiteral} importScope=[Import] '_' ref=[mapping::LiteralJava] 
 ;
 
 

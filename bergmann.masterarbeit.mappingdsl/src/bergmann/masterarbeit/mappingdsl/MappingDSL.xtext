@@ -1,67 +1,81 @@
-grammar bergmann.masterarbeit.mappingdsl.MappingDSL with org.eclipse.xtext.common.Terminals
+grammar bergmann.masterarbeit.mappingdsl.MappingDSL with org.eclipse.xtext.xbase.Xtype
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+import "http://www.eclipse.org/xtext/common/JavaVMTypes" as jvmTypes
 
 generate mappingDSL "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL"
 
 Domain:
 	elems+=DomainElement*
 ;
-
 DomainElement:
-	DomainDataType | DomainValue
+	JavaDataType | DomainValue | CustomJava
 ;
 
-DomainDataType:
-	{DomainDataType}
+JavaDataType:
+	{DataType}
 	"datatype:" "{"
-	 	(
-	 		("name:" name=ID) &
-	 		(attributes+=DataTypeAttribute* )
-	 	)
-	"}"
+	(
+		("name:" name=ID ) &
+		("javaClass:" javaType=[jvmTypes::JvmType|QualifiedName])
+	)
+"}"
 ;
-DataTypeAttribute:
-	{DomainTypeAttribute}
-	"attribute:" "{"
+
+CustomJava:
+	LiteralJava | UnaryJava | BinaryJava
+;
+
+LiteralJava returns CustomJava:
+	{LiteralJava}
+	"java" "{"
 	(
 		("name:" name=ID) &
-		("type:" type=VALUETYPE) &
-		("unit:" unit=Unit)? &
+		("type:" type=Type) &
 		("description:" description=STRING)? &
-		("source:" source=DataSource)? 
+		("javaClass:" javaType=[jvmTypes::JvmType|QualifiedName])
+	)
+	"}"
+;
+UnaryJava returns CustomJava:
+	{UnaryJava}
+	"java" "{"
+	(
+		("name:" name=ID) &
+		("type:" type1=Type "->" type2=Type) &
+		("description:" description=STRING)? &
+		("javaClass:" javaType=[jvmTypes::JvmType|QualifiedName])
 	)
 	"}"
 ;
 
+BinaryJava returns CustomJava:
+	{BinaryJava}
+	"java" "{"
+	(
+		("name:" name=ID) &
+		("type:" type1=Type "->" type2=Type "->" type3=Type) &
+		("description:" description=STRING)? &
+		("javaClass:" javaType=[jvmTypes::JvmType|QualifiedName])
+	)
+	"}"
+;
 DomainValue:
 	{DomainValue}
-	"value:" "{"
+	"databaseValue:" "{"
 	(
 		("name:" name=ID) &
-		("type:" type=VALUETYPE) &
+		("type:" type=BASE_VALUETYPE) &
 		("unit:" unit=Unit)? &
 		("description:" description=STRING)? &
-		("source:" source=DataSource)? 
+		("column:" column=STRING) 
 	)
 	"}"
 ;
 
-DataSource:
-	DataSourceJavaReference | DataSourceDatabaseValue
+Type:
+	{JavaType} type=[JavaDataType] | {BaseType} type=BASE_VALUETYPE
 ;
-
-DataSourceJavaReference returns DataSource:
-	{JavaDataSource}
-	"WIP_DataSourceJavaReference"
-;
-
-DataSourceDatabaseValue returns DataSource:
-	{DatabaseDataSource}
-	"database:" "{"
-		"columnLabel:" columnLabel = STRING
-	"}"
-;
-
-enum VALUETYPE:
+enum BASE_VALUETYPE:
 	NUMBER = "number" | STRING = "string" | BOOLEAN = "boolean"
 ;
 
@@ -102,3 +116,5 @@ terminal TIME_UNIT:
 terminal LENGTH_UNIT:
 	'mm' | 'cm' | 'm' | 'km'
 ;
+
+terminal INT returns ecore::EInt: ('0'..'9')+;

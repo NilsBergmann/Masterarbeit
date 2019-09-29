@@ -1,6 +1,5 @@
 package bergmann.masterarbeit.utils
 
-import bergmann.masterarbeit.mappingdsl.mappingDSL.VALUETYPE
 import bergmann.masterarbeit.monitorDsl.Add
 import bergmann.masterarbeit.monitorDsl.AggregateExpression
 import bergmann.masterarbeit.monitorDsl.And
@@ -22,123 +21,134 @@ import java.lang.reflect.Method
 import java.util.Arrays
 import java.util.HashMap;
 import java.util.Map
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BASE_VALUETYPE
+import bergmann.masterarbeit.monitorDsl.MappingLiteral
+import bergmann.masterarbeit.monitorDsl.MappingUnary
+import bergmann.masterarbeit.monitorDsl.MappingBinary
+import bergmann.masterarbeit.mappingdsl.mappingDSL.CustomJava
 
 class ExpressionTypeChecker {
-	static var expressionTypeMap = new HashMap<Expression, ExpressionType>()
+	static var expressionTypeMap = new HashMap<Expression, String>()
 	
-	public enum ExpressionType {
-		NUMBER,
-		BOOLEAN,
-		STRING,
-		UNKNOWN
-	}
-	def public static String toString(ExpressionType t){
-		switch(t){
-			case ExpressionType.NUMBER: return "number"
-			case ExpressionType.BOOLEAN: return "boolean"
-			case ExpressionType.STRING: return "string"
-			default: return "UNKNOWN"
-		}
-	}
-	
-	def public static toExpressionType(VALUETYPE src) {
-		// Converts MappingDSL types
-		switch (src) {
-			case BOOLEAN: return ExpressionType.BOOLEAN
-			case NUMBER: return ExpressionType.NUMBER
-			case STRING: return ExpressionType.STRING
-			default: return ExpressionType.UNKNOWN
-		}
-	}
-	
-	def public static String toJavaType(ExpressionType t) {
-		switch(t){
-			case ExpressionType.NUMBER: return "Double"
-			case ExpressionType.BOOLEAN: return "Boolean"
-			case ExpressionType.STRING: return "String"
-			default: throw new Exception()
-		}
-	}
+		
 
 	def public static boolean isValid(Expression expr) {
-		return expr.expressionType != ExpressionType.UNKNOWN
+		try {
+			return expr.expressionType != ""
+		} catch (IllegalArgumentException e) {
+			return false
+		}
 	}
 	
 	def public static boolean isBoolean(Expression expr) {
-		return expr.expressionType == ExpressionType.BOOLEAN
+		try {
+			return expr.expressionType == "BOOLEAN"
+		} catch (IllegalArgumentException e) {
+			return false
+		}
 	}
 	
 	def public static boolean isString(Expression expr) {
-		return expr.expressionType == ExpressionType.STRING
+		try {
+			return expr.expressionType == "STRING"
+		} catch (IllegalArgumentException e) {
+			return false
+		}
 	}
 	
 	def public static boolean isNumber(Expression expr) {
-		return expr.expressionType == ExpressionType.NUMBER
+		try {
+			return expr.expressionType == "NUMBER"
+		} catch (IllegalArgumentException e) {
+			return false
+		}
 	}
 	
 	
-	def static ExpressionType getExpressionType(Expression expr) {
+	def static String getExpressionType(Expression expr) {
 		if(expressionTypeMap.containsKey(expr)){
 			return expressionTypeMap.get(expr)
 		}
-		var ExpressionType t = ExpressionType.UNKNOWN
+		var String t = ""
 		switch (expr) {
 			Implication: 
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 			And:
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 			Or:
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 			LTL_Binary:
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 			LTL_Unary:
 				if (expr.expr.isBoolean)
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 			Rel:
 				if ((expr.op == "==" || expr.op == "!=") && expr.left.expressionType == expr.right.expressionType)
 					// Only for !=, ==: Any + Any => Boolean
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 				else if (expr.left.isNumber && expr.right.isNumber)
 					// Number + Number => Boolean
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 			Add:
 				if (expr.left.isNumber && expr.right.isNumber)
-					t = ExpressionType.NUMBER
+					t = "NUMBER"
 			Mult:
 				if (expr.left.isNumber && expr.right.isNumber)
-					t = ExpressionType.NUMBER
+					t = "NUMBER"
 			Negation:
 				if ((expr.op == "!" || expr.op == "not") && expr.expr.isBoolean)
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 				else if (expr.op == "-" && expr.expr.isNumber)
 					// Only for -: Number => Number
-					t = ExpressionType.BOOLEAN
+					t = "BOOLEAN"
 			Subexpression:
 				// ( expr ) => Passthrough type
 				t =  expr.expr.expressionType
 			AggregateExpression:
 				if (expr.expr.isNumber)
-					t = ExpressionType.NUMBER
+					t = "NUMBER"
 			UserVarReference:
 				t = expr.ref.expr.expressionType
 			MappingReference:
 				t = expr.ref.type.toExpressionType
 			IntLiteral:
-				t = ExpressionType.NUMBER
+				t = "NUMBER"
 			FloatLiteral:
-				t = ExpressionType.NUMBER
+				t = "NUMBER"
 			BoolLiteral:
-				t = ExpressionType.BOOLEAN
+				t = "BOOLEAN"
+			MappingLiteral: expr.ref.handleCustomJavaMapping
+			MappingUnary: expr.ref.handleCustomJavaMapping
+			MappingBinary: expr.ref.handleCustomJavaMapping
 			default: {
-				println("Unknown Expression of type: " + expr.class)
-				t = ExpressionType.UNKNOWN
+				throw new IllegalArgumentException("Can't parse expr: " + expr)
 			}
 		}
 		expressionTypeMap.put(expr, t)
 		return t		
+	}
+	
+	def static String toExpressionType(BASE_VALUETYPE t){
+		switch t{
+			case BOOLEAN: return "BOOLEAN"
+			case NUMBER: return "NUMBER"
+			case STRING: return "STRING"
+			default: throw new IllegalArgumentException("Can't parse type: " + t)
+		}
+	}
+	def static String toJavaType(String expressionType){
+		switch expressionType{
+			case "BOOLEAN": return "Boolean"
+			case "NUMBER": return "Double"
+			case "STRING": return "String"
+		}
+	}
+	def private static String handleCustomJavaMapping(CustomJava c){
+		throw new IllegalArgumentException("Typing: Can't parse : " + c)
 	}
 }

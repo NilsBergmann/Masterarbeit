@@ -3,17 +3,44 @@
  */
 package bergmann.masterarbeit.generator
 
+import bergmann.masterarbeit.monitorDsl.AGGREGATE_OPERATOR
+import bergmann.masterarbeit.monitorDsl.Add
+import bergmann.masterarbeit.monitorDsl.AggregateExpression
+import bergmann.masterarbeit.monitorDsl.And
+import bergmann.masterarbeit.monitorDsl.Assertion
+import bergmann.masterarbeit.monitorDsl.BINARY_LTL_OPERATOR
+import bergmann.masterarbeit.monitorDsl.BoolLiteral
+import bergmann.masterarbeit.monitorDsl.Expression
+import bergmann.masterarbeit.monitorDsl.FloatLiteral
+import bergmann.masterarbeit.monitorDsl.Implication
+import bergmann.masterarbeit.monitorDsl.IntLiteral
+import bergmann.masterarbeit.monitorDsl.LTL_Binary
+import bergmann.masterarbeit.monitorDsl.LTL_Unary
+import bergmann.masterarbeit.monitorDsl.MappingBinary
+import bergmann.masterarbeit.monitorDsl.MappingLiteral
+import bergmann.masterarbeit.monitorDsl.MappingReference
+import bergmann.masterarbeit.monitorDsl.MappingUnary
+import bergmann.masterarbeit.monitorDsl.Monitors
+import bergmann.masterarbeit.monitorDsl.Mult
+import bergmann.masterarbeit.monitorDsl.Negation
+import bergmann.masterarbeit.monitorDsl.Or
+import bergmann.masterarbeit.monitorDsl.Rel
+import bergmann.masterarbeit.monitorDsl.Subexpression
+import bergmann.masterarbeit.monitorDsl.TimeInterval
+import bergmann.masterarbeit.monitorDsl.TimeIntervalInequalityNotation
+import bergmann.masterarbeit.monitorDsl.TimeIntervalSimple
+import bergmann.masterarbeit.monitorDsl.TimeIntervalSingleton
+import bergmann.masterarbeit.monitorDsl.UNARY_LTL_OPERATOR
+import bergmann.masterarbeit.monitorDsl.Unit
+import bergmann.masterarbeit.monitorDsl.UserVarReference
+import bergmann.masterarbeit.monitorDsl.UserVariable
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import bergmann.masterarbeit.monitorDsl.*
-import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
+
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.TimeUtils.*
-import com.ibm.icu.impl.CaseMap.StringContextIterator
-import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
-import bergmann.masterarbeit.mappingdsl.mappingDSL.DatabaseDataSource
 
 /**
  * Generates code from your model files on save.
@@ -130,8 +157,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 			FloatLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
 			UserVarReference: return expr.ref.name 
-			MappingReference: return compile(expr as MappingReference)
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
+			/* MappingDSL stuff */			
+			MappingReference: return compile(expr as MappingReference)
+			MappingBinary: return compile(expr as MappingBinary)
+			MappingUnary: compile(expr as MappingUnary)
+			MappingLiteral: compile(expr as MappingLiteral)
+			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
 	
@@ -167,17 +199,23 @@ class MonitorDslGenerator extends AbstractGenerator {
 	}
 	
 	def String compile(MappingReference expr){
-		if(expr.ref.source instanceof DatabaseDataSource){
-			var source = expr.ref.source as DatabaseDataSource
-			if (expr.isBoolean)
-				return '''new BoolDatabaseAccess("«source.columnLabel»");'''
-			else if (expr.isNumber)
-				return '''new NumberDatabaseAccess("«source.columnLabel»")'''
-			else 
-				throw new Exception()	
-		}
-		else
-			return "TODO_JAVACLASS_MAPPING_REFERENCE"
+		var column = expr.ref.column
+		if (expr.isBoolean)
+			return '''new BoolDatabaseAccess("«column»");'''
+		else if (expr.isNumber)
+			return '''new NumberDatabaseAccess("«column»")'''
+		else 
+			throw new IllegalArgumentException("Can't parse expr: " + expr)
+	}
+	
+	def String compile(MappingBinary expr){
+		return '''TODO_BinaryJava'''
+	}
+	def String compile(MappingUnary expr){
+		return '''TODO_BinaryJava'''
+	}
+	def String compile(MappingLiteral expr){
+		return '''TODO_BinaryJava'''
 	}
 	
 	def String compile(TimeInterval interval){
