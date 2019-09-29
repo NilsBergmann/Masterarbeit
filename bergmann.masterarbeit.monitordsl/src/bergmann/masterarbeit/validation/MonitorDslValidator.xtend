@@ -13,19 +13,20 @@ import bergmann.masterarbeit.utils.ExpressionTypeChecker
 import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.UnitUtils.*
+import bergmann.masterarbeit.utils.ExpressionUtils
 
 /**
- * This class contains custom validation rules. 
+ * This class contains custom validation rules.
  *
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class MonitorDslValidator extends AbstractMonitorDslValidator {
 //	public static val INVALID_NAME = 'invalidName'
 //
-//	@Check 
+//	@Check
 //	def checkGreetingStartsWithCapital(Greeting greeting) {
 //		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
+//			warning('Name should start with a capital',
 //					MonitorDslPackage.Literals.GREETING__NAME,
 //					INVALID_NAME)
 //		}
@@ -35,19 +36,18 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 		if(!userVar.expr.isValid){
 			markSubexpressions(userVar.expr)
 			error("Invalid User Variable. Can not resolve to a valid type", MonitorDslPackage.Literals.USER_VARIABLE__NAME)
-		} 
-	} 
-	
+		}
+	}
+
 	@Check
 	def checkExpressionType(Assertion assertion){
 		if(!assertion.expr.isBoolean){
 			markSubexpressions(assertion.expr)
 			error("Invalid Assertion. Can not resolve expression to boolean", MonitorDslPackage.Literals.ASSERTION__NAME)
-		} 
+		}
 	}
-	
+
 	def markSubexpressions(Expression expr){
-		print("Checking " + expr)
 		if(!expr.isValid){
 			var invalidSubexpressionFound = false
 			for(Expression subExpr : expr.subexpressions){
@@ -62,23 +62,25 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 			}
 		}
 	}
-	
+
 	@Check
 	def checkTimeIntervals(TimeIntervalSimple t){
 		// TODO: Implement this
 	}
-	
-	@Check 
+
+	@Check
 	def checkUnits(Expression expr){
 		switch expr {
 			// TODO: Check if Units are compatible
 		}
 	}
-	
-	
-	@Check 
+
+
+	@Check
 	def checkNamesAreUnique(Monitors monitors){
 		//TODO: Implement this
 	}
+
+
 }
 

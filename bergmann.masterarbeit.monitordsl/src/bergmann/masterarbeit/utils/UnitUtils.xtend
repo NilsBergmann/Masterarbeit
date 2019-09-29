@@ -24,8 +24,7 @@ class UnitUtils {
 			AggregateExpression: return expr.expr.unit
 			IntLiteral: return if (expr.unit != null) expr.unit.toJavaUnit else Unit.ONE
 			FloatLiteral: return if (expr.unit != null) expr.unit.toJavaUnit else Unit.ONE
-			UserVarReference: return expr.ref.expr.unit
-			MappingReference: return if (expr.ref.unit != null) expr.ref.unit.toJavaUnit else Unit.ONE
+			CrossReference: return null//TODO //return if (expr.ref.unit != null) expr.ref.unit.toJavaUnit else Unit.ONE
 			default: throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}

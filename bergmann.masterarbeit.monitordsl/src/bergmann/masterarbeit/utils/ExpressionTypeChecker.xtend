@@ -10,23 +10,24 @@ import bergmann.masterarbeit.monitorDsl.Implication
 import bergmann.masterarbeit.monitorDsl.IntLiteral
 import bergmann.masterarbeit.monitorDsl.LTL_Binary
 import bergmann.masterarbeit.monitorDsl.LTL_Unary
-import bergmann.masterarbeit.monitorDsl.MappingReference
 import bergmann.masterarbeit.monitorDsl.Mult
 import bergmann.masterarbeit.monitorDsl.Negation
 import bergmann.masterarbeit.monitorDsl.Or
 import bergmann.masterarbeit.monitorDsl.Rel
 import bergmann.masterarbeit.monitorDsl.Subexpression
-import bergmann.masterarbeit.monitorDsl.UserVarReference
 import java.lang.reflect.Method
 import java.util.Arrays
 import java.util.HashMap;
 import java.util.Map
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BASE_VALUETYPE
-import bergmann.masterarbeit.monitorDsl.MappingLiteral
 import bergmann.masterarbeit.monitorDsl.MappingUnary
 import bergmann.masterarbeit.monitorDsl.MappingBinary
 import bergmann.masterarbeit.mappingdsl.mappingDSL.CustomJava
+import bergmann.masterarbeit.monitorDsl.CrossReference
+import org.eclipse.emf.ecore.EObject
+import bergmann.masterarbeit.monitorDsl.UserVariable
+import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
 
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
@@ -112,19 +113,15 @@ class ExpressionTypeChecker {
 			AggregateExpression:
 				if (expr.expr.isNumber)
 					t = "NUMBER"
-			UserVarReference:
-				t = expr.ref.expr.expressionType
-			MappingReference:
-				t = expr.ref.type.toExpressionType
 			IntLiteral:
 				t = "NUMBER"
 			FloatLiteral:
 				t = "NUMBER"
 			BoolLiteral:
 				t = "BOOLEAN"
-			MappingLiteral: expr.ref.handleCustomJavaMapping
-			MappingUnary: expr.ref.handleCustomJavaMapping
-			MappingBinary: expr.ref.handleCustomJavaMapping
+			CrossReference: return expr.handleCrossreference
+			MappingUnary: expr.handleCustomJavaMapping
+			MappingBinary: expr.handleCustomJavaMapping
 			default: {
 				throw new IllegalArgumentException("Can't parse expr: " + expr)
 			}
@@ -148,7 +145,23 @@ class ExpressionTypeChecker {
 			case "STRING": return "String"
 		}
 	}
-	def private static String handleCustomJavaMapping(CustomJava c){
-		throw new IllegalArgumentException("Typing: Can't parse : " + c)
+	
+	def private static String handleCustomJavaMapping(MappingUnary e){
+		throw new IllegalArgumentException("Typing: Can't parse : " + e)
+	}
+	
+		def private static String handleCustomJavaMapping(MappingBinary e){
+		throw new IllegalArgumentException("Typing: Can't parse : " + e)
+	}
+	
+	
+	def private static String handleCrossreference(CrossReference e){
+		var referenced = e.ref
+		switch referenced {
+			UserVariable: return referenced.expr.expressionType 
+			DomainValue: return referenced.type.toExpressionType
+			LiteralJava: throw new IllegalArgumentException("Typing: Can't parse : " + referenced)
+			default: throw new IllegalArgumentException("Typing: Can't parse : " + e)
+		}
 	}
 }

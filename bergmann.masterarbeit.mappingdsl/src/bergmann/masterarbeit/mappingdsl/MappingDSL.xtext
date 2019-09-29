@@ -5,8 +5,14 @@ import "http://www.eclipse.org/xtext/common/JavaVMTypes" as jvmTypes
 generate mappingDSL "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL"
 
 Domain:
+	package=PackageDeclaration
 	elems+=DomainElement*
 ;
+
+PackageDeclaration:
+	{PackageDeclaration} "package" name=ID
+;
+
 DomainElement:
 	JavaDataType | DomainValue | CustomJava
 ;
@@ -118,3 +124,4 @@ terminal LENGTH_UNIT:
 ;
 
 terminal INT returns ecore::EInt: ('0'..'9')+;
+FQN: ID ("." ID)*;

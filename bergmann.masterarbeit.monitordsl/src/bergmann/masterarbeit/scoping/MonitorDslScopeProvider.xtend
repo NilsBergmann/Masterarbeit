@@ -5,17 +5,49 @@ package bergmann.masterarbeit.scoping
 
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
+import bergmann.masterarbeit.monitorDsl.MonitorDslPackage
+import org.eclipse.xtext.EcoreUtil2
+import bergmann.masterarbeit.monitorDsl.CrossReference
+import java.util.ArrayList
+import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
+import bergmann.masterarbeit.monitorDsl.Monitors
+import org.eclipse.xtext.scoping.Scopes
+import bergmann.masterarbeit.monitorDsl.MappingBinary
+import bergmann.masterarbeit.monitorDsl.MappingUnary
+import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
+import org.eclipse.emf.ecore.util.EcoreUtil
+import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 
 /**
  * This class contains custom scoping description.
  * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
+ * See 
  * on how and when to use it.
  */
 class MonitorDslScopeProvider extends AbstractMonitorDslScopeProvider {
 
-	override getScope(EObject context, EReference reference){
-		return super.getScope(context, reference)
+	override getScope(EObject ctx, EReference ref){
+		if(ctx instanceof CrossReference && ref == MonitorDslPackage.Literals.CROSS_REFERENCE__REF){
+			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
+			var candidates = new ArrayList<EObject>()
+			candidates.addAll(root.allUserVariables)
+			for(EObject current : candidates){
+				if(EcoreUtil.isAncestor(current, ctx))
+					candidates.remove(current)
+			}
+			for(Domain current : root.importedDomains){
+				candidates.addAll(EcoreUtil2.eAllOfType(current, LiteralJava))
+				candidates.addAll(EcoreUtil2.eAllOfType(current, DomainValue))
+			}
+			return Scopes.scopeFor(candidates)
+		} else if (ctx instanceof MappingBinary && ref == MonitorDslPackage.Literals.MAPPING_BINARY__REF){
+			println("Binary mapping")
+		} else if (ctx instanceof MappingUnary && ref == MonitorDslPackage.Literals.MAPPING_UNARY__REF){
+			println("Unary mapping")
+		}
+		return super.getScope(ctx, ref)
 	}
 	
+
 }

@@ -11,11 +11,11 @@ Monitors:
 ;
 
 PackageDeclaration:
-	{PackageDeclaration} "package" package=FQN
+	{PackageDeclaration} "package" name=ID
 ;
 
 Import:
-	{Import} 'import' importURI=STRING 'as' name=ID
+	{Import} 'import' "domain" ref=[mapping::PackageDeclaration] ("as" name=ID)?
 ;
 
 UserVariable:
@@ -68,11 +68,11 @@ UnExpr returns Expression:
 ;
 
 MappingBinary returns Expression:
-	MappingUnary ({MappingBinary.left=current} importScope=[Import] ',,' ref=[mapping::BinaryJava] right=LTLUnaryExpression)*
+	MappingUnary ({MappingBinary.left=current} ref=[ecore::EObject]  right=LTLUnaryExpression)*
 ;
 
 MappingUnary returns Expression:
-	AtomExpr | {MappingUnary}  importScope=[Import] '.' ref=[mapping::UnaryJava]  expr=AtomExpr
+	AtomExpr | {MappingUnary}  ref=[ecore::EObject]   expr=AtomExpr
 ;
 
 AtomExpr returns Expression: 
@@ -82,11 +82,9 @@ AtomExpr returns Expression:
 	| {FloatLiteral} value=FLOAT unit=Unit?
 	| {BoolLiteral} value=("true" | "false")	
 	// User Variable
-	| {UserVarReference} ref=[UserVariable]
 	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
 	// MappingVariable
-	| {MappingReference} importScope=[Import] '.' ref=[mapping::DomainValue] 
-	| {MappingLiteral} importScope=[Import] '_' ref=[mapping::LiteralJava] 
+	| {CrossReference} ref=[ecore::EObject] 
 ;
 
 

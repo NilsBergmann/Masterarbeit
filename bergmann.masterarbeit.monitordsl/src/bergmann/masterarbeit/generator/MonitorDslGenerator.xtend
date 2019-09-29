@@ -17,8 +17,6 @@ import bergmann.masterarbeit.monitorDsl.IntLiteral
 import bergmann.masterarbeit.monitorDsl.LTL_Binary
 import bergmann.masterarbeit.monitorDsl.LTL_Unary
 import bergmann.masterarbeit.monitorDsl.MappingBinary
-import bergmann.masterarbeit.monitorDsl.MappingLiteral
-import bergmann.masterarbeit.monitorDsl.MappingReference
 import bergmann.masterarbeit.monitorDsl.MappingUnary
 import bergmann.masterarbeit.monitorDsl.Monitors
 import bergmann.masterarbeit.monitorDsl.Mult
@@ -32,7 +30,6 @@ import bergmann.masterarbeit.monitorDsl.TimeIntervalSimple
 import bergmann.masterarbeit.monitorDsl.TimeIntervalSingleton
 import bergmann.masterarbeit.monitorDsl.UNARY_LTL_OPERATOR
 import bergmann.masterarbeit.monitorDsl.Unit
-import bergmann.masterarbeit.monitorDsl.UserVarReference
 import bergmann.masterarbeit.monitorDsl.UserVariable
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
@@ -41,6 +38,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.TimeUtils.*
+import bergmann.masterarbeit.monitorDsl.CrossReference
 
 /**
  * Generates code from your model files on save.
@@ -60,7 +58,6 @@ class MonitorDslGenerator extends AbstractGenerator {
 	}
 	
 	def String compile(Monitors monitors){
-		var packageName = monitors.package.package
 		var assertions = monitors.assertions
 		var userVars = monitors.uservars
 		var databaseFilename = "test.db" //TODO Implement this
@@ -156,13 +153,12 @@ class MonitorDslGenerator extends AbstractGenerator {
 			IntLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
 			FloatLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
-			UserVarReference: return expr.ref.name 
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
 			/* MappingDSL stuff */			
-			MappingReference: return compile(expr as MappingReference)
+			CrossReference: return "TODO"
 			MappingBinary: return compile(expr as MappingBinary)
 			MappingUnary: compile(expr as MappingUnary)
-			MappingLiteral: compile(expr as MappingLiteral)
+
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
@@ -198,23 +194,12 @@ class MonitorDslGenerator extends AbstractGenerator {
 		}
 	}
 	
-	def String compile(MappingReference expr){
-		var column = expr.ref.column
-		if (expr.isBoolean)
-			return '''new BoolDatabaseAccess("«column»");'''
-		else if (expr.isNumber)
-			return '''new NumberDatabaseAccess("«column»")'''
-		else 
-			throw new IllegalArgumentException("Can't parse expr: " + expr)
-	}
+
 	
 	def String compile(MappingBinary expr){
 		return '''TODO_BinaryJava'''
 	}
 	def String compile(MappingUnary expr){
-		return '''TODO_BinaryJava'''
-	}
-	def String compile(MappingLiteral expr){
 		return '''TODO_BinaryJava'''
 	}
 	
