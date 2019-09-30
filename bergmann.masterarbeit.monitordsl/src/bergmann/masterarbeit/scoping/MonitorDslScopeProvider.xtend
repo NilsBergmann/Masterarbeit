@@ -32,10 +32,15 @@ class MonitorDslScopeProvider extends AbstractMonitorDslScopeProvider {
 			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
 			var candidates = new ArrayList<EObject>()
 			candidates.addAll(root.allUserVariables)
-			for(EObject current : candidates){
+			// Make self reference impossible 
+			// Example def var x := x + 2
+			var EObject parentOfCTX = null
+			for(EObject current : candidates)
 				if(EcoreUtil.isAncestor(current, ctx))
-					candidates.remove(current)
-			}
+					parentOfCTX = current
+			if(parentOfCTX != null)
+				candidates.remove(parentOfCTX)
+			// Add imported domain elements
 			for(Domain current : root.importedDomains){
 				candidates.addAll(EcoreUtil2.eAllOfType(current, LiteralJava))
 				candidates.addAll(EcoreUtil2.eAllOfType(current, DomainValue))
