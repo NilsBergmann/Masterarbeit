@@ -19,7 +19,7 @@ class MappingUtils {
 	static var EXPRESSION_2 = "bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression"
 	def public static String toClassName(Type t){
 		switch t{
-			JavaType : return t.type.javaType.qualifiedName
+			JavaType : return t.type.ref.javaType.qualifiedName
 			BaseType: return t.type.toClassName
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}

@@ -18,6 +18,7 @@ import java.util.List
 import org.eclipse.xtext.common.types.JvmOperation
 import org.eclipse.xtext.common.types.JvmMember
 import org.eclipse.xtext.common.types.JvmType
+import bergmann.masterarbeit.mappingdsl.mappingDSL.MappingDSLPackage
 
 /**
  * This class contains custom validation rules. 
@@ -38,24 +39,17 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 //	}
 	@Check 
 	def checkTypeMatching(CustomJava cj){
-		switch cj{
-			LiteralJava:{
-				var declaredClass = cj.type.toClassName
-				var referenced = cj.javaType
-				var EList<JvmTypeReference> superTypes = referenced.superTypes
-				for (JvmTypeReference t : superTypes){
-					println(t.qualifiedName)
-					println(t) 
-				}
-				return
-			}
-			UnaryJava:{
-				return
-			}
-			BinaryJava:{
-				return
-			}
+		var expectedInterface = cj.expectedQualifiedExpressionName			
+		var referenced = cj.ref.javaType
+		var EList<JvmTypeReference> superTypes = referenced.superTypes
+		var found = false
+		for (JvmTypeReference t : superTypes){
+			if(t.qualifiedName.equals(expectedInterface))
+				found = true
 		}
+		if (!found)
+			error("Referenced class doesn't implement the expected interface (" + expectedInterface + ")",cj.ref, MappingDSLPackage.Literals.JAVA_CLASS_REFERENCE__JAVA_TYPE, -1)
+		return
 	}
 	
 }

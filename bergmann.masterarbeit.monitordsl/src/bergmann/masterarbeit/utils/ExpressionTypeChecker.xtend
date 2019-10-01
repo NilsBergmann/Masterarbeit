@@ -179,7 +179,7 @@ class ExpressionTypeChecker {
 	
 	def private static String handleDomainType(Type t){
 		switch t{
-			JavaType : return t.type.javaType.qualifiedName
+			JavaType : return t.type.ref.javaType.qualifiedName
 			BaseType: return t.type.toExpressionType
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}

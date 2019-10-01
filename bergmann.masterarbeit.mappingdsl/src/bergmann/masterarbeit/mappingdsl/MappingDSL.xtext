@@ -22,7 +22,7 @@ JavaDataType:
 	"datatype:" "{"
 	(
 		("name:" name=ID ) &
-		("javaClass:" javaType=[jvmTypes::JvmDeclaredType|QualifiedName])
+		("javaClass:" ref=JavaClassReference)
 	)
 "}"
 ;
@@ -31,37 +31,42 @@ CustomJava:
 	LiteralJava | UnaryJava | BinaryJava
 ;
 
+JavaClassReference:
+	{JavaClassReference} javaType=[jvmTypes::JvmDeclaredType|QualifiedName]
+;
+
 LiteralJava returns CustomJava:
 	{LiteralJava}
-	"java" "{"
+	"Java" "{"
 	(
 		("name:" name=ID) &
 		("type:" type=Type) &
 		("description:" description=STRING)? &
-		("javaClass:" javaType=[jvmTypes::JvmDeclaredType|QualifiedName])
+		("javaClass:" ref=JavaClassReference)
 	)
 	"}"
 ;
+
 UnaryJava returns CustomJava:
 	{UnaryJava}
-	"java" "{"
+	"Java" "{"
 	(
 		("name:" name=ID) &
 		("type:" type1=Type "->" type2=Type) &
 		("description:" description=STRING)? &
-		("javaClass:" javaType=[jvmTypes::JvmDeclaredType|QualifiedName])
+		("javaClass:" ref=JavaClassReference)
 	)
 	"}"
 ;
 
 BinaryJava returns CustomJava:
 	{BinaryJava}
-	"java" "{"
+	"Java" "{"
 	(
 		("name:" name=ID) &
 		("type:" type1=Type "->" type2=Type "->" type3=Type) &
 		("description:" description=STRING)? &
-		("javaClass:" javaType=[jvmTypes::JvmDeclaredType|QualifiedName])
+		("javaClass:" ref=JavaClassReference)
 	)
 	"}"
 ;
