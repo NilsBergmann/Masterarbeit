@@ -3,6 +3,21 @@
  */
 package bergmann.masterarbeit.mappingdsl.validation
 
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.CustomJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
+import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
+import org.eclipse.xtext.validation.Check
+
+import static extension bergmann.masterarbeit.mappingdsl.utils.MappingUtils.*
+import org.eclipse.emf.common.util.EList
+import org.eclipse.xtext.xbase.jvmmodel.JvmTypeReferenceBuilder.Factory
+import org.eclipse.xtext.common.types.JvmTypeReference
+import java.util.List
+import org.eclipse.xtext.common.types.JvmOperation
+import org.eclipse.xtext.common.types.JvmMember
+import org.eclipse.xtext.common.types.JvmType
 
 /**
  * This class contains custom validation rules. 
@@ -21,5 +36,26 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 //					INVALID_NAME)
 //		}
 //	}
+	@Check 
+	def checkTypeMatching(CustomJava cj){
+		switch cj{
+			LiteralJava:{
+				var declaredClass = cj.type.toClassName
+				var referenced = cj.javaType
+				var EList<JvmTypeReference> superTypes = referenced.superTypes
+				for (JvmTypeReference t : superTypes){
+					println(t.qualifiedName)
+					println(t) 
+				}
+				return
+			}
+			UnaryJava:{
+				return
+			}
+			BinaryJava:{
+				return
+			}
+		}
+	}
 	
 }
