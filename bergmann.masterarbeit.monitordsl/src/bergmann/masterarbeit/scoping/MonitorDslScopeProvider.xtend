@@ -18,6 +18,8 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
 import org.eclipse.emf.ecore.util.EcoreUtil
 import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 
 /**
  * This class contains custom scoping description.
@@ -29,6 +31,8 @@ class MonitorDslScopeProvider extends AbstractMonitorDslScopeProvider {
 
 	override getScope(EObject ctx, EReference ref){
 		if(ctx instanceof CrossReference && ref == MonitorDslPackage.Literals.CROSS_REFERENCE__REF){
+			// CrossReference
+			// Refers to UserVariables or to domain java literals / database values
 			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
 			var candidates = new ArrayList<EObject>()
 			candidates.addAll(root.allUserVariables)
@@ -47,9 +51,23 @@ class MonitorDslScopeProvider extends AbstractMonitorDslScopeProvider {
 			}
 			return Scopes.scopeFor(candidates)
 		} else if (ctx instanceof MappingBinary && ref == MonitorDslPackage.Literals.MAPPING_BINARY__REF){
-			println("Binary mapping")
+			// MappingBinary
+			// Refers to domain BinaryJava elements
+			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
+			var candidates = new ArrayList<EObject>()
+			for(Domain current : root.importedDomains){
+				candidates.addAll(EcoreUtil2.eAllOfType(current, BinaryJava))
+			}
+			return Scopes.scopeFor(candidates)
 		} else if (ctx instanceof MappingUnary && ref == MonitorDslPackage.Literals.MAPPING_UNARY__REF){
-			println("Unary mapping")
+			// MappingUnary
+			// Refers to domain UnaryJava elements
+			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
+			var candidates = new ArrayList<EObject>()
+			for(Domain current : root.importedDomains){
+				candidates.addAll(EcoreUtil2.eAllOfType(current, UnaryJava))
+			}
+			return Scopes.scopeFor(candidates)
 		}
 		return super.getScope(ctx, ref)
 	}

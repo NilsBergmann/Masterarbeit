@@ -89,7 +89,9 @@ class MonitorDslGenerator extends AbstractGenerator {
 	}
 	
 	def String compile(UserVariable userVar){
-		var javaType = userVar.expr.expressionType.toJavaType
+		var javaType = userVar.expr.expressionType
+		if(javaType == null || javaType.equals(""))
+			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
 		UserVariable<«javaType»> «userVar.name» = new UserVariable<«javaType»>(«userVar.expr.compile»);
 		'''

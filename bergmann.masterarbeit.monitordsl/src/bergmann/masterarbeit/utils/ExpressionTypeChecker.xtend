@@ -28,10 +28,17 @@ import bergmann.masterarbeit.monitorDsl.CrossReference
 import org.eclipse.emf.ecore.EObject
 import bergmann.masterarbeit.monitorDsl.UserVariable
 import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.Type
+import bergmann.masterarbeit.mappingdsl.mappingDSL.JavaType
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BaseType
+import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
-	
+	static var BOOLEAN_JAVA_CLASS = "java.lang.Boolean"
+	static var NUMBER_JAVA_CLASS = "Double"
+	static var STRING_JAVA_CLASS = "java.lang.String"
 		
 
 	def public static boolean isValid(Expression expr) {
@@ -44,7 +51,7 @@ class ExpressionTypeChecker {
 	
 	def public static boolean isBoolean(Expression expr) {
 		try {
-			return expr.expressionType == "BOOLEAN"
+			return expr.expressionType == BOOLEAN_JAVA_CLASS
 		} catch (IllegalArgumentException e) {
 			return false
 		}
@@ -52,7 +59,7 @@ class ExpressionTypeChecker {
 	
 	def public static boolean isString(Expression expr) {
 		try {
-			return expr.expressionType == "STRING"
+			return expr.expressionType == STRING_JAVA_CLASS
 		} catch (IllegalArgumentException e) {
 			return false
 		}
@@ -60,7 +67,7 @@ class ExpressionTypeChecker {
 	
 	def public static boolean isNumber(Expression expr) {
 		try {
-			return expr.expressionType == "NUMBER"
+			return expr.expressionType == NUMBER_JAVA_CLASS
 		} catch (IllegalArgumentException e) {
 			return false
 		}
@@ -75,53 +82,53 @@ class ExpressionTypeChecker {
 		switch (expr) {
 			Implication: 
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 			And:
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 			Or:
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 			LTL_Binary:
 				if (expr.left.isBoolean && expr.right.isBoolean)
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 			LTL_Unary:
 				if (expr.expr.isBoolean)
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 			Rel:
 				if ((expr.op == "==" || expr.op == "!=") && expr.left.expressionType == expr.right.expressionType)
 					// Only for !=, ==: Any + Any => Boolean
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 				else if (expr.left.isNumber && expr.right.isNumber)
 					// Number + Number => Boolean
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 			Add:
 				if (expr.left.isNumber && expr.right.isNumber)
-					t = "NUMBER"
+					t = NUMBER_JAVA_CLASS
 			Mult:
 				if (expr.left.isNumber && expr.right.isNumber)
-					t = "NUMBER"
+					t = NUMBER_JAVA_CLASS
 			Negation:
 				if ((expr.op == "!" || expr.op == "not") && expr.expr.isBoolean)
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 				else if (expr.op == "-" && expr.expr.isNumber)
 					// Only for -: Number => Number
-					t = "BOOLEAN"
+					t = BOOLEAN_JAVA_CLASS
 			Subexpression:
 				// ( expr ) => Passthrough type
 				t =  expr.expr.expressionType
 			AggregateExpression:
 				if (expr.expr.isNumber)
-					t = "NUMBER"
+					t = NUMBER_JAVA_CLASS
 			IntLiteral:
-				t = "NUMBER"
+				t = NUMBER_JAVA_CLASS
 			FloatLiteral:
-				t = "NUMBER"
+				t = NUMBER_JAVA_CLASS
 			BoolLiteral:
-				t = "BOOLEAN"
+				t = BOOLEAN_JAVA_CLASS
 			CrossReference: return expr.handleCrossreference
-			MappingUnary: expr.handleCustomJavaMapping
-			MappingBinary: expr.handleCustomJavaMapping
+			MappingUnary: return expr.handleCustomJavaMapping
+			MappingBinary: return expr.handleCustomJavaMapping
 			default: {
 				throw new IllegalArgumentException("Can't parse expr: " + expr)
 			}
@@ -132,35 +139,64 @@ class ExpressionTypeChecker {
 	
 	def static String toExpressionType(BASE_VALUETYPE t){
 		switch t{
-			case BOOLEAN: return "BOOLEAN"
-			case NUMBER: return "NUMBER"
-			case STRING: return "STRING"
+			case BOOLEAN: return BOOLEAN_JAVA_CLASS
+			case NUMBER: return NUMBER_JAVA_CLASS
+			case STRING: return STRING_JAVA_CLASS
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
-		}
-	}
-	def static String toJavaType(String expressionType){
-		switch expressionType{
-			case "BOOLEAN": return "Boolean"
-			case "NUMBER": return "Double"
-			case "STRING": return "String"
 		}
 	}
 	
 	def private static String handleCustomJavaMapping(MappingUnary e){
-		throw new IllegalArgumentException("Typing: Can't parse : " + e)
+		try {
+			var domainElement = e.ref as UnaryJava
+			var declaredIn = domainElement.type1.handleDomainType
+			var declaredOut = domainElement.type2.handleDomainType
+			if(e.expr.expressionType.equals(declaredIn))
+				return declaredOut
+			else
+				return ""
+		} catch (Exception exception) {
+			throw new IllegalArgumentException("Can't parse type of: " + e)
+		}
 	}
 	
-		def private static String handleCustomJavaMapping(MappingBinary e){
-		throw new IllegalArgumentException("Typing: Can't parse : " + e)
+	def private static String handleCustomJavaMapping(MappingBinary e){
+		try {
+			var domainElement = e.ref as BinaryJava
+			var declaredLeft = domainElement.type1.handleDomainType
+			var declaredRight = domainElement.type2.handleDomainType
+			var declaredResult = domainElement.type3.handleDomainType
+			var realLeft = e.left.expressionType
+			var realRight = e.right.expressionType
+			if(realLeft.equals(declaredLeft) && realRight.equals(declaredRight))
+				return declaredResult
+			else
+				return ""
+		} catch (Exception exception) {
+			throw new IllegalArgumentException("Can't parse type of: " + e)
+		}
 	}
 	
+	def private static String handleDomainType(Type t){
+		switch t{
+			JavaType : return t.type.javaType.qualifiedName
+			BaseType: return t.type.toExpressionType
+			default: throw new IllegalArgumentException("Can't parse type: " + t)
+		}
+	}
+	def private static String getClassname(Object o){
+		if (o == null)
+			return ""
+		else
+			return 0.class.name
+	}
 	
 	def private static String handleCrossreference(CrossReference e){
 		var referenced = e.ref
 		switch referenced {
 			UserVariable: return referenced.expr.expressionType 
 			DomainValue: return referenced.type.toExpressionType
-			LiteralJava: throw new IllegalArgumentException("Typing: Can't parse : " + referenced)
+			LiteralJava: return referenced.type.handleDomainType 
 			default: throw new IllegalArgumentException("Typing: Can't parse : " + e)
 		}
 	}

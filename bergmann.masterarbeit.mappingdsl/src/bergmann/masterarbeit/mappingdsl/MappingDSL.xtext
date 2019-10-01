@@ -18,7 +18,7 @@ DomainElement:
 ;
 
 JavaDataType:
-	{DataType}
+	{JavaDataType}
 	"datatype:" "{"
 	(
 		("name:" name=ID ) &
