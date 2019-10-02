@@ -37,7 +37,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
 	static var BOOLEAN_JAVA_CLASS = "java.lang.Boolean"
-	static var NUMBER_JAVA_CLASS = "Double"
+	static var NUMBER_JAVA_CLASS = "org.jscience.physics.amount.Amount"
 	static var STRING_JAVA_CLASS = "java.lang.String"
 		
 

@@ -48,7 +48,7 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 				found = true
 		}
 		if (!found)
-			error("Referenced class doesn't implement the expected interface (" + expectedInterface + ")",cj.ref, MappingDSLPackage.Literals.JAVA_CLASS_REFERENCE__JAVA_TYPE, -1)
+			error("Referenced class doesn't implement the expected interface:\n\n" + expectedInterface,cj.ref, MappingDSLPackage.Literals.JAVA_CLASS_REFERENCE__JAVA_TYPE, -1)
 		return
 	}
 	

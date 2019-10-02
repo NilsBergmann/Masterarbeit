@@ -11,7 +11,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
 
 class MappingUtils {
 	static var BOOLEAN_JAVA_CLASS = "java.lang.Boolean"
-	static var NUMBER_JAVA_CLASS = "Double"
+	static var NUMBER_JAVA_CLASS = "org.jscience.physics.amount.Amount"
 	static var STRING_JAVA_CLASS = "java.lang.String"
 	
 	static var EXPRESSION_0 = "bergmann.masterarbeit.generationtarget.interfaces.Expression"
@@ -43,13 +43,13 @@ class MappingUtils {
 			UnaryJava: {
 				var in = cj.type1.toClassName
 				var out = cj.type2.toClassName
-				return '''«EXPRESSION_1»<«in»,«out»>'''
+				return '''«EXPRESSION_1»<«in», «out»>'''
 			}
 			BinaryJava: {
 				var in1 = cj.type1.toClassName
 				var in2 = cj.type2.toClassName
 				var out = cj.type3.toClassName
-				return '''«EXPRESSION_2»<«in1»,«in2»,«out»>'''
+				return '''«EXPRESSION_2»<«in1», «in2», «out»>'''
 			}
 		}
 	}
