@@ -5,7 +5,7 @@ import java.util.Optional;
 import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 
-public interface Expression<T> {
-    public Optional<T> evaluate(State state, DataController dataSource);
-
+public abstract class Expression<T> {
+    public abstract Optional<T> evaluate(State state, DataController dataSource);
+    public Expression(){}; 
 }

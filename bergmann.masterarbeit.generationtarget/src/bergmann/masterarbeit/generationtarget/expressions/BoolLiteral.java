@@ -6,7 +6,7 @@ import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class BoolLiteral implements Expression<Boolean> {
+public class BoolLiteral extends Expression<Boolean> {
     boolean value;
 
     public BoolLiteral(boolean value) {

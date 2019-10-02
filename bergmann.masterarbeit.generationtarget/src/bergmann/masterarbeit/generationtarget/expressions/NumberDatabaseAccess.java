@@ -11,7 +11,7 @@ import bergmann.masterarbeit.generationtarget.dataaccess.DatabaseWrapper;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class NumberDatabaseAccess implements Expression<Amount> {
+public class NumberDatabaseAccess extends Expression<Amount> {
     public String columnName;
     public Unit unit;
 

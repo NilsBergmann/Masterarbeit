@@ -7,7 +7,7 @@ import bergmann.masterarbeit.generationtarget.dataaccess.DatabaseWrapper;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class BoolDatabaseAccess implements Expression<Boolean> {
+public class BoolDatabaseAccess extends Expression<Boolean> {
     public String columnName;
 
     public BoolDatabaseAccess(String columnName) {

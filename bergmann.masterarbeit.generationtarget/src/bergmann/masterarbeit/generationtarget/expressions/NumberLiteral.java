@@ -10,7 +10,7 @@ import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class NumberLiteral implements Expression<Amount> {
+public class NumberLiteral extends Expression<Amount> {
     Amount value;
 
     public NumberLiteral(long value, Unit unit) {
