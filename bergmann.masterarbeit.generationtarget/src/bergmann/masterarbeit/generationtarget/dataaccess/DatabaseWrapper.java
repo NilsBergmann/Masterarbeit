@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.measure.unit.Unit;
+
+import org.jscience.physics.amount.Amount;
+
 public class DatabaseWrapper {
     public static String TIMESTAMP_COLUMN_NAME = "Timestamp";
     public Connection conn;
@@ -49,7 +53,7 @@ public class DatabaseWrapper {
         return Optional.empty();
     }
 
-    public Optional<Double> getNumber(State state, String columnName) {
+    public Optional<Amount> getAmount(State state, String columnName, Unit unit) {
         // TODO: Implement this
         return Optional.empty();
     }

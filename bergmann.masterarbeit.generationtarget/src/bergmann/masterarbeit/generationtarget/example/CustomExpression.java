@@ -6,7 +6,7 @@ import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.*;
 
-public class CustomExpression extends UnaryExpression<Boolean, Double> {
+public class CustomExpression extends UnaryExpression<Boolean, Amount> {
 
     public CustomExpression(Expression<Boolean> expr) {
         super(expr);
@@ -14,7 +14,7 @@ public class CustomExpression extends UnaryExpression<Boolean, Double> {
     }
 
     @Override
-    public Optional<Double> evaluate(State state, DataController dataSource) {
+    public Optional<Amount> evaluate(State state, DataController dataSource) {
         // TODO Auto-generated method stub
         return null;
     }

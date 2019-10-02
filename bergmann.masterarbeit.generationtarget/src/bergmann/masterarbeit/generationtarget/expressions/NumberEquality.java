@@ -2,44 +2,58 @@ package bergmann.masterarbeit.generationtarget.expressions;
 
 import java.util.Optional;
 
+import javax.measure.converter.ConversionException;
+
+import org.jscience.physics.amount.Amount;
+
 import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class NumberEquality extends BinaryExpression<Double, Double, Boolean> {
+public class NumberEquality extends BinaryExpression<Amount, Amount, Boolean> {
     String operator = null;
 
-    public NumberEquality(Expression<Double> left, Expression<Double> right, String operator) {
+    public NumberEquality(Expression<Amount> left, Expression<Amount> right, String operator) {
         super(left, right);
         this.operator = operator;
     }
 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<Double> a = this.left.evaluate(state, dataSource);
-        Optional<Double> b = this.left.evaluate(state, dataSource);
+        Optional<Amount> a = this.left.evaluate(state, dataSource);
+        Optional<Amount> b = this.left.evaluate(state, dataSource);
         if (!a.isPresent() || !b.isPresent())
             return Optional.empty();
-        else
-            switch (this.operator) {
-            case ">":
-                return Optional.of(a.get() > b.get());
-            case ">=":
-                return Optional.of(a.get() >= b.get());
-            case "<":
-                return Optional.of(a.get() < b.get());
-            case "<=":
-                return Optional.of(a.get() <= b.get());
-            case "==":
-                return Optional.of(a.get() == b.get());
-            case "!=":
-                return Optional.of(a.get() != b.get());
-            default: {
-                System.out.println("ERROR: Unexpected operator '" + this.operator + "'");
+        else {
+            Amount aV = a.get();
+            Amount bV = b.get();
+            try {
+                Amount sum = aV.divide(bV);
+                int comparison = aV.compareTo(bV);
+                switch (this.operator) {
+                case ">":
+                    return Optional.of(comparison > 0);
+                case ">=":
+                    return Optional.of(comparison >= 0);
+                case "<":
+                    return Optional.of(comparison < 0);
+                case "<=":
+                    return Optional.of(comparison <= 0);
+                case "==":
+                    return Optional.of(comparison == 0);
+                case "!=":
+                    return Optional.of(comparison != 0);
+                default: {
+                    System.out.println("ERROR: Unexpected operator '" + this.operator + "'");
+                    return Optional.empty();
+                }
+                }
+            } catch (ConversionException e) {
+                System.err.println("Comparison: Incompatible units: " + aV.getUnit() + " and " + bV.getUnit());
                 return Optional.empty();
             }
-            }
-    }
 
+        }
+    }
 }
