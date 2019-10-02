@@ -14,6 +14,7 @@ import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.UnitUtils.*
 import bergmann.masterarbeit.utils.ExpressionUtils
+import bergmann.masterarbeit.monitorDsl.impl.AddImpl
 
 /**
  * This class contains custom validation rules.
@@ -69,10 +70,24 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 	}
 
 	@Check
-	def checkUnits(Expression expr){
-		switch expr {
-			// TODO: Check if Units are compatible
-		}
+	def unitMismatch(Add expr){
+		var comp = expr.left.isUnitCompatible(expr.right)		 
+		if (!comp){
+			var lUnit = expr.left.unit
+			var rUnit = expr.right.unit
+			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
+		}		
+	}
+	@Check
+	def unitMismatch(Rel expr){
+		if(! expr.left.isNumber && expr.right.isNumber)
+			return
+		var comp = expr.left.isUnitCompatible(expr.right)		 
+		if (!comp){
+			var lUnit = expr.left.unit
+			var rUnit = expr.right.unit
+			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
+		}		
 	}
 
 

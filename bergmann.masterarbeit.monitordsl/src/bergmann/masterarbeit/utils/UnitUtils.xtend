@@ -7,6 +7,8 @@ import bergmann.masterarbeit.monitorDsl.*
 import javax.measure.unit.Unit
 import javax.measure.unit.SI
 import javax.measure.unit.NonSI
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
+import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
 
 class UnitUtils {
 
@@ -14,7 +16,13 @@ class UnitUtils {
 		if (!expr.isNumber)
 			throw new IllegalArgumentException("Non-Number-Expressions don't have units")
 		switch expr{
-			Add: return expr.left.unit
+			Add: {
+				var lUnit = expr.left.unit
+				var rUnit = expr.right.unit
+				if(lUnit == null || rUnit == null)
+					return Unit.ONE
+				return lUnit
+			}
 			Mult: {
 				switch expr.op {
 					case "*": return expr.left.unit.times(expr.right.unit)
@@ -24,7 +32,17 @@ class UnitUtils {
 			AggregateExpression: return expr.expr.unit
 			IntLiteral: return if (expr.unit != null) expr.unit.toJavaUnit else Unit.ONE
 			FloatLiteral: return if (expr.unit != null) expr.unit.toJavaUnit else Unit.ONE
-			CrossReference: return null//TODO //return if (expr.ref.unit != null) expr.ref.unit.toJavaUnit else Unit.ONE
+			CrossReference: {
+				var ref = expr.ref
+				switch ref {
+					UserVariable: return ref.expr.unit
+					DomainValue: return ref.unit.toJavaUnit
+					LiteralJava: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
+					default: return Unit.ONE
+				}
+			}
+			MappingBinary: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
+			MappingUnary: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
 			default: throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
