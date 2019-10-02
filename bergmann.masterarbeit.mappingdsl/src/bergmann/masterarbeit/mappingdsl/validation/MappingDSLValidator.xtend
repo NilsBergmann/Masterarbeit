@@ -19,6 +19,8 @@ import org.eclipse.xtext.common.types.JvmOperation
 import org.eclipse.xtext.common.types.JvmMember
 import org.eclipse.xtext.common.types.JvmType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.MappingDSLPackage
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BASE_VALUETYPE
 
 /**
  * This class contains custom validation rules. 
@@ -52,4 +54,9 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 		return
 	}
 	
+	@Check
+	def checkUnit(DomainValue dv){
+		if(dv.type != BASE_VALUETYPE.NUMBER && dv.unit != null)
+			error("Values of type " + dv.type + " can not have a unit", MappingDSLPackage.Literals.DOMAIN_VALUE__UNIT)
+	}
 }
