@@ -2,6 +2,8 @@ package bergmann.masterarbeit.generationtarget.example;
 
 import java.util.Optional;
 
+import org.jscience.physics.amount.Amount;
+
 import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.*;
