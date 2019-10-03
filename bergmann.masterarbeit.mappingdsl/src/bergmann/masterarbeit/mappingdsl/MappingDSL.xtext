@@ -10,7 +10,7 @@ Domain:
 ;
 
 PackageDeclaration:
-	{PackageDeclaration} "package" name=ID
+	{PackageDeclaration} "domain" name=ID
 ;
 
 DomainElement:
