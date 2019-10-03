@@ -58,6 +58,8 @@ class UnitUtils {
  	* MonitorDSL Units
  	*/
 	def public static Unit<? extends Quantity> toJavaUnit(bergmann.masterarbeit.monitorDsl.Unit unit){
+		if (unit == null)
+			return Unit.ONE
 		switch unit{
 			UnitDiv: return unit.left.toJavaUnit.divide(unit.right.toJavaUnit)
 			UnitMult: return unit.left.toJavaUnit.times(unit.right.toJavaUnit)
@@ -98,6 +100,8 @@ class UnitUtils {
  	* MonitorDSL Units
  	*/
 	def public static Unit<? extends Quantity> toJavaUnit(bergmann.masterarbeit.mappingdsl.mappingDSL.Unit unit){
+		if (unit == null)
+			return Unit.ONE
 		switch unit{
 			bergmann.masterarbeit.mappingdsl.mappingDSL.UnitDiv: return unit.left.toJavaUnit.divide(unit.right.toJavaUnit)
 			bergmann.masterarbeit.mappingdsl.mappingDSL.UnitMult: return unit.left.toJavaUnit.times(unit.right.toJavaUnit)

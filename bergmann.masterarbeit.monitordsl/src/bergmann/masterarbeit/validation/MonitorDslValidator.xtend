@@ -15,6 +15,16 @@ import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.UnitUtils.*
 import bergmann.masterarbeit.utils.ExpressionUtils
 import bergmann.masterarbeit.monitorDsl.impl.AddImpl
+import org.eclipse.xtext.EcoreUtil2
+import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
+import java.util.ArrayList
+import java.util.HashMap
+import org.eclipse.emf.ecore.util.EcoreUtil
+import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainElement
 
 /**
  * This class contains custom validation rules.
@@ -93,7 +103,53 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 
 	@Check
 	def checkNamesAreUnique(Monitors monitors){
-		//TODO: Implement this
+		var userVars = EcoreUtil2.eAllOfType(monitors, UserVariable)
+		var assertions = EcoreUtil2.eAllOfType(monitors, Assertion)
+		
+		// Get names defined in imported domain files
+		var domainNames = new HashMap<Import, ArrayList<String>>()
+		for (Import i : monitors.imports){
+			var d = EcoreUtil.getRootContainer(i.ref)
+			var names = new ArrayList<String>()
+			var elems = new ArrayList<DomainElement>()
+			elems.addAll(EcoreUtil2.eAllOfType(d, LiteralJava))
+			elems.addAll(EcoreUtil2.eAllOfType(d, UnaryJava))
+			elems.addAll(EcoreUtil2.eAllOfType(d, BinaryJava))
+			elems.addAll(EcoreUtil2.eAllOfType(d, DomainValue))
+			for (j : elems) 
+				names.add(j.name)
+			domainNames.put(i, names)
+		}
+		
+		for(entry : domainNames.entrySet){
+			var domain = entry.key
+			var elems = entry.value
+			// Compare other domains
+			for (e : elems) {
+				for(entry2 : domainNames.entrySet){
+					var domain2 = entry2.key
+						if(domain != domain2){
+							var elems2 = entry2.value
+							if(elems2.contains(e)){
+								error("Duplicate Identifier: " + e + ". Also used in domain " + domain2.ref.name, domain,MonitorDslPackage.Literals.IMPORT__REF )								
+							}
+						}
+					}
+
+				// Compare userVars
+				for (uVar : userVars) {
+					if(uVar.name.equals(e)){
+						error("Duplicate Identifier: " + e + ". Also used in domain " + domain.ref.name, uVar,MonitorDslPackage.Literals.USER_VARIABLE__NAME )
+					}
+				}
+				// Compare assertions
+				for (ass  : assertions) {
+					if(ass.name.equals(e)){
+						error("Duplicate Identifier: " + e + ". Also used in domain " + domain.ref.name, ass,MonitorDslPackage.Literals.ASSERTION__NAME )
+					}
+				}
+			}
+		}
 	}
 
 
