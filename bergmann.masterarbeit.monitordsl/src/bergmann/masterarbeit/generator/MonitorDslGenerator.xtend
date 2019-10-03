@@ -38,7 +38,14 @@ import org.eclipse.xtext.generator.IGeneratorContext
 
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.TimeUtils.*
+import static extension bergmann.masterarbeit.utils.UnitUtils.*
 import bergmann.masterarbeit.monitorDsl.CrossReference
+import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
+import bergmann.masterarbeit.mappingdsl.mappingDSL.JavaClassReference
+import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
+import javax.measure.quantity.Quantity
 
 /**
  * Generates code from your model files on save.
@@ -63,6 +70,10 @@ class MonitorDslGenerator extends AbstractGenerator {
 		var databaseFilename = "test.db" //TODO Implement this
 		//TODO: Add imports
 		return '''
+		package «monitors.compilePackage»;
+		
+		«monitors.compileImports»
+		
 		class RunEvaluation {
 			public static void main(String args[]) {
 				DataController dataControl = new DataController();
@@ -84,8 +95,18 @@ class MonitorDslGenerator extends AbstractGenerator {
 				 «assertion.compile»
 				 
 				 «ENDFOR»
+			}
+		
 		}
 		'''
+	}
+	
+	def static String compilePackage(Monitors monitors){
+		return '''TODO - Package'''
+	}
+	
+	def static String compileImports(Monitors monitors){
+		return '''TODO - Imports'''
 	}
 	
 	def String compile(UserVariable userVar){
@@ -152,19 +173,38 @@ class MonitorDslGenerator extends AbstractGenerator {
 					throw new Exception()
 			}
 			Subexpression: return expr.expr.compile
-			IntLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
-			FloatLiteral: return '''new NumberLiteral(«expr.value»)''' //TODO Add handling of units
+			IntLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.compile»)''' //TODO Add handling of units
+			FloatLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.compile»)''' //TODO Add handling of units
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
+			
 			/* MappingDSL stuff */			
-			CrossReference: return "TODO"
+			CrossReference: {
+				var ref = expr.ref
+				switch ref{
+					UserVariable: return ref.name
+					DomainValue:{
+							switch ref.type {
+							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
+							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»", «ref.unit.compile»)'''
+							case STRING: return '''new StringDatabaseAcess("«ref.column»")'''
+							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
+						 }
+						}
+					LiteralJava: return '''new «ref.ref.className»()'''
+					default: throw new IllegalArgumentException("Can't parse expr: " + expr + " referencing " + ref)
+				}
+			}
 			MappingBinary: return compile(expr as MappingBinary)
-			MappingUnary: compile(expr as MappingUnary)
+			MappingUnary: return compile(expr as MappingUnary)
 
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
 	
+	def static String getClassName(JavaClassReference ref){
+		return "TODO_CLASSNAME"
+	}
 	def String compile(BINARY_LTL_OPERATOR op){
 		switch op{
 			case RELEASE: return "LTL_Release"
@@ -196,13 +236,14 @@ class MonitorDslGenerator extends AbstractGenerator {
 		}
 	}
 	
-
 	
 	def String compile(MappingBinary expr){
-		return '''TODO_BinaryJava'''
+		var refMapping = expr.ref as BinaryJava
+		return '''new «refMapping.ref.className»(«expr.left.compile», «expr.right.compile»)'''
 	}
 	def String compile(MappingUnary expr){
-		return '''TODO_BinaryJava'''
+		var refMapping = expr.ref as UnaryJava
+		return '''new «refMapping.ref.className»(«expr.expr.compile»)'''
 	}
 	
 	def String compile(TimeInterval interval){
@@ -212,7 +253,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 				var includeRight = interval.right.equals("]")
 				var startMillisec = interval.start.toMillisec
 				var endMillisec = interval.end.toMillisec
-				return '''new RelativeTimeInterval(Duration.ofMillis(«startMillisec»9, Duration.ofMillis(«endMillisec»), «includeLeft», «includeRight»)'''
+				return '''new RelativeTimeInterval(Duration.ofMillis(«startMillisec»), Duration.ofMillis(«endMillisec»), «includeLeft», «includeRight»)'''
 			}
 			TimeIntervalSingleton:{
 				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
@@ -234,7 +275,18 @@ class MonitorDslGenerator extends AbstractGenerator {
 		}
 	}
 	
+	/* Unit compilation */
+	// Convert to JScience Unit and use that
+	// -- MonitorDSL Unit
 	def String compile(Unit unit){
-		return "TODO_UNIT"
+		return unit.toJavaUnit.toJavaString
+	}
+	// -- MappingDSL Unit
+	def String compile(bergmann.masterarbeit.mappingdsl.mappingDSL.Unit mappingUnit){
+		return mappingUnit.toJavaUnit.toJavaString
+	}
+	// -- JScience Unit
+	def String toJavaString(javax.measure.unit.Unit<? extends Quantity> u){
+		return '''Unit.valueOf("«u.toString»")'''
 	}
 }
