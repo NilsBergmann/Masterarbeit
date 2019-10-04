@@ -46,6 +46,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import javax.measure.quantity.Quantity
+import bergmann.masterarbeit.monitorDsl.StringLiteral
 
 /**
  * Generates code from your model files on save.
@@ -70,19 +71,16 @@ class MonitorDslGenerator extends AbstractGenerator {
 		var databaseFilename = "test.db" //TODO Implement this
 		//TODO: Add imports
 		return '''
-		package «monitors.compilePackage»;
-		
+		«monitors.compilePackage»
 		«monitors.compileImports»
-		
 		class RunEvaluation {
 			public static void main(String args[]) {
-				DataController dataControl = new DataController();
-				dataControl.connectToDatabase("«databaseFilename»");
-				ArrayList<Assertion> assertions = new ArrayList<Assertion>();
+				«generateSetup»
 				
 				/**
 				 * User Variables 
 				 */
+				 
 				«FOR userVar : userVars»
 				«userVar.compile»
 				
@@ -91,22 +89,89 @@ class MonitorDslGenerator extends AbstractGenerator {
 				/**
 				 * Assertions
 				 */
+				 
 				 «FOR assertion : assertions»
 				 «assertion.compile»
 				 
 				 «ENDFOR»
+				 
+				 /**
+				 * Run evaluation
+				 */
+				 //TODO
 			}
 		
 		}
 		'''
 	}
 	
+	def static String generateSetup(){
+		'''
+		/**
+		* Setup
+		*/
+		// -- Choose real time mode
+		int realtimeSelection = UIUtils.isRealTimeSelection();
+		if (realtimeSelection == 2) {
+		    // User selected "Cancel"
+			UIUtils.showError("User selected cancel");
+			System.exit(0);
+		}
+		boolean isRealTime = realtimeSelection == 0;
+		
+		// -- Choose database
+		File dbFile = UIUtils.databaseSelection();
+		if (dbFile == null) {
+			UIUtils.showError("Please select a database file.");
+			System.exit(1);
+		}
+		System.out.println("Selected " + dbFile.getAbsolutePath());
+		
+		// -- Try Database
+		DataController dataControl = new DataController(isRealTime);
+		dataControl.connectToDatabase(dbFile.getAbsolutePath());
+		if (!dataControl.getDatabaseWrapper().isConnected()) {
+			UIUtils.showError("Could not open database " + dbFile.getAbsolutePath());
+			System.exit(1);
+		}
+		
+		// -- Select Table
+		List<String> tables = dataControl.getDatabaseWrapper().getTables();
+		if (tables.size() < 1) {
+				UIUtils.showError("No tables available");
+				System.exit(1);
+		}
+		String tableSelection = UIUtils.selectTable(tables);
+		if (tableSelection == null || tableSelection.equals("")) {
+			UIUtils.showError("No table selected");
+			System.exit(1);
+		}
+		dataControl.getDatabaseWrapper().setTable(tableSelection);
+		
+		// Create lists
+		ArrayList<Assertion> assertions = new ArrayList<Assertion>();
+		ArrayList<UserVariable> userVars = new ArrayList<UserVariable>();'''
+	}
 	def static String compilePackage(Monitors monitors){
-		return '''TODO - Package'''
+		return ''''''; //TODO: PackageName
 	}
 	
 	def static String compileImports(Monitors monitors){
-		return '''TODO - Imports'''
+		'''
+		import java.io.File;
+		import java.time.Duration;
+		import java.util.ArrayList;
+		import java.util.List;
+		
+		import javax.measure.unit.Unit;
+		
+		import org.jscience.physics.amount.Amount;
+		
+		import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+		import bergmann.masterarbeit.generationtarget.expressions.*;
+		import bergmann.masterarbeit.generationtarget.interfaces.*;
+		import bergmann.masterarbeit.generationtarget.utils.*;
+		'''
 	}
 	
 	def String compile(UserVariable userVar){
@@ -114,16 +179,20 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
-		UserVariable<«javaType»> «userVar.name» = new UserVariable<«javaType»>(«userVar.expr.compile»);
+		UserVariable<«javaType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«javaType»>(«userVar.expr.compile»);
+		userVars.add(«userVar.name»_«userVar.positiveHash»); 
 		'''
 	}
 	
 	def String compile(Assertion assertion){
 		return '''
-		Expression<Boolean> «assertion.name»_Expression = «assertion.expr.compile»;
-		Assertion «assertion.name» = new Assertion(«assertion.name»_Expression, dataControl);
-		assertions.add(«assertion.name»);
-		'''
+		Assertion «assertion.name»_«assertion.positiveHash» = new Assertion(«assertion.expr.compile», dataControl);
+		assertions.add(«assertion.name»_«assertion.positiveHash»); 
+		''' 
+	}
+	
+	def String positiveHash(Object obj){
+		return "" + (obj.hashCode.bitwiseAnd(0xfffffff)) // Removes -
 	}
 	
 	def String compile(Expression expr){
@@ -144,13 +213,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 					return '''new «expr.op.compile»(«expr.left.compile», «expr.right.compile», «expr.time.compile»)'''
 			}
 			Add: {
-				if(expr.op == "+")
+				if(expr.op.equals("+"))
 					return '''new Addition(«expr.left.compile», «expr.right.compile»)'''
 				else
 					return '''new Subtraction(«expr.left.compile», «expr.right.compile»)'''
 			}
 			Mult: {
-				if(expr.op == "*")
+				if(expr.op.equals("*"))
 					return '''new Multiplication(«expr.left.compile», «expr.right.compile»)'''
 				else
 					return '''new Division(«expr.left.compile», «expr.right.compile»)'''	
@@ -165,10 +234,12 @@ class MonitorDslGenerator extends AbstractGenerator {
 			
 			}
 			Rel:{
-				if(expr.left.isBoolean && expr.right.isBoolean)
-					return '''new BoolEquality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
+				if(expr.op.equals("=="))
+					return '''new Equals(«expr.left.compile», «expr.right.compile»)'''
+				if(expr.op.equals("!="))
+					return '''new NotEquals(«expr.left.compile», «expr.right.compile»)'''
 				else if (expr.left.isNumber && expr.right.isNumber)
-					return '''new NumberEquality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
+					return '''new NumberInequality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
 				else 
 					throw new Exception()
 			}
@@ -176,13 +247,14 @@ class MonitorDslGenerator extends AbstractGenerator {
 			IntLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.compile»)''' //TODO Add handling of units
 			FloatLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.compile»)''' //TODO Add handling of units
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
+			StringLiteral: return '''new StringLiteral("«expr.value»")'''
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
 			
 			/* MappingDSL stuff */			
 			CrossReference: {
 				var ref = expr.ref
 				switch ref{
-					UserVariable: return ref.name
+					UserVariable: return ref.name+"_"+ref.positiveHash
 					DomainValue:{
 							switch ref.type {
 							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
@@ -203,7 +275,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 	}
 	
 	def static String getClassName(JavaClassReference ref){
-		return "TODO_CLASSNAME"
+		return ref.javaType.qualifiedName
 	}
 	def String compile(BINARY_LTL_OPERATOR op){
 		switch op{
@@ -251,8 +323,8 @@ class MonitorDslGenerator extends AbstractGenerator {
 			TimeIntervalSimple:{
 				var includeLeft = interval.left.equals("[")
 				var includeRight = interval.right.equals("]")
-				var startMillisec = interval.start.toMillisec
-				var endMillisec = interval.end.toMillisec
+				var startMillisec = if (interval.start instanceof TimeIntervalSimple) interval.start.toMillisec else "Long.MAX_VALUE"
+				var endMillisec = if (interval.end instanceof TimeIntervalSimple) interval.end.toMillisec else "Long.MAX_VALUE"
 				return '''new RelativeTimeInterval(Duration.ofMillis(«startMillisec»), Duration.ofMillis(«endMillisec»), «includeLeft», «includeRight»)'''
 			}
 			TimeIntervalSingleton:{
@@ -264,10 +336,10 @@ class MonitorDslGenerator extends AbstractGenerator {
 				var zeroString = '''Duration.ofMillis(0)'''
 				var infinityString = '''Duration.ofMillis(Long.MAX_VALUE)'''
 				switch interval.op{
-					case "<": return '''new RelativeTimeInterval(«zeroString», «timeString», true, false'''
-					case "<=":return '''new RelativeTimeInterval(«zeroString», «timeString», true, true'''
-					case ">": return '''new RelativeTimeInterval(«timeString», «infinityString», false, true'''
-					case ">=":return '''new RelativeTimeInterval(«timeString», «infinityString», true, true'''
+					case "<": return '''new RelativeTimeInterval(«zeroString», «timeString», true, false)'''
+					case "<=":return '''new RelativeTimeInterval(«zeroString», «timeString», true, true)'''
+					case ">": return '''new RelativeTimeInterval(«timeString», «infinityString», false, true)'''
+					case ">=":return '''new RelativeTimeInterval(«timeString», «infinityString», true, true)'''
 					default: throw new Exception()
 				}
 			}
@@ -287,6 +359,9 @@ class MonitorDslGenerator extends AbstractGenerator {
 	}
 	// -- JScience Unit
 	def String toJavaString(javax.measure.unit.Unit<? extends Quantity> u){
-		return '''Unit.valueOf("«u.toString»")'''
+		if (u.equals(javax.measure.unit.Unit.ONE))
+			return '''Unit.ONE'''
+		else
+			return '''Unit.valueOf("«u.toString»")'''
 	}
 }
