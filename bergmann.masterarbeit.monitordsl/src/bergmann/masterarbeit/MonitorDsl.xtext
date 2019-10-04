@@ -31,7 +31,7 @@ Expression:
 ;
 
 ImplicationExpr returns Expression:
-	OrExpr ({Implication.left=current} op=('->'|'<->'|'implies'|'iff') right=AndExpr)*
+	OrExpr ({Implication.left=current} op=('->'|'<->'|'implies'|'iff') right=OrExpr)*
 ;
 
 OrExpr returns Expression:
