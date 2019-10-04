@@ -81,6 +81,7 @@ AtomExpr returns Expression:
 	| {IntLiteral} value=INT unit=Unit?
 	| {FloatLiteral} value=FLOAT unit=Unit?
 	| {BoolLiteral} value=("true" | "false")	
+	| {StringLiteral} value=STRING
 	// User Variable
 	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
 	// MappingVariable

@@ -33,12 +33,14 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.Type
 import bergmann.masterarbeit.mappingdsl.mappingDSL.JavaType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BaseType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
+import bergmann.masterarbeit.monitorDsl.StringLiteral
 
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
 	static var BOOLEAN_JAVA_CLASS = "java.lang.Boolean"
 	static var NUMBER_JAVA_CLASS = "org.jscience.physics.amount.Amount"
 	static var STRING_JAVA_CLASS = "java.lang.String"
+	static var OBJECT = "java.lang.Object"
 		
 
 	def public static boolean isValid(Expression expr) {
@@ -96,7 +98,7 @@ class ExpressionTypeChecker {
 				if (expr.expr.isBoolean)
 					t = BOOLEAN_JAVA_CLASS
 			Rel:
-				if ((expr.op == "==" || expr.op == "!=") && expr.left.expressionType == expr.right.expressionType)
+				if ((expr.op == "==" || expr.op == "!="))
 					// Only for !=, ==: Any + Any => Boolean
 					t = BOOLEAN_JAVA_CLASS
 				else if (expr.left.isNumber && expr.right.isNumber)
@@ -126,6 +128,7 @@ class ExpressionTypeChecker {
 				t = NUMBER_JAVA_CLASS
 			BoolLiteral:
 				t = BOOLEAN_JAVA_CLASS
+			StringLiteral: t = STRING_JAVA_CLASS
 			CrossReference: return expr.handleCrossreference
 			MappingUnary: return expr.handleCustomJavaMapping
 			MappingBinary: return expr.handleCustomJavaMapping
@@ -151,7 +154,7 @@ class ExpressionTypeChecker {
 			var domainElement = e.ref as UnaryJava
 			var declaredIn = domainElement.type1.handleDomainType
 			var declaredOut = domainElement.type2.handleDomainType
-			if(e.expr.expressionType.equals(declaredIn))
+			if(e.expr.expressionType.equals(declaredIn) || e.expr.expressionType.equals(OBJECT))
 				return declaredOut
 			else
 				return ""
@@ -168,7 +171,7 @@ class ExpressionTypeChecker {
 			var declaredResult = domainElement.type3.handleDomainType
 			var realLeft = e.left.expressionType
 			var realRight = e.right.expressionType
-			if(realLeft.equals(declaredLeft) && realRight.equals(declaredRight))
+			if((realLeft.equals(declaredLeft)|| declaredLeft.equals(OBJECT)) && ( realRight.equals(declaredRight) || declaredRight.equals(OBJECT)))
 				return declaredResult
 			else
 				return ""
