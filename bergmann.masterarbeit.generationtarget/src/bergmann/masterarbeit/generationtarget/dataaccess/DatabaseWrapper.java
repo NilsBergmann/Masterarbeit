@@ -24,6 +24,10 @@ public class DatabaseWrapper {
         this.tableName = tableName;
     }
 
+    public boolean isConnected() {
+        return this.conn != null;
+    }
+
     public Connection connect(String databaseName) {
         // SQLite connection string
         String url = "jdbc:sqlite:" + databaseName;

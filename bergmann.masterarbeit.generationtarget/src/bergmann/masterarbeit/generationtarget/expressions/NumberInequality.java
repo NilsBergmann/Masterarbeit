@@ -11,10 +11,10 @@ import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class NumberEquality extends BinaryExpression<Amount, Amount, Boolean> {
+public class NumberInequality extends BinaryExpression<Amount, Amount, Boolean> {
     String operator = null;
 
-    public NumberEquality(Expression<Amount> left, Expression<Amount> right, String operator) {
+    public NumberInequality(Expression<Amount> left, Expression<Amount> right, String operator) {
         super(left, right);
         this.operator = operator;
     }
@@ -24,6 +24,8 @@ public class NumberEquality extends BinaryExpression<Amount, Amount, Boolean> {
         Optional<Amount> a = this.left.evaluate(state, dataSource);
         Optional<Amount> b = this.left.evaluate(state, dataSource);
         if (!a.isPresent() || !b.isPresent())
+            return Optional.empty();
+        if (a.get() == null || b.get() == null)
             return Optional.empty();
         else {
             Amount aV = a.get();
@@ -50,7 +52,7 @@ public class NumberEquality extends BinaryExpression<Amount, Amount, Boolean> {
                 }
                 }
             } catch (ConversionException e) {
-                System.err.println("Comparison: Incompatible units: " + aV.getUnit() + " and " + bV.getUnit());
+                System.err.println("Inequality: Incompatible units: " + aV.getUnit() + " and " + bV.getUnit());
                 return Optional.empty();
             }
 

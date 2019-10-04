@@ -2,23 +2,19 @@ package bergmann.masterarbeit.generationtarget.expressions;
 
 import java.util.Optional;
 
-import javax.measure.unit.Unit;
-
-import org.jscience.physics.amount.Amount;
-
 import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class NumberLiteral extends Expression<Amount> {
-    Amount value;
+public class StringLiteral extends Expression<String> {
+    String value;
 
-    public NumberLiteral(double value, Unit unit) {
+    public StringLiteral(String value) {
         super();
-        this.value = Amount.valueOf(value, unit);
+        this.value = value;
     }
 
-    public Optional<Amount> evaluate(State state, DataController dataSource) {
+    public Optional<String> evaluate(State state, DataController dataSource) {
         return Optional.of(this.value);
     }
 }
