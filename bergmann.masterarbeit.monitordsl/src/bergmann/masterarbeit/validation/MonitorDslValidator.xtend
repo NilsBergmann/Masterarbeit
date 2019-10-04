@@ -69,7 +69,7 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 			}
 			if(!invalidSubexpressionFound){
 				// Error must be in how this expression is used, not in some subexpression
-				error("Expression can't be resolved to a valid type", expr.eContainer, expr.eContainingFeature, -1)
+				error("Subexpression can't be resolved to a valid type", expr.eContainer, expr.eContainingFeature, -1)
 			}
 		}
 	}
@@ -90,7 +90,7 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 	}
 	@Check
 	def unitMismatch(Rel expr){
-		if(! expr.left.isNumber && expr.right.isNumber)
+		if(! (expr.left.isNumber && expr.right.isNumber))
 			return
 		var comp = expr.left.isUnitCompatible(expr.right)		 
 		if (!comp){
@@ -98,6 +98,13 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 			var rUnit = expr.right.unit
 			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
 		}		
+	}
+	
+	@Check 
+	def EqualsTypeWarning(Rel expr){
+		if(expr.op.equals("==") || expr.op.equals("!=") )
+			if(!expr.left.expressionType.equals(expr.right.expressionType))
+				warning("Comparing two different datatypes: " + expr.left.expressionType + " and " + expr.right.expressionType + ". Resulting behaviour may be unpredictable",  expr.eContainer, expr.eContainingFeature, -1 )
 	}
 
 
