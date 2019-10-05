@@ -22,6 +22,7 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
     public PLTL_Historically(Expression<Boolean> expr, RelativeTimeInterval interval) {
         super(expr);
         this.interval = interval;
+        this.interval.makeNegative();
     }
 
     @Override

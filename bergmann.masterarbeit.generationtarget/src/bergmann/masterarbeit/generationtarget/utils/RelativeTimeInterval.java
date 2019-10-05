@@ -17,4 +17,9 @@ public class RelativeTimeInterval {
     public AbsoluteTimeInterval addInstant(Instant instant) {
         return new AbsoluteTimeInterval(instant.plus(start), instant.plus(start), this.includeLeft, this.includeRight);
     }
+
+    public void makeNegative() {
+        this.start = this.start.negated();
+        this.end = this.start.negated();
+    }
 }

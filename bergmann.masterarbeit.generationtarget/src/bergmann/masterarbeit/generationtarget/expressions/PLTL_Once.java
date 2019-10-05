@@ -19,6 +19,7 @@ public class PLTL_Once extends UnaryExpression<Boolean, Boolean> {
     public PLTL_Once(Expression<Boolean> expr, RelativeTimeInterval interval) {
         super(expr);
         this.interval = interval;
+        this.interval.makeNegative();
         // Once ψ ≡ ¬Historically ¬ψ
         helper = new BoolNegation(new PLTL_Historically(new BoolNegation(expr), interval));
     }

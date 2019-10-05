@@ -18,6 +18,7 @@ public class PLTL_Since extends BinaryExpression<Boolean, Boolean, Boolean> {
     public PLTL_Since(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {
         super(left, right);
         this.interval = interval;
+        this.interval.makeNegative();
     }
 
     @Override
