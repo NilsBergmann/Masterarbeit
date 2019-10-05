@@ -106,6 +106,18 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 			if(!expr.left.expressionType.equals(expr.right.expressionType))
 				warning("Comparing two different datatypes: " + expr.left.expressionType + " and " + expr.right.expressionType + ". Resulting behaviour may be unpredictable",  expr.eContainer, expr.eContainingFeature, -1 )
 	}
+	
+	@Check
+	def IntervallAllowedCheck(LTL_Unary expr) {
+		if(expr.time == null){
+			return 
+		}
+		switch  expr.op {
+			case NEXT,
+			case PREVIOUS,
+			case Z: error("Time constraints are currently not supported for given operator " + expr.op, MonitorDslPackage.Literals.LTL_UNARY__TIME)
+		}
+	}
 
 
 	@Check
