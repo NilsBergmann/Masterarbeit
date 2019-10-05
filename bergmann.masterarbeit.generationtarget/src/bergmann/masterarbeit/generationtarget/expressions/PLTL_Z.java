@@ -10,19 +10,18 @@ import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
     RelativeTimeInterval interval;
+    Expression<Boolean> helper;
 
     public PLTL_Z(Expression<Boolean> expr) {
         super(expr);
-    }
-
-    public PLTL_Z(Expression<Boolean> expr, RelativeTimeInterval interval) {
-        super(expr);
-        this.interval = interval;
+        // ¬Zϕ ≡ Y¬ϕ
+        // Zϕ ≡ ¬(Y¬ϕ)
+        helper = new BoolNegation(new PLTL_Previous(new BoolNegation(expr)));
     }
 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
         // TODO: Implement this
-        return Optional.empty();
+        return helper.evaluate(state, dataSource);
     }
 }

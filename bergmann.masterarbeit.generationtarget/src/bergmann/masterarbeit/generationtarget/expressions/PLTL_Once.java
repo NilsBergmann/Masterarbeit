@@ -10,6 +10,7 @@ import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 public class PLTL_Once extends UnaryExpression<Boolean, Boolean> {
     RelativeTimeInterval interval;
+    Expression<Boolean> helper;
 
     public PLTL_Once(Expression<Boolean> expr) {
         this(expr, null);
@@ -18,6 +19,8 @@ public class PLTL_Once extends UnaryExpression<Boolean, Boolean> {
     public PLTL_Once(Expression<Boolean> expr, RelativeTimeInterval interval) {
         super(expr);
         this.interval = interval;
+        // Once ψ ≡ ¬Historically ¬ψ
+        helper = new BoolNegation(new PLTL_Historically(new BoolNegation(expr), interval));
     }
 
     @Override
