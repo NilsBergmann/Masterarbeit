@@ -25,7 +25,6 @@ public class PLTL_Once extends UnaryExpression<Boolean, Boolean> {
 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        // TODO: Implement this
-        return Optional.empty();
+        return helper.evaluate(state, dataSource);
     }
 }

@@ -21,7 +21,6 @@ public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        // TODO: Implement this
         return helper.evaluate(state, dataSource);
     }
 }
