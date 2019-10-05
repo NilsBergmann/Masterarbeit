@@ -10,6 +10,7 @@ import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 public class LTL_WeakUntil extends BinaryExpression<Boolean, Boolean, Boolean> {
     RelativeTimeInterval interval;
+    Expression<Boolean> helper;
 
     public LTL_WeakUntil(Expression<Boolean> left, Expression<Boolean> right) {
         super(left, right);
@@ -18,11 +19,14 @@ public class LTL_WeakUntil extends BinaryExpression<Boolean, Boolean, Boolean> {
     public LTL_WeakUntil(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {
         super(left, right);
         this.interval = interval;
+        // φ W ψ ≡ (φ U ψ) ∨ G φ ≡ φ U (ψ ∨ G φ) ≡ ψ R (ψ ∨ φ)
+        // φ W ψ ≡ ψ R (ψ ∨ φ)
+        Expression<Boolean> leftOrRight = new Or(left, right);
+        helper = new LTL_Release(right, leftOrRight, interval);
     }
 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        // TODO: Implement this
-        return Optional.empty();
+        return helper.evaluate(state, dataSource);
     }
 }

@@ -12,6 +12,7 @@ import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 public class LTL_Global extends UnaryExpression<Boolean, Boolean> {
     RelativeTimeInterval interval;
+    private Expression<Boolean> helper;
 
     public LTL_Global(Expression<Boolean> expr) {
         super(expr);
@@ -20,28 +21,12 @@ public class LTL_Global extends UnaryExpression<Boolean, Boolean> {
     public LTL_Global(Expression<Boolean> expr, RelativeTimeInterval interval) {
         super(expr);
         this.interval = interval;
+        // G ψ ≡ ¬F ¬ψ
+        helper = new BoolNegation(new LTL_Finally(new BoolNegation(expr), interval));
     }
 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        List<State> relevantStates = null;
-        if (this.interval != null) {
-            AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = dataSource.getStatesInInterval(relevantTime);
-        } else {
-            relevantStates = dataSource.getAllStatesAfter(state);
-        }
-
-        for (State current : relevantStates) {
-            Optional<Boolean> result = expr.evaluate(current, dataSource);
-            if (result.isPresent() && result.get() == false)
-                return Optional.of(false);
-        }
-
-        // TODO: Handle case where an Interval is given and simulation is real time
-        if (dataSource.isRealTime())
-            return Optional.of(true);
-        else
-            return Optional.empty();
+        return helper.evaluate(state, dataSource);
     }
 }
