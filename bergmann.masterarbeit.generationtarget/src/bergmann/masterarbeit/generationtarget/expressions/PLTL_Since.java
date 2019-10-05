@@ -12,7 +12,7 @@ public class PLTL_Since extends BinaryExpression<Boolean, Boolean, Boolean> {
     RelativeTimeInterval interval;
 
     public PLTL_Since(Expression<Boolean> left, Expression<Boolean> right) {
-        super(left, right);
+        this(left, right, null);
     }
 
     public PLTL_Since(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {

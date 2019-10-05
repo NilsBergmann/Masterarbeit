@@ -15,7 +15,7 @@ public class LTL_Until extends BinaryExpression<Boolean, Boolean, Boolean> {
     Expression<Boolean> helper;
 
     public LTL_Until(Expression<Boolean> left, Expression<Boolean> right) {
-        super(left, right);
+        this(left, right, null);
     }
 
     public LTL_Until(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {

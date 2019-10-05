@@ -15,7 +15,7 @@ public class LTL_Global extends UnaryExpression<Boolean, Boolean> {
     private Expression<Boolean> helper;
 
     public LTL_Global(Expression<Boolean> expr) {
-        super(expr);
+        this(expr, null);
     }
 
     public LTL_Global(Expression<Boolean> expr, RelativeTimeInterval interval) {

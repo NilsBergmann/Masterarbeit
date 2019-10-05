@@ -14,7 +14,7 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
     RelativeTimeInterval interval;
 
     public LTL_Finally(Expression<Boolean> expr) {
-        super(expr);
+        this(expr, null);
     }
 
     public LTL_Finally(Expression<Boolean> expr, RelativeTimeInterval interval) {

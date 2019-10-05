@@ -12,7 +12,7 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
     RelativeTimeInterval interval;
 
     public PLTL_Historically(Expression<Boolean> expr) {
-        super(expr);
+        this(expr, null);
     }
 
     public PLTL_Historically(Expression<Boolean> expr, RelativeTimeInterval interval) {

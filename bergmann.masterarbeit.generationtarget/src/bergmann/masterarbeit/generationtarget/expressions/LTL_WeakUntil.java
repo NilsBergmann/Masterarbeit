@@ -13,7 +13,7 @@ public class LTL_WeakUntil extends BinaryExpression<Boolean, Boolean, Boolean> {
     Expression<Boolean> helper;
 
     public LTL_WeakUntil(Expression<Boolean> left, Expression<Boolean> right) {
-        super(left, right);
+        this(left, right, null);
     }
 
     public LTL_WeakUntil(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {

@@ -12,7 +12,7 @@ public class PLTL_Once extends UnaryExpression<Boolean, Boolean> {
     RelativeTimeInterval interval;
 
     public PLTL_Once(Expression<Boolean> expr) {
-        super(expr);
+        this(expr, null);
     }
 
     public PLTL_Once(Expression<Boolean> expr, RelativeTimeInterval interval) {

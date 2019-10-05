@@ -12,7 +12,7 @@ public class PLTL_Trigger extends BinaryExpression<Boolean, Boolean, Boolean> {
     RelativeTimeInterval interval;
 
     public PLTL_Trigger(Expression<Boolean> left, Expression<Boolean> right) {
-        super(left, right);
+        this(left, right, null);
     }
 
     public PLTL_Trigger(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {

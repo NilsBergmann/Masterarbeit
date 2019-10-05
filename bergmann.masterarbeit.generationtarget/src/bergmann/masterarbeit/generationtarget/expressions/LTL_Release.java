@@ -14,7 +14,7 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
     RelativeTimeInterval interval;
 
     public LTL_Release(Expression<Boolean> left, Expression<Boolean> right) {
-        super(left, right);
+        this(left, right, null);
     }
 
     public LTL_Release(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {
