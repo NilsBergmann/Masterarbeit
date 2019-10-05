@@ -111,7 +111,7 @@ enum UNARY_LTL_OPERATOR:
 	NEXT =  'next' | NEXT = 'X' 
 	| FINALLY = 'finally' | FINALLY = 'F' 
 	| GLOBAL = 'globally' | GLOBAL = 'G' 
-	| PREVIOUS = 'previous' | PREVIOUS = 'Y' 
+	| YESTERDAY = 'yesterday' | YESTERDAY = 'Y' 
 	| ONCE = 'once' | ONCE = 'O'  
 	| HISTORICALLY = 'historically' | HISTORICALLY =  'H'
 	| Z = "Z"

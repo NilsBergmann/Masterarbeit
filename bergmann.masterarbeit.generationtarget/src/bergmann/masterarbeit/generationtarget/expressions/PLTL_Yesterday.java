@@ -7,9 +7,9 @@ import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 import bergmann.masterarbeit.generationtarget.interfaces.UnaryExpression;
 
-public class PLTL_Previous extends UnaryExpression<Boolean, Boolean> {
+public class PLTL_Yesterday extends UnaryExpression<Boolean, Boolean> {
 
-    public PLTL_Previous(Expression<Boolean> expr) {
+    public PLTL_Yesterday(Expression<Boolean> expr) {
         super(expr);
     }
 

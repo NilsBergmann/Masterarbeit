@@ -16,7 +16,7 @@ public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
         super(expr);
         // ¬Zϕ ≡ Y¬ϕ
         // Zϕ ≡ ¬(Y¬ϕ)
-        helper = new BoolNegation(new PLTL_Previous(new BoolNegation(expr)));
+        helper = new BoolNegation(new PLTL_Yesterday(new BoolNegation(expr)));
     }
 
     @Override
