@@ -12,6 +12,8 @@ public class RelativeTimeInterval {
         this.end = end;
         this.includeLeft = includeLeft;
         this.includeRight = includeRight;
+        if (start.toMillis() > end.toMillis())
+            this.switchSides();
     }
 
     public AbsoluteTimeInterval addInstant(Instant instant) {
@@ -21,5 +23,16 @@ public class RelativeTimeInterval {
     public void makeNegative() {
         this.start = this.start.negated();
         this.end = this.start.negated();
+    }
+
+    public void switchSides() {
+        boolean tmp = this.includeLeft;
+        Duration tmpD = this.start;
+
+        this.includeLeft = this.includeRight;
+        this.start = this.end;
+
+        this.includeRight = tmp;
+        this.end = tmpD;
     }
 }

@@ -11,6 +11,19 @@ public class AbsoluteTimeInterval {
         this.end = end;
         this.includeLeft = includeLeft;
         this.includeRight = includeRight;
+        if (start.isAfter(end))
+            this.switchSides();
+    }
+
+    public void switchSides() {
+        boolean tmp = this.includeLeft;
+        Instant tmpD = this.start;
+
+        this.includeLeft = this.includeRight;
+        this.start = this.end;
+
+        this.includeRight = tmp;
+        this.end = tmpD;
     }
 
 }

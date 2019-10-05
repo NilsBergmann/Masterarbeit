@@ -47,6 +47,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import javax.measure.quantity.Quantity
 import bergmann.masterarbeit.monitorDsl.StringLiteral
+import bergmann.masterarbeit.monitorDsl.TimeLiteral
 
 /**
  * Generates code from your model files on save.
@@ -71,29 +72,29 @@ class MonitorDslGenerator extends AbstractGenerator {
 		var databaseFilename = "test.db" //TODO Implement this
 		//TODO: Add imports
 		return '''
-		ï¿½monitors.compilePackageï¿½
-		ï¿½monitors.compileImportsï¿½
+		«monitors.compilePackage»
+		«monitors.compileImports»
 		class RunEvaluation {
 			public static void main(String args[]) {
-				ï¿½generateSetupï¿½
+				«generateSetup»
 				
 				/**
 				 * User Variables 
 				 */
 				 
-				ï¿½FOR userVar : userVarsï¿½
-				ï¿½userVar.compileï¿½
+				«FOR userVar : userVars»
+				«userVar.compile»
 				
-				ï¿½ENDFORï¿½
+				«ENDFOR»
 				
 				/**
 				 * Assertions
 				 */
 				 
-				 ï¿½FOR assertion : assertionsï¿½
-				 ï¿½assertion.compileï¿½
+				 «FOR assertion : assertions»
+				 «assertion.compile»
 				 
-				 ï¿½ENDFORï¿½
+				 «ENDFOR»
 				 
 				 /**
 				 * Run evaluation
@@ -179,15 +180,15 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
-		UserVariable<ï¿½javaTypeï¿½> ï¿½userVar.nameï¿½_ï¿½userVar.positiveHashï¿½ = new UserVariable<ï¿½javaTypeï¿½>(ï¿½userVar.expr.compileï¿½);
-		userVars.add(ï¿½userVar.nameï¿½_ï¿½userVar.positiveHashï¿½); 
+		UserVariable<«javaType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«javaType»>(«userVar.expr.compile»);
+		userVars.add(«userVar.name»_«userVar.positiveHash»); 
 		'''
 	}
 	
 	def String compile(Assertion assertion){
 		return '''
-		Assertion ï¿½assertion.nameï¿½_ï¿½assertion.positiveHashï¿½ = new Assertion(ï¿½assertion.expr.compileï¿½, dataControl);
-		assertions.add(ï¿½assertion.nameï¿½_ï¿½assertion.positiveHashï¿½); 
+		Assertion «assertion.name»_«assertion.positiveHash» = new Assertion(«assertion.expr.compile», dataControl);
+		assertions.add(«assertion.name»_«assertion.positiveHash»); 
 		''' 
 	}
 	
@@ -197,58 +198,58 @@ class MonitorDslGenerator extends AbstractGenerator {
 	
 	def String compile(Expression expr){
 		switch expr{
-			And: return '''new And(ï¿½expr.left.compileï¿½,ï¿½expr.right.compileï¿½)'''
-			Or: return '''new Or(ï¿½expr.left.compileï¿½,ï¿½expr.right.compileï¿½)'''
-			Implication: return '''new Implication(ï¿½expr.left.compileï¿½,ï¿½expr.right.compileï¿½)'''
+			And: return '''new And(«expr.left.compile»,«expr.right.compile»)'''
+			Or: return '''new Or(«expr.left.compile»,«expr.right.compile»)'''
+			Implication: return '''new Implication(«expr.left.compile»,«expr.right.compile»)'''
 			LTL_Unary: {
 				if(expr.time == null)
-					return '''new ï¿½expr.op.compileï¿½(ï¿½expr.expr.compileï¿½)'''
+					return '''new «expr.op.compile»(«expr.expr.compile»)'''
 				else
-					return  '''new ï¿½expr.op.compileï¿½(ï¿½expr.expr.compileï¿½, ï¿½expr.time.compileï¿½)'''
+					return  '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
 			}
 			LTL_Binary: {
 				if(expr.time == null)
-					return '''new ï¿½expr.op.compileï¿½(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new «expr.op.compile»(«expr.left.compile», «expr.right.compile»)'''
 				else
-					return '''new ï¿½expr.op.compileï¿½(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½, ï¿½expr.time.compileï¿½)'''
+					return '''new «expr.op.compile»(«expr.left.compile», «expr.right.compile», «expr.time.compile»)'''
 			}
 			Add: {
 				if(expr.op.equals("+"))
-					return '''new Addition(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Addition(«expr.left.compile», «expr.right.compile»)'''
 				else
-					return '''new Subtraction(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Subtraction(«expr.left.compile», «expr.right.compile»)'''
 			}
 			Mult: {
 				if(expr.op.equals("*"))
-					return '''new Multiplication(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Multiplication(«expr.left.compile», «expr.right.compile»)'''
 				else
-					return '''new Division(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''	
+					return '''new Division(«expr.left.compile», «expr.right.compile»)'''	
 			}
 			Negation: {
 				if(expr.isBoolean)
-					return '''new BoolNegation(ï¿½expr.expr.compileï¿½)'''
+					return '''new BoolNegation(«expr.expr.compile»)'''
 				else if (expr.isNumber)
-					return '''new NumberNegation(ï¿½expr.expr.compileï¿½)'''
+					return '''new NumberNegation(«expr.expr.compile»)'''
 				else 
 					throw new Exception()	
 			
 			}
 			Rel:{
 				if(expr.op.equals("=="))
-					return '''new Equals(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Equals(«expr.left.compile», «expr.right.compile»)'''
 				if(expr.op.equals("!="))
-					return '''new NotEquals(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new NotEquals(«expr.left.compile», «expr.right.compile»)'''
 				else if (expr.left.isNumber && expr.right.isNumber)
-					return '''new NumberInequality(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½, "ï¿½expr.opï¿½")'''
+					return '''new NumberInequality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
 				else 
 					throw new Exception()
 			}
 			Subexpression: return expr.expr.compile
-			IntLiteral: return '''new NumberLiteral(ï¿½expr.valueï¿½, ï¿½expr.unit.compileï¿½)''' //TODO Add handling of units
-			FloatLiteral: return '''new NumberLiteral(ï¿½expr.valueï¿½, ï¿½expr.unit.compileï¿½)''' //TODO Add handling of units
-			BoolLiteral: return '''new BoolLiteral(ï¿½expr.valueï¿½)'''
-			StringLiteral: return '''new StringLiteral("ï¿½expr.valueï¿½")'''
-			AggregateExpression: return '''new ï¿½expr.op.compileï¿½(ï¿½expr.expr.compileï¿½, ï¿½expr.time.compileï¿½)'''
+			IntLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.compile»)''' //TODO Add handling of units
+			FloatLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.compile»)''' //TODO Add handling of units
+			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
+			StringLiteral: return '''new StringLiteral("«expr.value»")'''
+			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
 			
 			/* MappingDSL stuff */			
 			CrossReference: {
@@ -257,13 +258,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 					UserVariable: return ref.name+"_"+ref.positiveHash
 					DomainValue:{
 							switch ref.type {
-							case BOOLEAN: return '''new BooleanDatabaseAccess("ï¿½ref.columnï¿½")'''
-							case NUMBER: return '''new NumberDatabaseAccess("ï¿½ref.columnï¿½", ï¿½ref.unit.compileï¿½)'''
-							case STRING: return '''new StringDatabaseAcess("ï¿½ref.columnï¿½")'''
+							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
+							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»", «ref.unit.compile»)'''
+							case STRING: return '''new StringDatabaseAcess("«ref.column»")'''
 							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
 						 }
 						}
-					LiteralJava: return '''new ï¿½ref.ref.classNameï¿½()'''
+					LiteralJava: return '''new «ref.ref.className»()'''
 					default: throw new IllegalArgumentException("Can't parse expr: " + expr + " referencing " + ref)
 				}
 			}
@@ -311,11 +312,11 @@ class MonitorDslGenerator extends AbstractGenerator {
 	
 	def String compile(MappingBinary expr){
 		var refMapping = expr.ref as BinaryJava
-		return '''new ï¿½refMapping.ref.classNameï¿½(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+		return '''new «refMapping.ref.className»(«expr.left.compile», «expr.right.compile»)'''
 	}
 	def String compile(MappingUnary expr){
 		var refMapping = expr.ref as UnaryJava
-		return '''new ï¿½refMapping.ref.classNameï¿½(ï¿½expr.expr.compileï¿½)'''
+		return '''new «refMapping.ref.className»(«expr.expr.compile»)'''
 	}
 	
 	def String compile(TimeInterval interval){
@@ -323,23 +324,23 @@ class MonitorDslGenerator extends AbstractGenerator {
 			TimeIntervalSimple:{
 				var includeLeft = interval.left.equals("[")
 				var includeRight = interval.right.equals("]")
-				var startMillisec = if (interval.start instanceof TimeIntervalSimple) interval.start.toMillisec else "Long.MAX_VALUE"
-				var endMillisec = if (interval.end instanceof TimeIntervalSimple) interval.end.toMillisec else "Long.MAX_VALUE"
-				return '''new RelativeTimeInterval(Duration.ofMillis(ï¿½startMillisecï¿½), Duration.ofMillis(ï¿½endMillisecï¿½), ï¿½includeLeftï¿½, ï¿½includeRightï¿½)'''
+				var startMillisec = if (interval.start instanceof TimeLiteral) interval.start.toMillisec else "Long.MIN_VALUE"
+				var endMillisec = if (interval.end instanceof TimeLiteral) interval.end.toMillisec else "Long.MAX_VALUE"
+				return '''new RelativeTimeInterval(Duration.ofMillis(«startMillisec»), Duration.ofMillis(«endMillisec»), «includeLeft», «includeRight»)'''
 			}
 			TimeIntervalSingleton:{
-				var timeString = '''Duration.ofMillis(ï¿½interval.value.toMillisecï¿½)'''
-				return '''new RelativeTimeInterval(ï¿½timeStringï¿½, ï¿½timeStringï¿½, true, true)'''
+				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
+				return '''new RelativeTimeInterval(«timeString», «timeString», true, true)'''
 			}
 			TimeIntervalInequalityNotation:{
-				var timeString = '''Duration.ofMillis(ï¿½interval.value.toMillisecï¿½)'''
+				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
 				var zeroString = '''Duration.ofMillis(0)'''
-				var infinityString = '''Duration.ofMillis(Long.MAX_VALUE)'''
+				var infinityString = if(interval.containsPositive) '''Duration.ofMillis(Long.MAX_VALUE)''' else '''Duration.ofMillis(Long.MIN_VALUE)'''
 				switch interval.op{
-					case "<": return '''new RelativeTimeInterval(ï¿½zeroStringï¿½, ï¿½timeStringï¿½, true, false)'''
-					case "<=":return '''new RelativeTimeInterval(ï¿½zeroStringï¿½, ï¿½timeStringï¿½, true, true)'''
-					case ">": return '''new RelativeTimeInterval(ï¿½timeStringï¿½, ï¿½infinityStringï¿½, false, true)'''
-					case ">=":return '''new RelativeTimeInterval(ï¿½timeStringï¿½, ï¿½infinityStringï¿½, true, true)'''
+					case "<": return '''new RelativeTimeInterval(«zeroString», «timeString», true, false)'''
+					case "<=":return '''new RelativeTimeInterval(«zeroString», «timeString», true, true)'''
+					case ">": return '''new RelativeTimeInterval(«timeString», «infinityString», false, true)'''
+					case ">=":return '''new RelativeTimeInterval(«timeString», «infinityString», true, true)'''
 					default: throw new Exception()
 				}
 			}
@@ -362,6 +363,6 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if (u.equals(javax.measure.unit.Unit.ONE))
 			return '''Unit.ONE'''
 		else
-			return '''Unit.valueOf("ï¿½u.toStringï¿½")'''
+			return '''Unit.valueOf("«u.toString»")'''
 	}
 }

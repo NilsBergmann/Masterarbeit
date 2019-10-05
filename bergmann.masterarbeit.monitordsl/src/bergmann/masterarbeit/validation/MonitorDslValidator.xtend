@@ -13,6 +13,7 @@ import bergmann.masterarbeit.utils.ExpressionTypeChecker
 import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.UnitUtils.*
+import static extension bergmann.masterarbeit.utils.TimeUtils.*
 import bergmann.masterarbeit.utils.ExpressionUtils
 import bergmann.masterarbeit.monitorDsl.impl.AddImpl
 import org.eclipse.xtext.EcoreUtil2
@@ -76,7 +77,78 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 
 	@Check
 	def checkTimeIntervals(TimeIntervalSimple t){
-		// TODO: Implement this
+		if(!(t.start.toMillisec <= t.end.toMillisec)){
+			error("Interval start must be before end", t.eContainer, t.eContainingFeature, -1)
+		}
+	}
+	
+	@Check
+	def checkTimeIntervals(LTL_Binary expr){
+		if(expr.time == null){
+			return
+		}
+		if (expr.time.isZero){
+			warning("Given interval equals zero and can be removed.", MonitorDslPackage.Literals.LTL_BINARY__TIME)
+			return
+		}
+		if(expr.time.containsNegative && expr.time.containsPositive){
+			error("Mismatching signs for start and end are disallowed for '"+ expr.op +"'.", MonitorDslPackage.Literals.LTL_BINARY__TIME)
+			return
+		}
+		switch expr.op {
+			//LTL 
+			case UNTIL,
+			case WEAK_UNTIL,
+			case RELEASE:{
+				if(expr.time.containsNegative){
+					error("Negative time interval for LTL operator.", MonitorDslPackage.Literals.LTL_BINARY__TIME)
+				}
+			}
+			// PLTL
+			case TRIGGER,
+			case SINCE:{
+				if(expr.time.containsPositive){
+					error("Positive time interval for PLTL operator.", MonitorDslPackage.Literals.LTL_BINARY__TIME)
+				}
+			}
+			// default
+			default: throw new IllegalArgumentException("Unknown binary (P)LTL operator " + expr.op)
+		}
+	}
+		@Check
+	def checkTimeIntervals(LTL_Unary expr){
+		if(expr.time == null){
+			return
+		}
+		if (expr.time.isZero){
+			warning("Given interval equals zero and can be removed.", MonitorDslPackage.Literals.LTL_UNARY__TIME)
+			return 
+		}
+		if(expr.time.containsNegative && expr.time.containsPositive){
+			error("Mismatching signs for start and end are disallowed for '"+ expr.op +"'.", MonitorDslPackage.Literals.LTL_UNARY__TIME)
+			return
+		}
+		switch expr.op {
+			//LTL 
+			case NEXT,
+			case FINALLY,
+			case GLOBAL:{
+				if(expr.time.containsNegative){
+					error("Negative time interval for LTL operator.", MonitorDslPackage.Literals.LTL_UNARY__TIME)
+				}
+			} 
+			// PLTL
+			case YESTERDAY,
+			case Z,
+			case HISTORICALLY,
+			case ONCE:{
+				if(expr.time.containsPositive){
+					error("Positive time interval for PLTL operator.", MonitorDslPackage.Literals.LTL_UNARY__TIME)
+				}
+			}
+			// default
+			default: throw new IllegalArgumentException("Unknown binary (P)LTL operator " + expr.op)
+		}
 	}
 
 	@Check
@@ -114,7 +186,7 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 		}
 		switch  expr.op {
 			case NEXT,
-			case PREVIOUS,
+			case YESTERDAY,
 			case Z: error("Time constraints are currently not supported for given operator " + expr.op, MonitorDslPackage.Literals.LTL_UNARY__TIME)
 		}
 	}

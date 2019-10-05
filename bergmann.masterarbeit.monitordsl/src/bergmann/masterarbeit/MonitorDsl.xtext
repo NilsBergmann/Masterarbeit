@@ -97,8 +97,8 @@ TimeInterval:
 ;
 
 TimeAtom:
-	{TimeLiteral} value=INT unit=TIME_UNIT
-	| {InfinityTimeAtom} value="infinity"
+	{TimeLiteral} neg?="-"? value=INT unit=TIME_UNIT
+	| {InfinityTimeAtom} neg?="-"? value="infinity"
 ;
 
 enum AGGREGATE_OPERATOR:

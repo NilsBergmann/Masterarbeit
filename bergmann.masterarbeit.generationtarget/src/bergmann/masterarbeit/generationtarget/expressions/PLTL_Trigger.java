@@ -18,7 +18,6 @@ public class PLTL_Trigger extends BinaryExpression<Boolean, Boolean, Boolean> {
     public PLTL_Trigger(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {
         super(left, right);
         this.interval = interval;
-        this.interval.makeNegative();
     }
 
     @Override
