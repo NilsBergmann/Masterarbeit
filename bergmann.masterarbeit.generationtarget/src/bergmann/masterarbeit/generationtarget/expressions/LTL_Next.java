@@ -20,6 +20,5 @@ public class LTL_Next extends UnaryExpression<Boolean, Boolean> {
             return Optional.empty();
         }
         return expr.evaluate(next, dataSource);
-        // TODO: Next with interval?
     }
 }

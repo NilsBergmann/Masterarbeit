@@ -16,18 +16,6 @@ import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 class RunEvaluation {
 
     public static void main(String args[]) {
-        DataController dataControl = new DataController(false);
-        dataControl.connectToDatabase("test.db");
-        ArrayList<Assertion> assertions = new ArrayList<Assertion>();
-
-        DatabaseWrapper dbWrap = dataControl.getDatabaseWrapper();
-        List<String> tables = dbWrap.getTables();
-        dbWrap.setTable(tables.get(0));
-
-        List<State> states = dbWrap.getStates();
-        for (State state : states) {
-            System.out.println("State with timestamp:" + state.timestamp);
-        }
 
     }
 
