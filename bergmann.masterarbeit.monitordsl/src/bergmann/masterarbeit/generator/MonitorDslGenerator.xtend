@@ -99,7 +99,8 @@ class MonitorDslGenerator extends AbstractGenerator {
 				 /**
 				 * Run evaluation
 				 */
-				 //TODO
+				 
+				 dataControl.runEvaluation(assertions, userVars, tableSelection);
 			}
 		
 		}
@@ -180,14 +181,14 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
-		UserVariable<«javaType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«javaType»>(«userVar.expr.compile»);
+		UserVariable<«javaType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«javaType»>("«userVar.name»", «userVar.expr.compile»);
 		userVars.add(«userVar.name»_«userVar.positiveHash»); 
 		'''
 	}
 	
 	def String compile(Assertion assertion){
 		return '''
-		Assertion «assertion.name»_«assertion.positiveHash» = new Assertion(«assertion.expr.compile», dataControl);
+		Assertion «assertion.name»_«assertion.positiveHash» = new Assertion("«assertion.name»", «assertion.expr.compile»);
 		assertions.add(«assertion.name»_«assertion.positiveHash»); 
 		''' 
 	}
@@ -260,7 +261,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 							switch ref.type {
 							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
 							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»", «ref.unit.compile»)'''
-							case STRING: return '''new StringDatabaseAcess("«ref.column»")'''
+							case STRING: return '''new StringDatabaseAccess("«ref.column»")'''
 							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
 						 }
 						}
