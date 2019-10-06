@@ -35,4 +35,18 @@ public class RelativeTimeInterval {
         this.includeRight = tmp;
         this.end = tmpD;
     }
+
+    public boolean contains(Duration dur) {
+        // Check start
+        int s = this.start.compareTo(dur);
+        boolean startOK = s < 0;
+        if (this.includeLeft)
+            startOK = s <= 0;
+        // Check end
+        int e = this.end.compareTo(dur);
+        boolean endOK = e > 0;
+        if (this.includeLeft)
+            endOK = s >= 0;
+        return startOK && endOK;
+    }
 }

@@ -26,4 +26,18 @@ public class AbsoluteTimeInterval {
         this.end = tmpD;
     }
 
+    public boolean contains(Instant i) {
+        // Check start
+        int s = this.start.compareTo(i);
+        boolean startOK = s < 0;
+        if (this.includeLeft)
+            startOK = s <= 0;
+        // Check end
+        int e = this.end.compareTo(i);
+        boolean endOK = e > 0;
+        if (this.includeLeft)
+            endOK = s >= 0;
+        return startOK && endOK;
+    }
+
 }
