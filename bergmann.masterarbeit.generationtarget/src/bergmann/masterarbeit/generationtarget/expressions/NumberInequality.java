@@ -22,7 +22,7 @@ public class NumberInequality extends BinaryExpression<Amount, Amount, Boolean> 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
         Optional<Amount> a = this.left.evaluate(state, dataSource);
-        Optional<Amount> b = this.left.evaluate(state, dataSource);
+        Optional<Amount> b = this.right.evaluate(state, dataSource);
         if (!a.isPresent() || !b.isPresent())
             return Optional.empty();
         if (a.get() == null || b.get() == null)
@@ -31,7 +31,6 @@ public class NumberInequality extends BinaryExpression<Amount, Amount, Boolean> 
             Amount aV = a.get();
             Amount bV = b.get();
             try {
-                Amount sum = aV.divide(bV);
                 int comparison = aV.compareTo(bV);
                 switch (this.operator) {
                 case ">":
