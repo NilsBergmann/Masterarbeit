@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 
 import org.jscience.physics.amount.Amount;
@@ -46,31 +48,47 @@ public class DatabaseWrapper {
         try {
             this.conn.close();
         } catch (Exception e) {
-            // TODO: handle exception
+            System.err.println("ERROR when disconnecting: " + e);
         }
         this.conn = null;
         this.tableName = null;
     }
 
     public Optional<Boolean> getBoolean(State state, String columnName) {
-        // TODO: Implement this
-        return Optional.empty();
+        ResultSet r = this.getValue(state, columnName);
+        try {
+            Boolean retVal = r.getBoolean(columnName);
+            return Optional.of(retVal);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     public Optional<Amount> getAmount(State state, String columnName, Unit unit) {
-        // TODO: Implement this
-        return Optional.empty();
+        ResultSet r = this.getValue(state, columnName);
+        try {
+            Double value = r.getDouble(columnName);
+            Amount retVal = Amount.valueOf(value, unit);
+            return Optional.of(retVal);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     public Optional<String> getString(State state, String columnName) {
-        // TODO: Implement this
-        return Optional.empty();
+        ResultSet r = this.getValue(state, columnName);
+        try {
+            String retVal = r.getString(columnName);
+            return Optional.of(retVal);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     private ResultSet getValue(State state, String columnName) {
         Timestamp timestamp = Timestamp.from(state.timestamp);
         long timeInMillisec = timestamp.getTime();
-        String sql = "SELECT " + columnName + " FROM " + this.tableName + " WHERE " + TIMESTAMP_COLUMN_NAME + " = "
+        String sql = "SELECT `" + columnName + "` FROM `" + this.tableName + "` WHERE " + TIMESTAMP_COLUMN_NAME + " = "
                 + timeInMillisec;
         try {
             Statement stmnt = conn.createStatement();
@@ -78,7 +96,7 @@ public class DatabaseWrapper {
             ResultSet result = stmnt.getResultSet();
             return result;
         } catch (Exception e) {
-            // TODO Handle this
+            System.err.println("ERROR: Failed:" + sql);
         }
         return null;
     }
@@ -96,7 +114,8 @@ public class DatabaseWrapper {
                 states.add(current);
             }
         } catch (Exception e) {
-            // TODO: handle exception
+            System.err.println("Getting states from " + tableName + "failed.");
+            return new ArrayList<State>();
         }
         return states;
     }
@@ -116,8 +135,10 @@ public class DatabaseWrapper {
     }
 
     public void setTable(String name) {
-        // TODO: Check if table exists
-        this.tableName = name;
+        if (this.getTables().contains(name))
+            this.tableName = name;
+        else
+            throw new IllegalArgumentException("No table with name " + name);
     }
 
 }

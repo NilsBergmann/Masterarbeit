@@ -1,14 +1,21 @@
 package bergmann.masterarbeit.generationtarget.dataaccess;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
+import bergmann.masterarbeit.generationtarget.utils.Assertion;
+import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 
 public class DataController {
     DatabaseWrapper dbWrapper;
-    ArrayList<State> states;
+    List<State> states;
     boolean isRealTime = false;
 
     public DataController(boolean isRealTime) {
@@ -18,16 +25,14 @@ public class DataController {
 
     public void connectToDatabase(String path) {
         dbWrapper = new DatabaseWrapper(path);
-        // TODO: Get timestamps from database, create states
     }
 
     public DatabaseWrapper getDatabaseWrapper() {
         return this.dbWrapper;
     }
 
-    public void addState(Instant timestamp) {
-        State newState = new State(timestamp);
-        states.add(newState);
+    public void updateStates() {
+        this.states = this.dbWrapper.getStates();
     }
 
     public State getCurrentState() {
@@ -42,19 +47,20 @@ public class DataController {
             if (distance.abs().compareTo(minimumDistance) > 0) {
                 minimumDistance = distance;
                 minimumState = state;
-                // Improvement: Optimize taking into account the list should be ordered
             }
         }
         return minimumState;
     }
 
-    public ArrayList<State> getStatesInInterval(AbsoluteTimeInterval interval) {
-        System.out.println("getStatesInRange(): Not implemented yet");
-        return null;
-        // TODO Implement this. Consider open and closed time intervals
+    public List<State> getStatesInInterval(AbsoluteTimeInterval interval) {
+        List<State> retVal = new ArrayList<State>();
+        for (State state : this.states) {
+            if (interval.contains(state.timestamp)) {
+                retVal.add(state);
+            }
+        }
+        return retVal;
     }
-
-
 
     public State getPreviousState(State state) {
         int index = states.indexOf(state);
@@ -90,20 +96,87 @@ public class DataController {
         }
     }
 
-    public boolean timestampIsInRange(Instant timestamp) {
+    public boolean timestampIsInRange(Instant timestamp, boolean included) {
         if (states.isEmpty() || timestamp == null)
             return false;
-        return states.get(states.size() - 1).timestamp.compareTo(timestamp) >= 0;
-        // TODO Consider simulationCompleted()
+        int diff = states.get(states.size() - 1).timestamp.compareTo(timestamp);
+        if (included)
+            return diff >= 0;
+        else
+            return diff > 0;
     }
 
     public boolean intervalIsInRange(AbsoluteTimeInterval interval) {
-        // TODO: Implement
-        System.out.println("intervalIsInRange(). Not implemented");
-        return true;
+        boolean start = timestampIsInRange(interval.start, interval.includeLeft);
+        boolean end = timestampIsInRange(interval.end, interval.includeRight);
+        return start && end;
     }
-    
+
     public boolean isRealTime() {
         return this.isRealTime;
+    }
+
+    public void runEvaluation(List<Assertion> assertions, List<UserVariable> userVars, String tableName) {
+        if (this.isRealTime) {
+            System.err.println("real time not implemented yet");
+            // TODO: Implement real time mode
+        } else {
+            this.runNonRealtimeEvaluation(assertions, userVars, tableName);
+        }
+    }
+
+    private void runNonRealtimeEvaluation(List<Assertion> assertions, List<UserVariable> userVars, String tableName) {
+        this.dbWrapper.setTable(tableName);
+        // Get states
+        this.updateStates();
+        // Evaluate States
+        System.out.println("Running evaluations...");
+        // Assertions
+        Map<String, Map<State, Optional>> resultsAssertions = new HashMap<String, Map<State, Optional>>();
+        for (Assertion assertion : assertions) {
+            System.out.println(assertion.name);
+            Map<State, Optional> res = new HashMap<State, Optional>();
+            for (State s : this.states) {
+                res.put(s, assertion.evaluateAt(s, this));
+            }
+            resultsAssertions.put(assertion.name, res);
+        }
+        // User Variables
+        Map<String, Map<State, Optional>> resultsUserVars = new HashMap<String, Map<State, Optional>>();
+        for (UserVariable uv : userVars) {
+            System.out.println(uv.name);
+            Map<State, Optional> res = new HashMap<State, Optional>();
+            for (State s : this.states) {
+                res.put(s, uv.evaluate(s, this));
+            }
+            resultsUserVars.put(uv.name, res);
+        }
+        System.out.println("Done, saving results");
+        writeToCSV(resultsAssertions, "Test_Assertions.txt");
+        writeToCSV(resultsUserVars, "Test_Uservars.txt");
+    }
+
+    public void writeToCSV(Map<String, Map<State, Optional>> result, String path) {
+        if (result.size() == 0)
+            return;
+        // TODO: Actually print csv
+        for (Map.Entry<String, Map<State, Optional>> entry : result.entrySet()) {
+            String expr = entry.getKey();
+            try {
+            	String CSVpath = expr + ".txt";
+            	System.out.println("Writing results to " + CSVpath);
+                FileWriter fw = new FileWriter(path);
+                for (Map.Entry<State, Optional> r : entry.getValue().entrySet()) {
+                    State state = r.getKey();
+                    Optional x = r.getValue();
+                    String value = x.isPresent() ? x.get().toString() : "UNKNOWN";
+                    fw.write(state.timestamp + " -> " + value.toString() + "\n");
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        }
     }
 }
