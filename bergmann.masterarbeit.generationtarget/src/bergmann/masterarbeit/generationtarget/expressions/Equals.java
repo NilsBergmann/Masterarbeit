@@ -7,17 +7,17 @@ import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class Equals extends BinaryExpression<Object, Object, Boolean> {
+public class Equals<A extends Object, B extends Object> extends BinaryExpression<A, B, Boolean> {
     String operator = null;
 
-    public Equals(Expression<Object> left, Expression<Object> right) {
+    public Equals(Expression<A> left, Expression<B> right) {
         super(left, right);
     }
 
     @Override
     public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<Object> a = this.left.evaluate(state, dataSource);
-        Optional<Object> b = this.right.evaluate(state, dataSource);
+        Optional<A> a = this.left.evaluate(state, dataSource);
+        Optional<B> b = this.right.evaluate(state, dataSource);
         // One is missing: Return Nothing
         if (!a.isPresent() || !b.isPresent())
             return Optional.empty();
@@ -25,6 +25,12 @@ public class Equals extends BinaryExpression<Object, Object, Boolean> {
             return Optional.empty();
         boolean eq = a.get().equals(b.get());
         return Optional.of(eq);
+    }
+
+    public static void main(String[] args) {
+        StringLiteral a = new StringLiteral("A");
+        StringLiteral b = new StringLiteral("A");
+        Equals h = new Equals(a, b);
     }
 
 }
