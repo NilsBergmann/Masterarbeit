@@ -116,6 +116,11 @@ public class DataController {
         return this.isRealTime;
     }
 
+    public Optional<Object> getValue(State state, String ID) {
+        // Todo: Implement this
+        dbWrapper.g
+    }
+
     public void runEvaluation(List<Assertion> assertions, List<UserVariable> userVars, String tableName) {
         if (this.isRealTime) {
             System.err.println("real time not implemented yet");
@@ -163,8 +168,8 @@ public class DataController {
         for (Map.Entry<String, Map<State, Optional>> entry : result.entrySet()) {
             String expr = entry.getKey();
             try {
-            	String CSVpath = expr + ".txt";
-            	System.out.println("Writing results to " + CSVpath);
+                String CSVpath = expr + ".txt";
+                System.out.println("Writing results to " + CSVpath);
                 FileWriter fw = new FileWriter(path);
                 for (Map.Entry<State, Optional> r : entry.getValue().entrySet()) {
                     State state = r.getKey();

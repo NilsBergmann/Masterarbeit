@@ -85,6 +85,11 @@ public class DatabaseWrapper {
         }
     }
 
+    public <T> Optional<T> getDBValue(State state, String columnName, Class<T> clazz) {
+        // Todo Implement me
+        return Optional.empty();
+    }
+
     private ResultSet getValue(State state, String columnName) {
         Timestamp timestamp = Timestamp.from(state.timestamp);
         long timeInMillisec = timestamp.getTime();

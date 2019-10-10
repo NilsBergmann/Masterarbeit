@@ -27,10 +27,4 @@ public class Equals<A extends Object, B extends Object> extends BinaryExpression
         return Optional.of(eq);
     }
 
-    public static void main(String[] args) {
-        StringLiteral a = new StringLiteral("A");
-        StringLiteral b = new StringLiteral("A");
-        Equals h = new Equals(a, b);
-    }
-
 }
