@@ -1,0 +1,1 @@
+CREATE TABLE "LTL_Finally" ( `Timestamp` TEXT NOT NULL, `a` TEXT, `b` TEXT, `expected` TEXT, `comment` TEXT, PRIMARY KEY(`Timestamp`) )
