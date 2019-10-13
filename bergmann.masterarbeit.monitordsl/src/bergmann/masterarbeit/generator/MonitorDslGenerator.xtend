@@ -39,6 +39,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.TimeUtils.*
 import static extension bergmann.masterarbeit.utils.UnitUtils.*
+import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import bergmann.masterarbeit.monitorDsl.CrossReference
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 import bergmann.masterarbeit.mappingdsl.mappingDSL.JavaClassReference
@@ -48,6 +49,8 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import javax.measure.quantity.Quantity
 import bergmann.masterarbeit.monitorDsl.StringLiteral
 import bergmann.masterarbeit.monitorDsl.TimeLiteral
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtext.EcoreUtil2
 
 /**
  * Generates code from your model files on save.
@@ -77,7 +80,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		class RunEvaluation {
 			public static void main(String args[]) {
 				«generateSetup»
-				
+				«monitors.registerDomainColumns»
 				/**
 				 * User Variables 
 				 */
@@ -107,6 +110,27 @@ class MonitorDslGenerator extends AbstractGenerator {
 		'''
 	}
 	
+	def static String registerDomainColumns(Monitors monitors){
+		var s = "// Register domain columns\n"
+		var domains = monitors.importedDomains
+		for (currentDomain : domains) {
+			s+= "// Domain: " + currentDomain.package.name + "\n"
+			for (dv : EcoreUtil2.eAllOfType(currentDomain, DomainValue)) {
+				s+= dv.registerDomainColumn + "\n"
+			}  
+			s+= "\n"
+		}
+		return s
+	}
+	
+	def static String registerDomainColumn(DomainValue dv){
+		switch dv.type {
+			case BOOLEAN: return '''dataControl.registerBooleanDBColumn("«dv.column»");'''
+			case NUMBER: return  '''dataControl.registerNumberDBColumn("«dv.column»", «dv.unit.compile»);'''
+			case STRING: return '''dataControl.registerStringDBColumn("«dv.column»");'''
+			default:  throw new IllegalArgumentException("Can't parse type: " + dv.type)
+		}
+	}
 	def static String generateSetup(){
 		'''
 		/**
@@ -148,7 +172,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 			UIUtils.showError("No table selected");
 			System.exit(1);
 		}
-		dataControl.getDatabaseWrapper().setTable(tableSelection);
+		dataControl.selectTable(tableSelection);
 		
 		// Create lists
 		ArrayList<Assertion> assertions = new ArrayList<Assertion>();
@@ -260,7 +284,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 					DomainValue:{
 							switch ref.type {
 							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
-							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»", «ref.unit.compile»)'''
+							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»")'''
 							case STRING: return '''new StringDatabaseAccess("«ref.column»")'''
 							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
 						 }
@@ -352,15 +376,15 @@ class MonitorDslGenerator extends AbstractGenerator {
 	/* Unit compilation */
 	// Convert to JScience Unit and use that
 	// -- MonitorDSL Unit
-	def String compile(Unit unit){
+	def static String compile(Unit unit){
 		return unit.toJavaUnit.toJavaString
 	}
 	// -- MappingDSL Unit
-	def String compile(bergmann.masterarbeit.mappingdsl.mappingDSL.Unit mappingUnit){
+	def static String compile(bergmann.masterarbeit.mappingdsl.mappingDSL.Unit mappingUnit){
 		return mappingUnit.toJavaUnit.toJavaString
 	}
 	// -- JScience Unit
-	def String toJavaString(javax.measure.unit.Unit<? extends Quantity> u){
+	def static String toJavaString(javax.measure.unit.Unit<? extends Quantity> u){
 		if (u.equals(javax.measure.unit.Unit.ONE))
 			return '''Unit.ONE'''
 		else
