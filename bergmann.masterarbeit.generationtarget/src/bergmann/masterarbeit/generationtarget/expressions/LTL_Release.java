@@ -23,21 +23,21 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
+    public Optional<Boolean> evaluate(State state) {
         /**
          * Wikipedia: ψ R φ -> φ has to be true until and including the point where ψ
          * first becomes true; if ψ never becomes true, φ must remain true forever.
          */
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = dataSource.isRealTime();
+        boolean realTime = state.dataController.isRealTime();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = dataSource.getStatesInInterval(relevantTime);
+            relevantStates = state.dataController.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = dataSource.getAllStatesAfter(state);
+            relevantStates = state.dataController.getAllStatesAfter(state);
         }
 
         Optional<Boolean> leftWasTrueOnce = Optional.of(false);
@@ -45,8 +45,8 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
             if (leftWasTrueOnce.isPresent() && leftWasTrueOnce.get().equals(false)) {
                 // Left definitly wasnt true yet
                 // Right has to be true else return false
-                Optional<Boolean> resultLeft = left.evaluate(state, dataSource);
-                Optional<Boolean> resultRight = left.evaluate(state, dataSource);
+                Optional<Boolean> resultLeft = left.evaluate(state);
+                Optional<Boolean> resultRight = left.evaluate(state);
                 if (!resultRight.isPresent())
                     return Optional.empty();
                 if (resultRight.get().equals(false))
@@ -59,8 +59,8 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
             } else if (!leftWasTrueOnce.isPresent()) {
                 // No info known about left
                 // Right has to be true else return unknown
-                Optional<Boolean> resultLeft = left.evaluate(state, dataSource);
-                Optional<Boolean> resultRight = left.evaluate(state, dataSource);
+                Optional<Boolean> resultLeft = left.evaluate(state);
+                Optional<Boolean> resultRight = left.evaluate(state);
                 if (!resultRight.isPresent())
                     return Optional.empty();
                 if (resultRight.get().equals(false))
@@ -86,7 +86,7 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
             // Expr has interval
             if (realTime) {
                 // Realtime mode -> There might be future states coming
-                if (dataSource.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
+                if (state.dataController.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
                     // Interval is completely inside timeframe of known data when evaluating
                     return Optional.of(true);
                 } else {

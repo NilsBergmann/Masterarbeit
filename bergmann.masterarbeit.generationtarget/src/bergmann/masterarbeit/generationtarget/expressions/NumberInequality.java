@@ -20,9 +20,9 @@ public class NumberInequality extends BinaryExpression<Amount, Amount, Boolean> 
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<Amount> a = this.left.evaluate(state, dataSource);
-        Optional<Amount> b = this.right.evaluate(state, dataSource);
+    public Optional<Boolean> evaluate(State state) {
+        Optional<Amount> a = this.left.evaluate(state);
+        Optional<Amount> b = this.right.evaluate(state);
         if (!a.isPresent() || !b.isPresent())
             return Optional.empty();
         if (a.get() == null || b.get() == null)

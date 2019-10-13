@@ -23,22 +23,22 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
+    public Optional<Boolean> evaluate(State state) {
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = dataSource.isRealTime();
+        boolean realTime = state.dataController.isRealTime();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = dataSource.getStatesInInterval(relevantTime);
+            relevantStates = state.dataController.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = dataSource.getAllStatesAfter(state);
+            relevantStates = state.dataController.getAllStatesAfter(state);
         }
 
         // Check if any state evaluates to true
         for (State current : relevantStates) {
-            Optional<Boolean> result = expr.evaluate(current, dataSource);
+            Optional<Boolean> result = expr.evaluate(current);
             if (result.isPresent() && result.get() == true)
                 return Optional.of(true);
         }
@@ -49,7 +49,7 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
             // Expr has interval (e.g F[0s, 20s](X))
             if (realTime) {
                 // Realtime mode -> There might be future states coming
-                if (dataSource.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
+                if (state.dataController.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
                     // Interval is completely inside timeframe of known data when evaluating
                     return Optional.of(false);
                 } else {

@@ -18,9 +18,9 @@ public class Multiplication extends BinaryExpression<Amount, Amount, Amount> {
     }
 
     @Override
-    public Optional<Amount> evaluate(State state, DataController dataSource) {
-        Optional<Amount> a = left.evaluate(state, dataSource);
-        Optional<Amount> b = right.evaluate(state, dataSource);
+    public Optional<Amount> evaluate(State state) {
+        Optional<Amount> a = left.evaluate(state);
+        Optional<Amount> b = right.evaluate(state);
         if (!a.isPresent() || !b.isPresent())
             return Optional.empty();
         else {

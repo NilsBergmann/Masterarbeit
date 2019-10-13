@@ -21,7 +21,7 @@ public class PLTL_Trigger extends BinaryExpression<Boolean, Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
+    public Optional<Boolean> evaluate(State state) {
         // TODO: Implement this
         return Optional.empty();
     }

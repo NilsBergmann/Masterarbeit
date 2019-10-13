@@ -14,9 +14,9 @@ public class Implication extends BinaryExpression<Boolean, Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<Boolean> a = this.left.evaluate(state, dataSource);
-        Optional<Boolean> b = this.right.evaluate(state, dataSource);
+    public Optional<Boolean> evaluate(State state) {
+        Optional<Boolean> a = this.left.evaluate(state);
+        Optional<Boolean> b = this.right.evaluate(state);
         // None are present: Return Nothing
         if (!a.isPresent() && !b.isPresent())
             return Optional.empty();

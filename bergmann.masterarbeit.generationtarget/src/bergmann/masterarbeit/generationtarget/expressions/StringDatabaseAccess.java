@@ -19,9 +19,8 @@ public class StringDatabaseAccess extends Expression<String> {
         this.columnName = columnName;
     }
 
-    public Optional<String> evaluate(State state, DataController dataSource) {
-        DatabaseWrapper dbWrap = dataSource.getDatabaseWrapper();
-        Optional<String> retVal = dbWrap.getString(state, this.columnName);
+    public Optional<String> evaluate(State state) {
+        Optional<String> retVal = state.getDBString(this.columnName);
         return retVal;
     }
 }

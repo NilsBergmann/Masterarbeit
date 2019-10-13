@@ -14,11 +14,11 @@ public class PLTL_Yesterday extends UnaryExpression<Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        State previous = dataSource.getPreviousState(state);
+    public Optional<Boolean> evaluate(State state) {
+        State previous = state.dataController.getPreviousState(state);
         if (previous == null) {
             return Optional.empty();
         }
-        return expr.evaluate(previous, dataSource);
+        return expr.evaluate(previous);
     }
 }

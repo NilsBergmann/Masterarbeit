@@ -5,55 +5,69 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.measure.unit.Unit;
+
+import org.jscience.physics.amount.Amount;
+
 public class State implements Comparable<State> {
     public Instant timestamp;
-    public DataController ctrl;
-    Map<String, Object> stateData;
+    public DataController dataController;
+    Map<String, Optional> storedData;
 
     public State(Instant timestamp, DataController ctrl) {
         this.timestamp = timestamp;
-        this.ctrl = ctrl;
-        stateData = new HashMap<String, Object>();
+        this.dataController = ctrl;
+        storedData = new HashMap<String, Optional>();
     }
 
     public State(Instant timestamp) {
         this(timestamp, null);
     }
 
-    public <T> Optional<T> get(String key, Class<T> clazz) {
-        Object obj = null;
-        if (stateData.containsKey(key)) {
-            // Return cached if existing
-            obj = stateData.get(key);
-        } else if (this.ctrl != null) {
-            // try getting data matching key from dataControl
-            Optional tmp = ctrl.getValue(this, key);
-            if (tmp.isPresent())
-                obj = tmp.get();
+    public Optional<Boolean> getDBBoolean(String key) {
+    	if(storedData.containsKey(key))
+    		return storedData.get(key);
+    	else	
+    		System.err.println(this.toString() + "has no boolean stored for " + key);
+    	return Optional.empty();
+    }
+    
+    public Optional<Amount> getDBAmount(String key) {
+    	if(storedData.containsKey(key))
+    		return storedData.get(key);
+    	else	
+    		System.err.println(this.toString() + "has no Amount stored for " + key);
+    	return Optional.empty();
+    }
+    
+    public Optional<String> getDBString(String key) {
+    	if(storedData.containsKey(key))
+    		return storedData.get(key);
+    	else	
+    		System.err.println(this.toString() + "has no String stored for " + key);
+    	return Optional.empty();
+    }
+    
+  
+    public void store(String key, Optional value) {
+        if (value == null || key == null)
+            return;
+        storedData.put(key, value);
+        this.getStored(null);
+    }   
+    
+    public <T> Optional<T> getStored(String key) {
+        Optional obj = Optional.empty();
+        if (storedData.containsKey(key)) {
+            // Return cached if it exists
+            obj = storedData.get(key);
         }
-        // Check if obj is right class
-        if (obj != null && obj.getClass().equals(clazz)) {
-            T retVal = clazz.cast(obj);
-            return Optional.of(retVal);
+        if (obj != null && obj.isPresent()) {
+            return obj;
         }
         return Optional.empty();
     }
-
-    private void store(Object o, String key) {
-        if (o == null || key == null)
-            return;
-        if (o instanceof Optional) {
-            Optional oOptional = (Optional) o;
-            if (oOptional.isPresent()) {
-                store(oOptional.get(), key);
-            } else {
-                return;
-            }
-        } else {
-            stateData.put(key, o);
-        }
-
-    }
+    
 
     public int compareTo(State state) {
         return this.compareTo(this.timestamp);
@@ -68,6 +82,7 @@ public class State implements Comparable<State> {
             return 1;
     }
 
+    
     public boolean equals(Object other) {
         if (other == null || other.getClass() != this.getClass()) {
             return false;
@@ -75,5 +90,17 @@ public class State implements Comparable<State> {
             State otherS = (State) other;
             return this.timestamp.equals(otherS.timestamp);
         }
+    }
+    
+    public String toString() {
+    	return "State[" + timestamp + "]";
+    }
+    
+    public String toLongString() {
+    	return this.toString() + " -> " + this.StoredDataToString();
+    }
+    
+    public String StoredDataToString() {
+    	return this.storedData.toString();
     }
 }

@@ -2,8 +2,6 @@ package bergmann.masterarbeit.generationtarget.expressions;
 
 import java.util.Optional;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
-import bergmann.masterarbeit.generationtarget.dataaccess.DatabaseWrapper;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
@@ -14,9 +12,8 @@ public class BoolDatabaseAccess extends Expression<Boolean> {
         this.columnName = columnName;
     }
 
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        DatabaseWrapper dbWrap = dataSource.getDatabaseWrapper();
-        Optional<Boolean> retVal = dbWrap.getBoolean(state, this.columnName);
+    public Optional<Boolean> evaluate(State state) {
+        Optional<Boolean> retVal = state.getDBBoolean(this.columnName);
         return retVal;
     }
 }

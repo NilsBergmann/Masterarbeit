@@ -15,9 +15,9 @@ public class Equals<A extends Object, B extends Object> extends BinaryExpression
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<A> a = this.left.evaluate(state, dataSource);
-        Optional<B> b = this.right.evaluate(state, dataSource);
+    public Optional<Boolean> evaluate(State state) {
+        Optional<A> a = this.left.evaluate(state);
+        Optional<B> b = this.right.evaluate(state);
         // One is missing: Return Nothing
         if (!a.isPresent() || !b.isPresent())
             return Optional.empty();

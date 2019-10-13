@@ -21,12 +21,12 @@ public class LTL_Global extends UnaryExpression<Boolean, Boolean> {
     public LTL_Global(Expression<Boolean> expr, RelativeTimeInterval interval) {
         super(expr);
         this.interval = interval;
-        // G ψ ≡ ¬F ¬ψ
+        // G x = not F(not x)
         helper = new BoolNegation(new LTL_Finally(new BoolNegation(expr), interval));
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        return helper.evaluate(state, dataSource);
+    public Optional<Boolean> evaluate(State state) {
+        return helper.evaluate(state);
     }
 }

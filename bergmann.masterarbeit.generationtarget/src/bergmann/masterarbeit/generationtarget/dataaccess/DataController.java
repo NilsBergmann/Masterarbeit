@@ -2,49 +2,74 @@ package bergmann.masterarbeit.generationtarget.dataaccess;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.measure.unit.Unit;
+
+import org.jscience.physics.amount.Amount;
+
 import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.Assertion;
 import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 
 public class DataController {
-    DatabaseWrapper dbWrapper;
+    private DatabaseWrapper dbWrapper;
     List<State> states;
-    boolean isRealTime = false;
+    public boolean isRealTime = false;
 
     public DataController(boolean isRealTime) {
         states = new ArrayList<State>();
         this.isRealTime = isRealTime;
+        this.dbWrapper = new DatabaseWrapper();
     }
 
     public void connectToDatabase(String path) {
-        dbWrapper = new DatabaseWrapper(path);
-    }
-
-    public DatabaseWrapper getDatabaseWrapper() {
-        return this.dbWrapper;
+    	if(dbWrapper.isConnected()){
+    		dbWrapper.disconnect();
+    	}
+        dbWrapper.connect(path);
     }
 
     public void updateStates() {
         this.states = this.dbWrapper.getStates();
+        for (State state : states) {
+			state.dataController = this;
+		}
+    }
+    
+    public void selectTable(String tablename) {
+    	if(this.dbWrapper != null && this.dbWrapper.isConnected()) {
+    		try {
+				this.dbWrapper.setTable(tablename);
+				this.updateStates();
+			} catch (IllegalArgumentException e) {
+				throw e;
+			}
+    	}
     }
 
-    public State getCurrentState() {
+    public State getLatestState() {
         return states.get(states.size() - 1);
     }
-
+    public State getFirstState() {
+        return states.get(0);
+    }
+    
+    public List<State> getAllStates(){
+    	return this.states;
+    }
     public State getClosestState(Instant timestamp) {
         Duration minimumDistance = Duration.ofMillis(Long.MAX_VALUE);
         State minimumState = null;
         for (State state : this.states) {
             Duration distance = Duration.between(state.timestamp, timestamp);
-            if (distance.abs().compareTo(minimumDistance) > 0) {
+            if (distance.abs().compareTo(minimumDistance) < 0) {
                 minimumDistance = distance;
                 minimumState = state;
             }
@@ -115,10 +140,17 @@ public class DataController {
     public boolean isRealTime() {
         return this.isRealTime;
     }
-
-    public Optional<Object> getValue(State state, String ID) {
-        // Todo: Implement this
-        dbWrapper.g
+    
+    public void registerNumberDBColumn(String name, Unit unit) {
+  		this.dbWrapper.registerNumberColumn(name, unit);
+    }
+    
+    public void registerStringDBColumn(String name) {
+    	this.dbWrapper.registerStringColumn(name);
+    }
+    
+    public void registerBooleanDBColumn(String name) {
+    	this.dbWrapper.registerBooleanColumn(name);
     }
 
     public void runEvaluation(List<Assertion> assertions, List<UserVariable> userVars, String tableName) {
@@ -142,7 +174,7 @@ public class DataController {
             System.out.println(assertion.name);
             Map<State, Optional> res = new HashMap<State, Optional>();
             for (State s : this.states) {
-                res.put(s, assertion.evaluateAt(s, this));
+                res.put(s, assertion.evaluateAt(s));
             }
             resultsAssertions.put(assertion.name, res);
         }
@@ -152,7 +184,7 @@ public class DataController {
             System.out.println(uv.name);
             Map<State, Optional> res = new HashMap<State, Optional>();
             for (State s : this.states) {
-                res.put(s, uv.evaluate(s, this));
+                res.put(s, uv.evaluate(s));
             }
             resultsUserVars.put(uv.name, res);
         }
