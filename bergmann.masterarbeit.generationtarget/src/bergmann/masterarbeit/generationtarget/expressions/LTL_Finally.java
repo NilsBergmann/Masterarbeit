@@ -1,5 +1,6 @@
 package bergmann.masterarbeit.generationtarget.expressions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,7 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
             relevantStates = state.dataController.getStatesInInterval(relevantTime);
         } else {
             relevantStates = state.dataController.getAllStatesAfter(state);
+            relevantStates.add(0,state);
         }
 
         // Check if any state evaluates to true
