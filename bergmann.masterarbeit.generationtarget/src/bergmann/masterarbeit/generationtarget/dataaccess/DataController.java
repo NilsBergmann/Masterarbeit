@@ -106,7 +106,7 @@ public class DataController {
     public List<State> getAllStatesBefore(State state) {
         int index = states.indexOf(state);
         try {
-            return states.subList(0, index);
+            return new ArrayList(states.subList(0, index));
         } catch (Exception e) {
             return new ArrayList<State>();
         }
@@ -115,7 +115,7 @@ public class DataController {
     public List<State> getAllStatesAfter(State state) {
         int index = states.indexOf(state);
         try {
-            return states.subList(index + 1, states.size());
+            return new ArrayList(states.subList(index + 1, states.size()));
         } catch (Exception e) {
             return new ArrayList<State>();
         }
