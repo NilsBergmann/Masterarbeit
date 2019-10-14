@@ -42,5 +42,9 @@ public class And extends BinaryExpression<Boolean, Boolean, Boolean> {
         return Optional.empty();
 
     }
+    
+    public String toString() {
+    	return "(" + left + " AND "+ right + ")";
+    }
 
 }

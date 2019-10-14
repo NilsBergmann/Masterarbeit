@@ -43,4 +43,7 @@ public class Or extends BinaryExpression<Boolean, Boolean, Boolean> {
 
     }
 
+    public String toString() {
+    	return "(" + left + " OR "+ right + ") ";
+    }
 }

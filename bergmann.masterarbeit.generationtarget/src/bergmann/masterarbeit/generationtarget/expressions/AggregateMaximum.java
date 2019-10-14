@@ -59,4 +59,8 @@ public class AggregateMaximum extends UnaryExpression<Amount, Amount> {
             return Optional.empty();
         }
     }
+    
+    public String toString() {
+    	return " MAX" +interval.toString() + "(" + expr + ") ";
+    }
 }

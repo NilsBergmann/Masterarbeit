@@ -21,4 +21,8 @@ public class PLTL_Yesterday extends UnaryExpression<Boolean, Boolean> {
         }
         return expr.evaluate(previous);
     }
+    
+    public String toString() {
+    	return "Y"+"("+expr+")";
+    }
 }

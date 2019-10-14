@@ -29,4 +29,8 @@ public class LTL_WeakUntil extends BinaryExpression<Boolean, Boolean, Boolean> {
     public Optional<Boolean> evaluate(State state) {
         return helper.evaluate(state);
     }
+    
+    public String toString() {
+    	return "W"+"("+left+","+right+")";
+    }
 }

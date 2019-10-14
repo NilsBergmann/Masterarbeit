@@ -108,4 +108,8 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
             }
         }
     }
+    
+    public String toString() {
+    	return "R"+"("+left+","+right+")";
+    }
 }

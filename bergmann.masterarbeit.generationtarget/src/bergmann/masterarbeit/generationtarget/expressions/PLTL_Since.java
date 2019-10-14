@@ -25,4 +25,8 @@ public class PLTL_Since extends BinaryExpression<Boolean, Boolean, Boolean> {
         // TODO: Implement this
         return Optional.empty();
     }
+    
+    public String toString() {
+    	return "S"+"("+left+","+right+")";
+    }
 }

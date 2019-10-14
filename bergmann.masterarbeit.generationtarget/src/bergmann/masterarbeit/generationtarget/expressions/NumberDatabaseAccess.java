@@ -21,4 +21,8 @@ public class NumberDatabaseAccess extends Expression<Amount> {
         Optional<Amount> retVal =  state.getDBAmount(this.columnName);
         return retVal;
     }
+    
+    public String toString() {
+    	return "DB_NUMBER[" + columnName + "]";
+    }
 }

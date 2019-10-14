@@ -35,4 +35,8 @@ public class Subtraction extends BinaryExpression<Amount, Amount, Amount> {
             }
         }
     }
+    
+    public String toString() {
+    	return "("+left+","+right+")";
+    }
 }

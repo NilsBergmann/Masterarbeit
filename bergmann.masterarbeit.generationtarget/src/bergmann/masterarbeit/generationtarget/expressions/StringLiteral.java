@@ -20,4 +20,9 @@ public class StringLiteral extends Expression<String> {
     	else
     		return Optional.empty();
     }
+    
+    @Override
+    public String toString() {
+    	return "\""+value+"\"";
+    }
 }

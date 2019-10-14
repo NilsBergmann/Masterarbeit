@@ -71,4 +71,8 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
             }
         }
     }
+    
+    public String toString() {
+    	return "F"+"("+expr+")";
+    }
 }

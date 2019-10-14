@@ -23,4 +23,8 @@ public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
     public Optional<Boolean> evaluate(State state) {
         return helper.evaluate(state);
     }
+    
+    public String toString() {
+    	return "Z"+"("+expr+")";
+    }
 }

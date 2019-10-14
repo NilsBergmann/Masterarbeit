@@ -18,4 +18,7 @@ public class BoolLiteral extends Expression<Boolean> {
     public Optional<Boolean> evaluate(State state) {
         return Optional.of(this.value);
     }
+    public String toString() {
+    	return value + "";
+    }
 }

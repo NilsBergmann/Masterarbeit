@@ -21,5 +21,9 @@ public class BoolNegation extends UnaryExpression<Boolean, Boolean> {
         else
             return Optional.of(!eval.get());
     }
+    
+    public String toString() {
+    	return "(NOT " + expr + ")";
+    }
 
 }

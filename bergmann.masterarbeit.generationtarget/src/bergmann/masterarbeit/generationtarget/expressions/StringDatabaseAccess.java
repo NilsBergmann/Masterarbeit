@@ -23,4 +23,7 @@ public class StringDatabaseAccess extends Expression<String> {
         Optional<String> retVal = state.getDBString(this.columnName);
         return retVal;
     }
+    public String toString() {
+    	return "DB_STRING[" + columnName + "]";
+    }
 }

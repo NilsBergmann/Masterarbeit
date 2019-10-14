@@ -16,4 +16,8 @@ public class BoolDatabaseAccess extends Expression<Boolean> {
         Optional<Boolean> retVal = state.getDBBoolean(this.columnName);
         return retVal;
     }
+    
+    public String toString() {
+    	return "DB_BOOL[" + columnName + "]";
+    }
 }

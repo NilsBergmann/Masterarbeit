@@ -50,4 +50,8 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
 
         return Optional.of(true);
     }
+    
+    public String toString() {
+    	return "H"+"("+expr+")";
+    }
 }

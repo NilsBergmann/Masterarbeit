@@ -27,4 +27,7 @@ public class Equals<A extends Object, B extends Object> extends BinaryExpression
         return Optional.of(eq);
     }
 
+    public String toString() {
+    	return "(" + left + " == "+ right + ") ";
+    }
 }

@@ -21,4 +21,9 @@ public class NumberLiteral extends Expression<Amount> {
     public Optional<Amount> evaluate(State state) {
         return Optional.of(this.value);
     }
+    
+    @Override
+    public String toString() {
+    	return value.toString();
+    }
 }

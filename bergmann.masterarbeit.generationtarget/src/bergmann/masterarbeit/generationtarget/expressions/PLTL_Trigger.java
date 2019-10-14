@@ -25,4 +25,7 @@ public class PLTL_Trigger extends BinaryExpression<Boolean, Boolean, Boolean> {
         // TODO: Implement this
         return Optional.empty();
     }
+    public String toString() {
+    	return "T"+"("+left+","+right+")";
+    }
 }

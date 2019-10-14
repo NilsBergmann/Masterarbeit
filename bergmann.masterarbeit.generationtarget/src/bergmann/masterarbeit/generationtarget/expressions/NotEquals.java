@@ -21,4 +21,7 @@ public class NotEquals<A extends Object, B extends Object> extends BinaryExpress
     	return helper.evaluate(state);
     }
 
+    public String toString() {
+    	return "(" + left + " != "+ right + ") ";
+    }
 }

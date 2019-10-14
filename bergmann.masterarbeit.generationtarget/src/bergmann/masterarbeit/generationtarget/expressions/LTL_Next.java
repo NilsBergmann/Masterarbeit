@@ -23,4 +23,7 @@ public class LTL_Next extends UnaryExpression<Boolean, Boolean> {
         }
         return expr.evaluate(next);
     }
+    public String toString() {
+    	return "N"+"("+expr+")";
+    }
 }

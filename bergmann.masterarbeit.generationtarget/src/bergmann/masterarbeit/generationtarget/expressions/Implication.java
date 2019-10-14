@@ -42,5 +42,9 @@ public class Implication extends BinaryExpression<Boolean, Boolean, Boolean> {
         return Optional.empty();
 
     }
+    
+    public String toString() {
+    	return "(" + left + " -> "+ right + ") ";
+    }
 
 }

@@ -57,4 +57,8 @@ public class NumberInequality extends BinaryExpression<Amount, Amount, Boolean> 
 
         }
     }
+    
+    public String toString() {
+    	return "(" + left + operator + right + ") ";
+    }
 }

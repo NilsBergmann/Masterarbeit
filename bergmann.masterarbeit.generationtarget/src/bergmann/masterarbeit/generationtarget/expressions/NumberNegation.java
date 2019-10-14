@@ -23,5 +23,9 @@ public class NumberNegation extends UnaryExpression<Amount, Amount> {
         else
             return Optional.of(eval.get().inverse());
     }
-
+    
+    @Override
+    public String toString() {
+    	return "-" + expr.toString();
+    }
 }
