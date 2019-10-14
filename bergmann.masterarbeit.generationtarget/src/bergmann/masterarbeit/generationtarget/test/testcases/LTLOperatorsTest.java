@@ -13,6 +13,7 @@ import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.And;
 import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
+import bergmann.masterarbeit.generationtarget.expressions.BoolNegation;
 import bergmann.masterarbeit.generationtarget.expressions.Implication;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Finally;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Global;
@@ -67,12 +68,29 @@ class LTLOperatorsTest {
 		ctrl.selectTable("LTL_Global");
 		
 		// Global(a) == expected?
+		// Expression e1 = new And(a,b);
+		// Expression e2 = new BoolNegation(e1);
+		// Expression e3 = new LTL_Finally(e2);
+		// Expression e4 = new BoolNegation(e3);
 		Expression e = new LTL_Global(new And(a,b));
 		
 		for (State state : ctrl.getAllStates()) {
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
-			System.out.println(state.toLongString() + " -> " + result + " | "+expectedResult);
+			
+			// Optional<Boolean> result1 = e1.evaluate(state);
+			// Optional<Boolean> result2 = e2.evaluate(state);
+			// Optional<Boolean> result3 = e3.evaluate(state);
+			// Optional<Boolean> result4 = e4.evaluate(state);
+			
+			// System.out.println(e3.toString() + "->" + result3);
+			// System.out.println("\n"+state.toLongString());
+			// System.out.println(e1.toString() + "->" + result1);
+			// System.out.println(e2.toString() + "->" + result2);
+			// System.out.println(e4.toString() + "->" + result4);
+			// System.out.println(e.toString() + "->" + result);
+			// System.out.println("expected:" + expectedResult);
+			// System.out.println("------" + expectedResult.equals(result));
 			//System.out.println(state.timestamp.toEpochMilli() + ": " + result + " expected " + expectedResult);
 			assertEquals(expectedResult, result, "Timestamp " + state.timestamp.toEpochMilli());
 		}
@@ -100,8 +118,7 @@ class LTLOperatorsTest {
 			assertEquals(expectedResult, result, "Timestamp " + state.timestamp.toEpochMilli());
 		}
 	}
-	
-	@Test 
+	@Test
 	void finallyTestRealTime() {
 		ctrl.isRealTime = true;
 		ctrl.registerBooleanDBColumn("A");
