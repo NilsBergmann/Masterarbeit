@@ -39,8 +39,11 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
         }
 
         // Check if any state evaluates to true
+        boolean atLeastOneUnknownInRange = false;
         for (State current : relevantStates) {
             Optional<Boolean> result = expr.evaluate(current);
+            if(!result.isPresent())
+            	atLeastOneUnknownInRange = true;
             if (result.isPresent() && result.get() == true)
                 return Optional.of(true);
         }
@@ -53,7 +56,7 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
                 // Realtime mode -> There might be future states coming
                 if (state.dataController.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
                     // Interval is completely inside timeframe of known data when evaluating
-                    return Optional.of(false);
+                    return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
                 } else {
                     // There might be some future state where X evaluates to true
                     return Optional.empty();
@@ -69,7 +72,7 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
                 return Optional.empty();
             } else {
                 // Non realtime mode -> No more future states coming
-                return Optional.of(false);
+                return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
             }
         }
     }
