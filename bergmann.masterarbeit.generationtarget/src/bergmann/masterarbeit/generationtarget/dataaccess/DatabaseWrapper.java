@@ -80,22 +80,37 @@ public class DatabaseWrapper {
                 long timestamp = rs.getLong(TIMESTAMP_COLUMN_NAME);
                 State current = new State(Instant.ofEpochMilli(timestamp));
                 for (String name : booleanColumns) {
-					boolean x = rs.getBoolean(name);
-					Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
-					current.store(name, data);
+                	try {
+                		boolean x = rs.getBoolean(name);
+						Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
+						current.store(name, data);
+					} catch (SQLException  e) {
+						System.err.println("Couldnt get boolean '" + name + "' for " + current.toString() + ". Saving Optional.empty " + e);
+						current.store(name, Optional.empty());
+					}
 				}
                 for (String name : stringColumns) {
-					String x = rs.getString(name);
-					Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
-					current.store(name, data);
+                	try { 
+                		String x = rs.getString(name);
+                		Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
+                		current.store(name, data);
+					} catch (SQLException  e) {
+						System.err.println("Couldnt get boolean '" + name + "' for " + current.toString() + ". Saving Optional.empty " + e);
+						current.store(name, Optional.empty());
+					}
 				}
                 for (Entry<String, Unit> pair : numberColumns.entrySet()) {
-                	String name = pair.getKey();
                 	Unit unit = pair.getValue();
-                	double value = rs.getDouble(name);
-					Amount x = Amount.valueOf(value, unit);
-					Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
-					current.store(name, data);
+                	String name = pair.getKey();
+                	try {
+                		double value = rs.getDouble(name);
+                		Amount x = Amount.valueOf(value, unit);
+						Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
+						current.store(name, data);
+					} catch (SQLException  e) {
+						System.err.println("Couldnt get boolean '" + name + "' for " + current.toString() + ". Saving Optional.empty " + e);
+						current.store(name, Optional.empty());
+					}
 				}
                 states.add(current);
             }

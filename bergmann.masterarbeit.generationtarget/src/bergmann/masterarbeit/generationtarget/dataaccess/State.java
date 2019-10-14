@@ -28,7 +28,7 @@ public class State implements Comparable<State> {
     	if(storedData.containsKey(key))
     		return storedData.get(key);
     	else	
-    		System.err.println(this.toString() + "has no boolean stored for " + key);
+    		System.err.println(this.toString() + " has no boolean " + key);
     	return Optional.empty();
     }
     
@@ -36,7 +36,7 @@ public class State implements Comparable<State> {
     	if(storedData.containsKey(key))
     		return storedData.get(key);
     	else	
-    		System.err.println(this.toString() + "has no Amount stored for " + key);
+    		System.err.println(this.toString() + " has no Amount " + key);
     	return Optional.empty();
     }
     
@@ -44,7 +44,7 @@ public class State implements Comparable<State> {
     	if(storedData.containsKey(key))
     		return storedData.get(key);
     	else	
-    		System.err.println(this.toString() + "has no String stored for " + key);
+    		System.err.println(this.toString() + " has no String " + key);
     	return Optional.empty();
     }
     
