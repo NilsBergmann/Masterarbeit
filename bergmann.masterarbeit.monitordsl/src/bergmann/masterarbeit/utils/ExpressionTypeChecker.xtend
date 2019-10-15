@@ -116,7 +116,7 @@ class ExpressionTypeChecker {
 					t = BOOLEAN_JAVA_CLASS
 				else if (expr.op == "-" && expr.expr.isNumber)
 					// Only for -: Number => Number
-					t = BOOLEAN_JAVA_CLASS
+					t = NUMBER_JAVA_CLASS 
 			Subexpression:
 				// ( expr ) => Passthrough type
 				t =  expr.expr.expressionType
