@@ -148,8 +148,7 @@ UnitMultiplication returns Unit:
 ;
 
 UnitExponent returns Unit:
-	{UnitExponent} (value=UnitAtom '^' negative?='-' exponent=INT)
-	| UnitAtom
+	UnitAtom ({UnitExponent.value=current} '^' negative?='-'? exponent=INT)?
 ;
 
 UnitAtom returns Unit:
