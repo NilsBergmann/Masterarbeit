@@ -21,6 +21,8 @@ import org.eclipse.xtext.common.types.JvmType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.MappingDSLPackage
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BASE_VALUETYPE
+import bergmann.masterarbeit.mappingdsl.mappingDSL.Type
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BaseType
 
 /**
  * This class contains custom validation rules. 
@@ -58,5 +60,24 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 	def checkUnit(DomainValue dv){
 		if(dv.type != BASE_VALUETYPE.NUMBER && dv.unit != null)
 			error("Values of type " + dv.type + " can not have a unit", MappingDSLPackage.Literals.DOMAIN_VALUE__UNIT)
+	}
+	
+	@Check
+	def checkUnit(CustomJava jv){
+		if(jv.unit==null)
+			return
+		else{
+			var Type relevantType
+			switch jv {
+				LiteralJava: relevantType = jv.type
+				UnaryJava: relevantType = jv.type2
+				BinaryJava: relevantType = jv.type3
+				default: throw new IllegalArgumentException("Unknown CustomJava element: " +jv)
+			}
+			if (!(relevantType instanceof BaseType) || (relevantType as BaseType).type != BASE_VALUETYPE.NUMBER)
+				error("Type " + relevantType + " can not have a unit", MappingDSLPackage.Literals.CUSTOM_JAVA__UNIT)
+			else 
+				info("There is no verification of the actual return unit. Make sure the actual return type is comaptible", MappingDSLPackage.Literals.CUSTOM_JAVA__UNIT)
+		}
 	}
 }

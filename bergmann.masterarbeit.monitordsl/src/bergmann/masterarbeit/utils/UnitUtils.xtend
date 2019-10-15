@@ -9,6 +9,8 @@ import javax.measure.unit.SI
 import javax.measure.unit.NonSI
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 
 class UnitUtils {
 
@@ -37,13 +39,13 @@ class UnitUtils {
 				switch ref {
 					UserVariable: return ref.expr.unit
 					DomainValue: return ref.unit.toJavaUnit
-					LiteralJava: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
+					LiteralJava: return ref.unit.toJavaUnit
 					default: return Unit.ONE
 				}
 			}
 			TimeOffset: return expr.expr.unit
-			MappingBinary: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
-			MappingUnary: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
+			MappingBinary: return (expr.ref as BinaryJava).unit.toJavaUnit // TODO: Allow JavaLiterals to have a unit
+			MappingUnary: return (expr.ref as UnaryJava).unit.toJavaUnit  // TODO: Allow JavaLiterals to have a unit
 			default: throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
