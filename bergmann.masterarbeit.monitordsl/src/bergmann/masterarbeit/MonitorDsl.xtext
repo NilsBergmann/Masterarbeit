@@ -27,7 +27,16 @@ Assertion:
 ;
 
 Expression:
-	ImplicationExpr
+	TimeOffsetExpr
+;
+
+TimeOffsetExpr returns Expression:
+	ImplicationExpr ({TimeOffset.expr=current} offset=ExpressionTimeOffset)?
+;
+
+ExpressionTimeOffset:
+	{StateOffset}  "[" "at"? op=("+"|"-") value=INT ("state"|"states")"]"
+	| {TimeOffset} "[" "at"? op=("+"|"-") value=INT unit=TIME_UNIT"]"
 ;
 
 ImplicationExpr returns Expression:

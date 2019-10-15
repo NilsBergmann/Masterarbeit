@@ -51,6 +51,8 @@ import bergmann.masterarbeit.monitorDsl.StringLiteral
 import bergmann.masterarbeit.monitorDsl.TimeLiteral
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.EcoreUtil2
+import bergmann.masterarbeit.monitorDsl.TimeOffset
+import bergmann.masterarbeit.monitorDsl.StateOffset
 
 /**
  * Generates code from your model files on save.
@@ -295,7 +297,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 			}
 			MappingBinary: return compile(expr as MappingBinary)
 			MappingUnary: return compile(expr as MappingUnary)
-
+			TimeOffset: return compile(expr as TimeOffset)
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
@@ -366,10 +368,27 @@ class MonitorDslGenerator extends AbstractGenerator {
 					case "<=":return '''new RelativeTimeInterval(«zeroString», «timeString», true, true)'''
 					case ">": return '''new RelativeTimeInterval(«timeString», «infinityString», false, true)'''
 					case ">=":return '''new RelativeTimeInterval(«timeString», «infinityString», true, true)'''
-					default: throw new Exception()
+					default: throw new IllegalArgumentException("Unknown operator: " + interval.op)
 				}
 			}
-			default: throw new Exception()
+			default: throw new IllegalArgumentException("Unknown interval: " + interval)
+		}
+	}
+	
+	def String compile(TimeOffset expr){
+		var offset = expr.offset
+		switch offset{
+			StateOffset: {
+				var amount = if(offset.op == "+") offset.value else -offset.value
+				return '''new OffsetByStates(«expr.expr.compile», «amount»)'''
+				}
+			TimeOffset:{
+				var amount = if(offset.op == "+") offset.value else -offset.value
+				var millis = toMillisec(amount, offset.unit)
+				var durationString = '''Duration.ofMillis(«millis»)'''
+				return '''new OffsetByTime(«expr.expr.compile», «durationString»)'''
+			}
+			default: throw new IllegalArgumentException("Unknown Offset: " + offset)
 		}
 	}
 	

@@ -60,7 +60,16 @@ public class DataController {
     public State getFirstState() {
         return states.get(0);
     }
-    
+    public State getStateOffsetBy(State start, int amount) {
+    	int startPos = this.states.indexOf(start);
+    	if(startPos == -1)
+    		return null;
+    	int targetPos = startPos + amount;
+    	if(targetPos < 0 || targetPos >= states.size())
+    		return null;
+    	return this.states.get(targetPos);
+    }
+
     public List<State> getAllStates(){
     	return this.states;
     }

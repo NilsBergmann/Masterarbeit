@@ -34,6 +34,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.JavaType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BaseType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import bergmann.masterarbeit.monitorDsl.StringLiteral
+import bergmann.masterarbeit.monitorDsl.TimeOffset
 
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
@@ -132,6 +133,7 @@ class ExpressionTypeChecker {
 			CrossReference: return expr.handleCrossreference
 			MappingUnary: return expr.handleCustomJavaMapping
 			MappingBinary: return expr.handleCustomJavaMapping
+			TimeOffset: return expr.expr.expressionType
 			default: {
 				throw new IllegalArgumentException("Can't parse expr: " + expr)
 			}

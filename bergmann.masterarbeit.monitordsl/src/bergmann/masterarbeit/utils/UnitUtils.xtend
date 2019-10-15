@@ -41,6 +41,7 @@ class UnitUtils {
 					default: return Unit.ONE
 				}
 			}
+			TimeOffset: return expr.expr.unit
 			MappingBinary: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
 			MappingUnary: return Unit.ONE // TODO: Allow JavaLiterals to have a unit
 			default: throw new IllegalArgumentException("Can't parse expr: " + expr)
