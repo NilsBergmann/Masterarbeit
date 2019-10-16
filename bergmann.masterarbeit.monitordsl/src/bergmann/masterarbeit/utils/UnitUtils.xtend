@@ -46,8 +46,8 @@ class UnitUtils {
 			TimeOffset: return expr.expr.unit
 			Subexpression: return expr.expr.unit
 			Negation: return expr.expr.unit
-			MappingBinary: return (expr.ref as BinaryJava).unit.toJavaUnit // TODO: Allow JavaLiterals to have a unit
-			MappingUnary: return (expr.ref as UnaryJava).unit.toJavaUnit  // TODO: Allow JavaLiterals to have a unit
+			MappingBinary: return (expr.ref as BinaryJava).unit.toJavaUnit
+			MappingUnary: return (expr.ref as UnaryJava).unit.toJavaUnit 
 			default: throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
