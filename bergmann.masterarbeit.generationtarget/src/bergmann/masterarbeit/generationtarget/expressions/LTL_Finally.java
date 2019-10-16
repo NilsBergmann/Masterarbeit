@@ -35,15 +35,15 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
             relevantStates = state.dataController.getStatesInInterval(relevantTime);
         } else {
             relevantStates = state.dataController.getAllStatesAfter(state);
-            relevantStates.add(0,state);
+            relevantStates.add(0, state);
         }
 
         // Check if any state evaluates to true
         boolean atLeastOneUnknownInRange = false;
         for (State current : relevantStates) {
             Optional<Boolean> result = expr.evaluate(current);
-            if(!result.isPresent())
-            	atLeastOneUnknownInRange = true;
+            if (!result.isPresent())
+                atLeastOneUnknownInRange = true;
             if (result.isPresent() && result.get() == true)
                 return Optional.of(true);
         }
@@ -63,7 +63,7 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
                 }
             } else {
                 // Non realtime mode -> No more future states coming
-                return Optional.of(false);
+                return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
             }
         } else {
             // Expr doesnt have interval
@@ -76,8 +76,8 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
             }
         }
     }
-    
+
     public String toString() {
-    	return "F"+"("+expr+")";
+        return "F" + "(" + expr + ")";
     }
 }
