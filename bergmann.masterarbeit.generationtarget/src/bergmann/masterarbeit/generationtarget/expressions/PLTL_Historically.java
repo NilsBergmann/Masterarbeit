@@ -36,9 +36,8 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
             relevantStates = state.dataController.getStatesInInterval(relevantTime);
         } else {
             relevantStates = state.dataController.getAllStatesBefore(state);
+            relevantStates.add(state);
         }
-        // Switch order
-        Collections.reverse(relevantStates);
 
         // Check if any state evaluates to false
         for (State current : relevantStates) {
@@ -50,8 +49,8 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
 
         return Optional.of(true);
     }
-    
+
     public String toString() {
-    	return "H"+"("+expr+")";
+        return "H" + "(" + expr + ")";
     }
 }
