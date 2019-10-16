@@ -17,12 +17,15 @@ public class PLTL_Yesterday extends UnaryExpression<Boolean, Boolean> {
     public Optional<Boolean> evaluate(State state) {
         State previous = state.dataController.getPreviousState(state);
         if (previous == null) {
-            return Optional.empty();
+            // The Z operator is similar to the Y operator, and it only differs in the way
+            // the initial time instant is dealt with: at time zero, Yφ is false, while Zφ
+            // is true. [Bounded Verification of Past LTL]
+            return Optional.of(false);
         }
         return expr.evaluate(previous);
     }
-    
+
     public String toString() {
-    	return "Y"+"("+expr+")";
+        return "Y" + "(" + expr + ")";
     }
 }
