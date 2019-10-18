@@ -101,6 +101,8 @@ class MonitorDslGenerator extends AbstractGenerator {
 				 
 				 «ENDFOR»
 				 
+				 System.out.println("Setup completed successfully");
+				 System.out.println("Starting evaluation");
 				 /**
 				 * Run evaluation
 				 */
@@ -134,7 +136,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		}
 	}
 	def static String generateSetup(){
-		'''
+				'''
 		/**
 		* Setup
 		*/
@@ -158,13 +160,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 		// -- Try Database
 		DataController dataControl = new DataController(isRealTime);
 		dataControl.connectToDatabase(dbFile.getAbsolutePath());
-		if (!dataControl.getDatabaseWrapper().isConnected()) {
+		if (!dataControl.isConnectedToDB()) {
 			UIUtils.showError("Could not open database " + dbFile.getAbsolutePath());
 			System.exit(1);
 		}
 		
 		// -- Select Table
-		List<String> tables = dataControl.getDatabaseWrapper().getTables();
+		List<String> tables = dataControl.getTables();
 		if (tables.size() < 1) {
 				UIUtils.showError("No tables available");
 				System.exit(1);
@@ -207,6 +209,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
+		System.out.println("Generating userVariable «userVar.name»");
 		UserVariable<«javaType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«javaType»>("«userVar.name»", «userVar.expr.compile»);
 		userVars.add(«userVar.name»_«userVar.positiveHash»); 
 		'''
@@ -214,6 +217,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 	
 	def String compile(Assertion assertion){
 		return '''
+		System.out.println("Generating assertion «assertion.name»");
 		Assertion «assertion.name»_«assertion.positiveHash» = new Assertion("«assertion.name»", «assertion.expr.compile»);
 		assertions.add(«assertion.name»_«assertion.positiveHash»); 
 		''' 
