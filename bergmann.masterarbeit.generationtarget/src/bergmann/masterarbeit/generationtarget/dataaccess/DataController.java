@@ -1,10 +1,16 @@
 package bergmann.masterarbeit.generationtarget.dataaccess;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
 
 import javax.measure.unit.Unit;
 
@@ -188,6 +194,7 @@ public class DataController {
         this.updateStates();
         // Evaluate States
         System.out.println("Running evaluations...\n");
+        
         for (State state : this.getAllStates()) {
         	System.out.println("------------------");
             System.out.println("State " + state.toString()+"\n");
@@ -203,5 +210,43 @@ public class DataController {
             System.out.println("");
         }
         System.out.println("Evaluation complete!");
+        writeToCSV("Test.csv", states);
     }
+    
+    private void writeToCSV(String path, List<State> states) {
+    	System.out.println("Writing data to " + path);
+    	Set<String> storedValues = new LinkedHashSet<String>();
+    	for (State state : states) {
+			storedValues.addAll(state.getStoredKeys());
+		}
+    	try {
+    	//Open file
+   		FileWriter fw = new FileWriter(path);
+   		
+    	// Create header
+    	String header = "Timestamp; ";
+    	for (String string : storedValues) {
+    		header += string +";";
+    	}
+    	header+="\n";
+    	
+    	// Write state data
+    	fw.write(header);
+    	for (State state : states) {
+			String current = state.timestamp.toString()+ ";";
+			for (String key : storedValues) {
+				Optional data = state.getStored(key);
+				String dataString = data.isPresent() ? data.get().toString() : "UNKNOWN";
+				current += dataString + ";";
+			}
+			current+="\n";
+			fw.write(current);
+		}
+    	fw.close();
+    	System.out.println("Completed!");
+    	} catch (IOException e) {
+    		System.out.println("Writing results to csv failed. " + e);
+    	}
+    }
+    
 }

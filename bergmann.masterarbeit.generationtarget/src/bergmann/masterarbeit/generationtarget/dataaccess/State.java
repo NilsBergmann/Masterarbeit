@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.measure.unit.Unit;
 
@@ -48,6 +49,9 @@ public class State implements Comparable<State> {
     	return Optional.empty();
     }
     
+    public Set<String> getStoredKeys() {
+    	return this.storedData.keySet();
+    }
   
     public void store(String key, Optional value) {
         if (value == null || key == null)
