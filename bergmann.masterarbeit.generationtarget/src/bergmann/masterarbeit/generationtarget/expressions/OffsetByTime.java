@@ -31,6 +31,6 @@ public class OffsetByTime<T extends Object> extends UnaryExpression<T, T>{
 
     @Override
     public String toString() {
-    	return "OFFSET["+ amount.toMillis() +"ms](" + expr.toString()+")";
+    	return "OFFSET["+ amount.toMillis() +" ms](" + expr.toString()+")";
     }
 }

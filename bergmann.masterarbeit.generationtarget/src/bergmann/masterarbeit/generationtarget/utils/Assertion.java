@@ -29,4 +29,8 @@ public class Assertion {
     public void setExpression(Expression<Boolean> expr) {
         this.expression = expr;
     }
+    
+    public String toString() {
+		return "Assertion[" + this.name +"]=" + this.expression.toString();
+    }
 }

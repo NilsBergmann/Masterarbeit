@@ -66,6 +66,6 @@ public class AggregateAverage extends UnaryExpression<Amount, Amount> {
     }
     
     public String toString() {
-    	return " AVG" +interval.toString() + "(" + expr + ") ";
+    	return "AVG[" +interval.toString() + "](" + expr + ")";
     }
 }

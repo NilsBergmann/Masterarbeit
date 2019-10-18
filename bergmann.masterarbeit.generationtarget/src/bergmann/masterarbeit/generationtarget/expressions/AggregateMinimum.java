@@ -60,6 +60,6 @@ public class AggregateMinimum extends UnaryExpression<Amount, Amount> {
     }
     
     public String toString() {
-    	return " MIN" +interval.toString() + "(" + expr + ") ";
+    	return " MIN[" +interval.toString() + "] (" + expr + ") ";
     }
 }

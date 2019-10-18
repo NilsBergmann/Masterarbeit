@@ -25,4 +25,8 @@ public class UserVariable<T> extends Expression<T> {
         	return result;
         }
     }
+    
+    public String toString() {
+		return "UserVar[" + this.name +"]=" + this.expression.toString();
+    }
 }

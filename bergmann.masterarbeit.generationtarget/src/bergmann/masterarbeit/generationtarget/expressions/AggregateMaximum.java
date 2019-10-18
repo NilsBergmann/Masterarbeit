@@ -61,6 +61,6 @@ public class AggregateMaximum extends UnaryExpression<Amount, Amount> {
     }
     
     public String toString() {
-    	return " MAX" +interval.toString() + "(" + expr + ") ";
+    	return " MAX[" +interval.toString() + "] (" + expr + ") ";
     }
 }

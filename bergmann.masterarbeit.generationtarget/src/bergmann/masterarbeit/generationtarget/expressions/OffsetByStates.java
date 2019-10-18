@@ -27,7 +27,7 @@ public class OffsetByStates<T extends Object> extends UnaryExpression<T, T>{
 	
     @Override
     public String toString() {
-    	return "OFFSET["+ amount +"states](" + expr.toString()+")";
+    	return "OFFSET["+ amount +" states](" + expr.toString()+")";
     }
 
 }
