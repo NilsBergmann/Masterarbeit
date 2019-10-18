@@ -187,18 +187,20 @@ public class DataController {
         // Get states
         this.updateStates();
         // Evaluate States
-        System.out.println("Running evaluations...");
+        System.out.println("Running evaluations...\n");
         for (State state : this.getAllStates()) {
-            System.out.println("State " + state.toString());
+        	System.out.println("------------------");
+            System.out.println("State " + state.toString()+"\n");
             for (UserVariable userVariable : userVars) {
                 Optional result = userVariable.evaluate(state);
                 System.out.println("UserVar: " + userVariable.name + " -> " + result);
             }
+            System.out.println("");
             for (Assertion assertion : assertions) {
                 Optional result = assertion.evaluateAt(state);
                 System.out.println("Assertion: " + assertion.name + " -> " + result);
             }
-            System.out.println("------------------\n");
+            System.out.println("");
         }
         System.out.println("Evaluation complete!");
     }
