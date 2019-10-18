@@ -139,5 +139,21 @@ class LTLOperatorsTest {
 			assertEquals(expectedResult, result, "Timestamp " + state.timestamp.toEpochMilli());
 		}
 	}
+	
+	@Test
+	void untilTest() {
+		fail("Not implemented yet");
+	}
+	
+	@Test
+	void weakUntilTest() {
+
+		fail("Not implemented yet");
+	}
+	
+	@Test 
+	void releaseTest() {
+		fail("Not implemented yet");
+	}
 
 }
