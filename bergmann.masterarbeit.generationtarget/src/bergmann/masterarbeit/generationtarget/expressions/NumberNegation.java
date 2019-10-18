@@ -21,7 +21,7 @@ public class NumberNegation extends UnaryExpression<Amount, Amount> {
         if (!eval.isPresent())
             return Optional.empty();
         else
-            return Optional.of(eval.get().inverse());
+            return Optional.of(eval.get().times(-1));
     }
     
     @Override

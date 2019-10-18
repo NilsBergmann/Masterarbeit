@@ -78,7 +78,7 @@ class ArithmeticTest {
 	@Test
 	void NegationTest() {
 		Expression expr = new NumberNegation(leftExpr);
-		Amount expected = leftAmount.inverse();
+		Amount expected = leftAmount.times(-1);
 		assertEquals(Optional.of(expected), expr.evaluate(s));
 	}
 	// TODO: Add tests for null cases and incompatible units
