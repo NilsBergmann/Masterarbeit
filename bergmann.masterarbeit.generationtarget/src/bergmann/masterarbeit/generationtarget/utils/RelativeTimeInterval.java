@@ -12,7 +12,7 @@ public class RelativeTimeInterval {
         this.end = end;
         this.includeLeft = includeLeft;
         this.includeRight = includeRight;
-        if (start.toMillis() > end.toMillis())
+        if (start.compareTo(end) > 0)
             this.switchSides();
     }
 
