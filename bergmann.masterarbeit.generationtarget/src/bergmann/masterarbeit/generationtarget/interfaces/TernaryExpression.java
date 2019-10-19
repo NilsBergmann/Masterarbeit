@@ -1,10 +1,6 @@
 package bergmann.masterarbeit.generationtarget.interfaces;
 
-import java.util.Optional;
-
-import bergmann.masterarbeit.generationtarget.dataaccess.State;
-
-public abstract class TernaryExpression<A,B,C,T> extends Expression<T> {
+public abstract class TernaryExpression<A extends Object, B extends Object, C extends Object, T extends Object> extends Expression<T>  {
     public Expression<A> a;
     public Expression<B> b;
     public Expression<C> c;
