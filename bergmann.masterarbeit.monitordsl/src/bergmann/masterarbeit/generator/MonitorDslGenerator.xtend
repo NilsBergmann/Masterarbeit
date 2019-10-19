@@ -80,7 +80,10 @@ class MonitorDslGenerator extends AbstractGenerator {
 		return '''
 		«monitors.compilePackage»
 		«monitors.compileImports»
+		@SuppressWarnings("unused")
 		class RunEvaluation {
+			
+			@SuppressWarnings("rawtypes")
 			public static void main(String args[]) {
 				«generateSetup»
 				«monitors.registerDomainColumns»
