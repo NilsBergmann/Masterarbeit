@@ -268,9 +268,9 @@ class MonitorDslGenerator extends AbstractGenerator {
 			}
 			Rel:{
 				if(expr.op.equals("=="))
-					return '''new Equals(«expr.left.compile», «expr.right.compile»)'''
+					return '''new Equals<«expr.left.expressionType», «expr.right.expressionType»>(«expr.left.compile», «expr.right.compile»)'''
 				if(expr.op.equals("!="))
-					return '''new NotEquals(«expr.left.compile», «expr.right.compile»)'''
+					return '''new NotEquals<«expr.left.expressionType», «expr.right.expressionType»>(«expr.left.compile», «expr.right.compile»)'''
 				else if (expr.left.isNumber && expr.right.isNumber)
 					return '''new NumberInequality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
 				else 
@@ -282,6 +282,8 @@ class MonitorDslGenerator extends AbstractGenerator {
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
 			StringLiteral: return '''new StringLiteral("«expr.value»")'''
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
+			IfThenElse: return '''new IfThenElse<«expr.then.expressionType»>(«expr.condition.compile», «expr.then.compile», «expr.getElse.compile»)'''
+			TimeOffset: return compile(expr as TimeOffset)
 			
 			/* MappingDSL stuff */			
 			CrossReference: {
@@ -302,8 +304,6 @@ class MonitorDslGenerator extends AbstractGenerator {
 			}
 			MappingBinary: return compile(expr as MappingBinary)
 			MappingUnary: return compile(expr as MappingUnary)
-			TimeOffset: return compile(expr as TimeOffset)
-			IfThenElse: return '''new IfThenElse(«expr.condition.compile», «expr.then.compile», «expr.getElse.compile»)'''
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
@@ -386,13 +386,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 		switch offset{
 			StateOffset: {
 				var amount = if(offset.op == "+") offset.value else -offset.value
-				return '''new OffsetByStates(«expr.expr.compile», «amount»)'''
+				return '''new OffsetByStates<«expr.expr.expressionType»>(«expr.expr.compile», «amount»)'''
 				}
 			TimeOffset:{
 				var amount = if(offset.op == "+") offset.value else -offset.value
 				var millis = toMillisec(amount, offset.unit)
 				var durationString = '''Duration.ofMillis(«millis»)'''
-				return '''new OffsetByTime(«expr.expr.compile», «durationString»)'''
+				return '''new OffsetByTime<«expr.expr.expressionType»>(«expr.expr.compile», «durationString»)'''
 			}
 			default: throw new IllegalArgumentException("Unknown Offset: " + offset)
 		}
