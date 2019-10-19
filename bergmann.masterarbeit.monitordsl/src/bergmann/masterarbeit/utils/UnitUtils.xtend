@@ -48,6 +48,15 @@ class UnitUtils {
 			Negation: return expr.expr.unit
 			MappingBinary: return (expr.ref as BinaryJava).unit.toJavaUnit
 			MappingUnary: return (expr.ref as UnaryJava).unit.toJavaUnit 
+			IfThenElse: {
+				var uThen = expr.then.unit
+				var uElse = expr.getElse.unit
+				if(uThen.isCompatible(uElse)){
+					return uThen
+				} else {
+					throw new IllegalArgumentException("IfThenElse : Different units for then ("+uThen+ ") and else (" + uElse + ")")
+				}
+			}
 			default: throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
