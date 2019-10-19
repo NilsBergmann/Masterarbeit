@@ -14,12 +14,16 @@ public class BoolNegation extends UnaryExpression<Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<Boolean> eval = this.expr.evaluate(state, dataSource);
+    public Optional<Boolean> evaluate(State state) {
+        Optional<Boolean> eval = this.expr.evaluate(state);
         if (!eval.isPresent())
             return Optional.empty();
         else
             return Optional.of(!eval.get());
+    }
+    
+    public String toString() {
+    	return "(NOT " + expr + ")";
     }
 
 }

@@ -35,9 +35,15 @@ public class AbsoluteTimeInterval {
         // Check end
         int e = this.end.compareTo(i);
         boolean endOK = e > 0;
-        if (this.includeLeft)
-            endOK = s >= 0;
+        if (this.includeRight)
+            endOK = e >= 0;
         return startOK && endOK;
     }
-
+    public String toString() {
+    	String s = "AbsoluteTimeInterval_";
+    	s += includeLeft ? "[" : "(";
+    	s += start + ", " + end;
+    	s += includeRight ? "]" : ")";
+    	return s;
+    }
 }

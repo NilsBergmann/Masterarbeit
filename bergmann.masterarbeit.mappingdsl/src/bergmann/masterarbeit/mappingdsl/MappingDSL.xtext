@@ -41,6 +41,7 @@ LiteralJava returns CustomJava:
 	(
 		("name:" name=ID) &
 		("type:" type=Type) &
+		("unit:" unit=Unit)? &
 		("description:" description=STRING)? &
 		("javaClass:" ref=JavaClassReference)
 	)
@@ -53,6 +54,7 @@ UnaryJava returns CustomJava:
 	(
 		("name:" name=ID) &
 		("type:" type1=Type "->" type2=Type) &
+		("unit:" unit=Unit)? &
 		("description:" description=STRING)? &
 		("javaClass:" ref=JavaClassReference)
 	)
@@ -65,6 +67,7 @@ BinaryJava returns CustomJava:
 	(
 		("name:" name=ID) &
 		("type:" type1=Type "->" type2=Type "->" type3=Type) &
+		("unit:" unit=Unit)? &
 		("description:" description=STRING)? &
 		("javaClass:" ref=JavaClassReference)
 	)
@@ -103,8 +106,7 @@ UnitMultiplication returns Unit:
 ;
 
 UnitExponent returns Unit:
-	{UnitExponent} (value=UnitAtom '^' negative?='-' exponent=INT)
-	| UnitAtom
+	UnitAtom ({UnitExponent.value=current} '^' negative?='-'? exponent=INT)?
 ;
 
 UnitAtom returns Unit:

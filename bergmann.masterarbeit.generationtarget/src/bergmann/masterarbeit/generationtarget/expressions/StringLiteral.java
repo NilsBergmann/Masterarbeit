@@ -14,7 +14,15 @@ public class StringLiteral extends Expression<String> {
         this.value = value;
     }
 
-    public Optional<String> evaluate(State state, DataController dataSource) {
-        return Optional.of(this.value);
+    public Optional<String> evaluate(State state) {
+    	if (value != null)
+    		return Optional.of(this.value);
+    	else
+    		return Optional.empty();
+    }
+    
+    @Override
+    public String toString() {
+    	return "\""+value+"\"";
     }
 }

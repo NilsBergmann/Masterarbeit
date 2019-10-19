@@ -16,12 +16,16 @@ public class NumberNegation extends UnaryExpression<Amount, Amount> {
     }
 
     @Override
-    public Optional<Amount> evaluate(State state, DataController dataSource) {
-        Optional<Amount> eval = this.expr.evaluate(state, dataSource);
+    public Optional<Amount> evaluate(State state) {
+        Optional<Amount> eval = this.expr.evaluate(state);
         if (!eval.isPresent())
             return Optional.empty();
         else
-            return Optional.of(eval.get().inverse());
+            return Optional.of(eval.get().times(-1));
     }
-
+    
+    @Override
+    public String toString() {
+    	return "-" + expr.toString();
+    }
 }

@@ -34,6 +34,8 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.JavaType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BaseType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import bergmann.masterarbeit.monitorDsl.StringLiteral
+import bergmann.masterarbeit.monitorDsl.TimeOffset
+import bergmann.masterarbeit.monitorDsl.IfThenElse
 
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
@@ -115,7 +117,7 @@ class ExpressionTypeChecker {
 					t = BOOLEAN_JAVA_CLASS
 				else if (expr.op == "-" && expr.expr.isNumber)
 					// Only for -: Number => Number
-					t = BOOLEAN_JAVA_CLASS
+					t = NUMBER_JAVA_CLASS 
 			Subexpression:
 				// ( expr ) => Passthrough type
 				t =  expr.expr.expressionType
@@ -132,6 +134,20 @@ class ExpressionTypeChecker {
 			CrossReference: return expr.handleCrossreference
 			MappingUnary: return expr.handleCustomJavaMapping
 			MappingBinary: return expr.handleCustomJavaMapping
+			TimeOffset: return expr.expr.expressionType
+			IfThenElse: {
+				if(expr.condition.isBoolean){
+					var tThen = expr.then.expressionType
+					var tElse = expr.getElse.expressionType
+					if(tThen.equals(tElse)){
+						t = tThen	
+					} else {
+						t=""
+					}
+				} else {
+					t=""
+				}
+			}
 			default: {
 				throw new IllegalArgumentException("Can't parse expr: " + expr)
 			}

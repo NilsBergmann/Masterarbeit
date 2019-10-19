@@ -15,7 +15,18 @@ public class UserVariable<T> extends Expression<T> {
         this.name = name;
     }
 
-    public Optional<T> evaluate(State state, DataController dataSource) {
-        return expression.evaluate(state, dataSource);
+    public Optional<T> evaluate(State state) {
+        Optional<T> result = state.getStored(this.name);
+        if(result.isPresent())
+        	return result;
+        else {
+        	result = expression.evaluate(state);
+       		state.store(this.name, result);
+        	return result;
+        }
+    }
+    
+    public String toString() {
+		return "UserVar[" + this.name +"]=" + this.expression.toString();
     }
 }

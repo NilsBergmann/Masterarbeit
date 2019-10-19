@@ -9,17 +9,21 @@ import bergmann.masterarbeit.monitorDsl.TimeIntervalInequalityNotation
 import bergmann.masterarbeit.monitorDsl.TimeInterval
 
 class TimeUtils {
+	
+	def public static long toMillisec(int amount, String unit){
+		switch unit {
+			case "ms": return amount
+			case "s" : return amount * 1000
+			case "min": return amount * 1000 * 60
+			case "h": return amount * 1000 * 60 * 60
+			default: throw new Exception()
+		}
+	}
 	def public static long toMillisec(TimeAtom atom){
 		switch(atom){
 			TimeLiteral: {
-				var sign = if (atom.neg) -1 else 1
-				switch (atom.unit){
-					case "ms": return sign * atom.value
-					case "s" : return sign * atom.value * 1000
-					case "min": return sign * atom.value * 1000 * 60
-					case "h": return sign * atom.value * 1000 * 60 * 60
-					default: throw new Exception()
-				}
+				var value = if (atom.neg) -1*atom.value else atom.value
+				return toMillisec(value, atom.unit)
 			}
 			InfinityTimeAtom:{ 
 				if(atom.neg)

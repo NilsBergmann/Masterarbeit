@@ -15,7 +15,10 @@ public class BoolLiteral extends Expression<Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
+    public Optional<Boolean> evaluate(State state) {
         return Optional.of(this.value);
+    }
+    public String toString() {
+    	return value + "";
     }
 }

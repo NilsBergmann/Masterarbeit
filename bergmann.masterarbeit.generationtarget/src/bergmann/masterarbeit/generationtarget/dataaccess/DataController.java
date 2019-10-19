@@ -2,41 +2,92 @@ package bergmann.masterarbeit.generationtarget.dataaccess;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+
+import javax.measure.unit.Unit;
 
 import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.Assertion;
 import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 
 public class DataController {
-    DatabaseWrapper dbWrapper;
+    private DatabaseWrapper dbWrapper;
     List<State> states;
-    boolean isRealTime = false;
+    public boolean isRealTime = false;
 
     public DataController(boolean isRealTime) {
         states = new ArrayList<State>();
         this.isRealTime = isRealTime;
+        this.dbWrapper = new DatabaseWrapper();
     }
 
     public void connectToDatabase(String path) {
-        dbWrapper = new DatabaseWrapper(path);
-    }
-
-    public DatabaseWrapper getDatabaseWrapper() {
-        return this.dbWrapper;
+        if (dbWrapper.isConnected()) {
+            dbWrapper.disconnect();
+        }
+        dbWrapper.connect(path);
     }
 
     public void updateStates() {
         this.states = this.dbWrapper.getStates();
+        for (State state : states) {
+            state.dataController = this;
+        }
     }
 
-    public State getCurrentState() {
+    public void selectTable(String tablename) {
+        if (this.dbWrapper != null && this.dbWrapper.isConnected()) {
+            try {
+                this.dbWrapper.setTable(tablename);
+                this.updateStates();
+            } catch (IllegalArgumentException e) {
+                throw e;
+            }
+        }
+    }
+
+    public List<String> getTables() {
+        if (this.dbWrapper != null && this.dbWrapper.isConnected()) {
+            return this.dbWrapper.getTables();
+        }
+        return new ArrayList<String>();
+    }
+
+    public boolean isConnectedToDB() {
+        if (this.dbWrapper == null)
+            return false;
+        else
+            return this.dbWrapper.isConnected();
+    }
+
+    public State getLatestState() {
         return states.get(states.size() - 1);
+    }
+
+    public State getFirstState() {
+        return states.get(0);
+    }
+
+    public State getStateOffsetBy(State start, int amount) {
+        int startPos = this.states.indexOf(start);
+        if (startPos == -1)
+            return null;
+        int targetPos = startPos + amount;
+        if (targetPos < 0 || targetPos >= states.size())
+            return null;
+        return this.states.get(targetPos);
+    }
+
+    public List<State> getAllStates() {
+        return this.states;
     }
 
     public State getClosestState(Instant timestamp) {
@@ -44,7 +95,7 @@ public class DataController {
         State minimumState = null;
         for (State state : this.states) {
             Duration distance = Duration.between(state.timestamp, timestamp);
-            if (distance.abs().compareTo(minimumDistance) > 0) {
+            if (distance.abs().compareTo(minimumDistance) < 0) {
                 minimumDistance = distance;
                 minimumState = state;
             }
@@ -81,7 +132,7 @@ public class DataController {
     public List<State> getAllStatesBefore(State state) {
         int index = states.indexOf(state);
         try {
-            return states.subList(0, index);
+            return new ArrayList(states.subList(0, index));
         } catch (Exception e) {
             return new ArrayList<State>();
         }
@@ -90,7 +141,7 @@ public class DataController {
     public List<State> getAllStatesAfter(State state) {
         int index = states.indexOf(state);
         try {
-            return states.subList(index + 1, states.size());
+            return new ArrayList(states.subList(index + 1, states.size()));
         } catch (Exception e) {
             return new ArrayList<State>();
         }
@@ -116,6 +167,18 @@ public class DataController {
         return this.isRealTime;
     }
 
+    public void registerNumberDBColumn(String name, Unit unit) {
+        this.dbWrapper.registerNumberColumn(name, unit);
+    }
+
+    public void registerStringDBColumn(String name) {
+        this.dbWrapper.registerStringColumn(name);
+    }
+
+    public void registerBooleanDBColumn(String name) {
+        this.dbWrapper.registerBooleanColumn(name);
+    }
+
     public void runEvaluation(List<Assertion> assertions, List<UserVariable> userVars, String tableName) {
         if (this.isRealTime) {
             System.err.println("real time not implemented yet");
@@ -130,53 +193,60 @@ public class DataController {
         // Get states
         this.updateStates();
         // Evaluate States
-        System.out.println("Running evaluations...");
-        // Assertions
-        Map<String, Map<State, Optional>> resultsAssertions = new HashMap<String, Map<State, Optional>>();
-        for (Assertion assertion : assertions) {
-            System.out.println(assertion.name);
-            Map<State, Optional> res = new HashMap<State, Optional>();
-            for (State s : this.states) {
-                res.put(s, assertion.evaluateAt(s, this));
+        System.out.println("Running evaluations...\n");
+        
+        for (State state : this.getAllStates()) {
+        	System.out.println("------------------");
+            System.out.println("State " + state.toString()+"\n");
+            for (UserVariable userVariable : userVars) {
+                Optional result = userVariable.evaluate(state);
+                System.out.println("UserVar: " + userVariable.name + " -> " + result);
             }
-            resultsAssertions.put(assertion.name, res);
-        }
-        // User Variables
-        Map<String, Map<State, Optional>> resultsUserVars = new HashMap<String, Map<State, Optional>>();
-        for (UserVariable uv : userVars) {
-            System.out.println(uv.name);
-            Map<State, Optional> res = new HashMap<State, Optional>();
-            for (State s : this.states) {
-                res.put(s, uv.evaluate(s, this));
+            System.out.println("");
+            for (Assertion assertion : assertions) {
+                Optional result = assertion.evaluateAt(state);
+                System.out.println("Assertion: " + assertion.name + " -> " + result);
             }
-            resultsUserVars.put(uv.name, res);
+            System.out.println("");
         }
-        System.out.println("Done, saving results");
-        writeToCSV(resultsAssertions, "Test_Assertions.txt");
-        writeToCSV(resultsUserVars, "Test_Uservars.txt");
+        System.out.println("Evaluation complete!");
+        writeToCSV("Test.csv", states);
     }
-
-    public void writeToCSV(Map<String, Map<State, Optional>> result, String path) {
-        if (result.size() == 0)
-            return;
-        // TODO: Actually print csv
-        for (Map.Entry<String, Map<State, Optional>> entry : result.entrySet()) {
-            String expr = entry.getKey();
-            try {
-            	String CSVpath = expr + ".txt";
-            	System.out.println("Writing results to " + CSVpath);
-                FileWriter fw = new FileWriter(path);
-                for (Map.Entry<State, Optional> r : entry.getValue().entrySet()) {
-                    State state = r.getKey();
-                    Optional x = r.getValue();
-                    String value = x.isPresent() ? x.get().toString() : "UNKNOWN";
-                    fw.write(state.timestamp + " -> " + value.toString() + "\n");
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-        }
+    
+    private void writeToCSV(String path, List<State> states) {
+    	System.out.println("Writing data to " + path);
+    	Set<String> storedValues = new LinkedHashSet<String>();
+    	for (State state : states) {
+			storedValues.addAll(state.getStoredKeys());
+		}
+    	try {
+    	//Open file
+   		FileWriter fw = new FileWriter(path);
+   		
+    	// Create header
+    	String header = "Timestamp; ";
+    	for (String string : storedValues) {
+    		header += string +";";
+    	}
+    	header+="\n";
+    	
+    	// Write state data
+    	fw.write(header);
+    	for (State state : states) {
+			String current = state.timestamp.toString()+ ";";
+			for (String key : storedValues) {
+				Optional data = state.getStored(key);
+				String dataString = data.isPresent() ? data.get().toString() : "UNKNOWN";
+				current += dataString + ";";
+			}
+			current+="\n";
+			fw.write(current);
+		}
+    	fw.close();
+    	System.out.println("Completed!");
+    	} catch (IOException e) {
+    		System.out.println("Writing results to csv failed. " + e);
+    	}
     }
+    
 }

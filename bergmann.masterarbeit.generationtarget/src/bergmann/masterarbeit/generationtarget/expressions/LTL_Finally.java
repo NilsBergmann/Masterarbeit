@@ -1,5 +1,6 @@
 package bergmann.masterarbeit.generationtarget.expressions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,22 +24,26 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
+    public Optional<Boolean> evaluate(State state) {
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = dataSource.isRealTime();
+        boolean realTime = state.dataController.isRealTime();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = dataSource.getStatesInInterval(relevantTime);
+            relevantStates = state.dataController.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = dataSource.getAllStatesAfter(state);
+            relevantStates = state.dataController.getAllStatesAfter(state);
+            relevantStates.add(0, state);
         }
 
         // Check if any state evaluates to true
+        boolean atLeastOneUnknownInRange = false;
         for (State current : relevantStates) {
-            Optional<Boolean> result = expr.evaluate(current, dataSource);
+            Optional<Boolean> result = expr.evaluate(current);
+            if (!result.isPresent())
+                atLeastOneUnknownInRange = true;
             if (result.isPresent() && result.get() == true)
                 return Optional.of(true);
         }
@@ -49,16 +54,16 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
             // Expr has interval (e.g F[0s, 20s](X))
             if (realTime) {
                 // Realtime mode -> There might be future states coming
-                if (dataSource.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
+                if (state.dataController.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
                     // Interval is completely inside timeframe of known data when evaluating
-                    return Optional.of(false);
+                    return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
                 } else {
                     // There might be some future state where X evaluates to true
                     return Optional.empty();
                 }
             } else {
                 // Non realtime mode -> No more future states coming
-                return Optional.of(false);
+                return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
             }
         } else {
             // Expr doesnt have interval
@@ -67,8 +72,12 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
                 return Optional.empty();
             } else {
                 // Non realtime mode -> No more future states coming
-                return Optional.of(false);
+                return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
             }
         }
+    }
+
+    public String toString() {
+        return "F" + "(" + expr + ")";
     }
 }

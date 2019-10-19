@@ -14,13 +14,21 @@ public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
 
     public PLTL_Z(Expression<Boolean> expr) {
         super(expr);
-        // ¬Zϕ ≡ Y¬ϕ
-        // Zϕ ≡ ¬(Y¬ϕ)
-        helper = new BoolNegation(new PLTL_Yesterday(new BoolNegation(expr)));
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        return helper.evaluate(state, dataSource);
+    public Optional<Boolean> evaluate(State state) {
+        State previous = state.dataController.getPreviousState(state);
+        if (previous == null) {
+            // The Z operator is similar to the Y operator, and it only differs in the way
+            // the initial time instant is dealt with: at time zero, Yφ is false, while Zφ
+            // is true. [Bounded Verification of Past LTL]
+            return Optional.of(true);
+        }
+        return expr.evaluate(previous);
+    }
+
+    public String toString() {
+        return "Z" + "(" + expr + ")";
     }
 }

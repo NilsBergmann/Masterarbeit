@@ -15,11 +15,22 @@ public class Assertion {
         this.name = name;
     }
 
-    public Optional<Boolean> evaluateAt(State state, DataController dataSource) {
-        return expression.evaluate(state, dataSource);
+    public Optional<Boolean> evaluateAt(State state) {
+        Optional<Boolean> result = state.getStored(this.name);
+        if(result.isPresent())
+        	return result;
+        else {
+        	result = expression.evaluate(state);
+       		state.store(this.name, result);
+        	return result;
+        }
     }
 
     public void setExpression(Expression<Boolean> expr) {
         this.expression = expr;
+    }
+    
+    public String toString() {
+		return "Assertion[" + this.name +"]=" + this.expression.toString();
     }
 }

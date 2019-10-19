@@ -18,7 +18,12 @@ public class NumberLiteral extends Expression<Amount> {
         this.value = Amount.valueOf(value, unit);
     }
 
-    public Optional<Amount> evaluate(State state, DataController dataSource) {
+    public Optional<Amount> evaluate(State state) {
         return Optional.of(this.value);
+    }
+    
+    @Override
+    public String toString() {
+    	return value.toString();
     }
 }

@@ -39,6 +39,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import static extension bergmann.masterarbeit.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.utils.TimeUtils.*
 import static extension bergmann.masterarbeit.utils.UnitUtils.*
+import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import bergmann.masterarbeit.monitorDsl.CrossReference
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 import bergmann.masterarbeit.mappingdsl.mappingDSL.JavaClassReference
@@ -48,6 +49,11 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import javax.measure.quantity.Quantity
 import bergmann.masterarbeit.monitorDsl.StringLiteral
 import bergmann.masterarbeit.monitorDsl.TimeLiteral
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtext.EcoreUtil2
+import bergmann.masterarbeit.monitorDsl.TimeOffset
+import bergmann.masterarbeit.monitorDsl.StateOffset
+import bergmann.masterarbeit.monitorDsl.IfThenElse
 
 /**
  * Generates code from your model files on save.
@@ -74,10 +80,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 		return '''
 		«monitors.compilePackage»
 		«monitors.compileImports»
+		@SuppressWarnings("unused")
 		class RunEvaluation {
+			
+			@SuppressWarnings("rawtypes")
 			public static void main(String args[]) {
 				«generateSetup»
-				
+				«monitors.registerDomainColumns»
 				/**
 				 * User Variables 
 				 */
@@ -96,6 +105,8 @@ class MonitorDslGenerator extends AbstractGenerator {
 				 
 				 «ENDFOR»
 				 
+				 System.out.println("Setup completed successfully");
+				 System.out.println("Starting evaluation");
 				 /**
 				 * Run evaluation
 				 */
@@ -107,8 +118,29 @@ class MonitorDslGenerator extends AbstractGenerator {
 		'''
 	}
 	
+	def static String registerDomainColumns(Monitors monitors){
+		var s = "// Register domain columns\n"
+		var domains = monitors.importedDomains
+		for (currentDomain : domains) {
+			s+= "// Domain: " + currentDomain.package.name + "\n"
+			for (dv : EcoreUtil2.eAllOfType(currentDomain, DomainValue)) {
+				s+= dv.registerDomainColumn + "\n"
+			}  
+			s+= "\n"
+		}
+		return s
+	}
+	
+	def static String registerDomainColumn(DomainValue dv){
+		switch dv.type {
+			case BOOLEAN: return '''dataControl.registerBooleanDBColumn("«dv.column»");'''
+			case NUMBER: return  '''dataControl.registerNumberDBColumn("«dv.column»", «dv.unit.compile»);'''
+			case STRING: return '''dataControl.registerStringDBColumn("«dv.column»");'''
+			default:  throw new IllegalArgumentException("Can't parse type: " + dv.type)
+		}
+	}
 	def static String generateSetup(){
-		'''
+				'''
 		/**
 		* Setup
 		*/
@@ -132,13 +164,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 		// -- Try Database
 		DataController dataControl = new DataController(isRealTime);
 		dataControl.connectToDatabase(dbFile.getAbsolutePath());
-		if (!dataControl.getDatabaseWrapper().isConnected()) {
+		if (!dataControl.isConnectedToDB()) {
 			UIUtils.showError("Could not open database " + dbFile.getAbsolutePath());
 			System.exit(1);
 		}
 		
 		// -- Select Table
-		List<String> tables = dataControl.getDatabaseWrapper().getTables();
+		List<String> tables = dataControl.getTables();
 		if (tables.size() < 1) {
 				UIUtils.showError("No tables available");
 				System.exit(1);
@@ -148,7 +180,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 			UIUtils.showError("No table selected");
 			System.exit(1);
 		}
-		dataControl.getDatabaseWrapper().setTable(tableSelection);
+		dataControl.selectTable(tableSelection);
 		
 		// Create lists
 		ArrayList<Assertion> assertions = new ArrayList<Assertion>();
@@ -181,6 +213,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
+		System.out.println("Generating userVariable «userVar.name»");
 		UserVariable<«javaType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«javaType»>("«userVar.name»", «userVar.expr.compile»);
 		userVars.add(«userVar.name»_«userVar.positiveHash»); 
 		'''
@@ -188,6 +221,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 	
 	def String compile(Assertion assertion){
 		return '''
+		System.out.println("Generating assertion «assertion.name»");
 		Assertion «assertion.name»_«assertion.positiveHash» = new Assertion("«assertion.name»", «assertion.expr.compile»);
 		assertions.add(«assertion.name»_«assertion.positiveHash»); 
 		''' 
@@ -237,9 +271,9 @@ class MonitorDslGenerator extends AbstractGenerator {
 			}
 			Rel:{
 				if(expr.op.equals("=="))
-					return '''new Equals(«expr.left.compile», «expr.right.compile»)'''
+					return '''new Equals<«expr.left.expressionType», «expr.right.expressionType»>(«expr.left.compile», «expr.right.compile»)'''
 				if(expr.op.equals("!="))
-					return '''new NotEquals(«expr.left.compile», «expr.right.compile»)'''
+					return '''new NotEquals<«expr.left.expressionType», «expr.right.expressionType»>(«expr.left.compile», «expr.right.compile»)'''
 				else if (expr.left.isNumber && expr.right.isNumber)
 					return '''new NumberInequality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
 				else 
@@ -251,6 +285,8 @@ class MonitorDslGenerator extends AbstractGenerator {
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
 			StringLiteral: return '''new StringLiteral("«expr.value»")'''
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
+			IfThenElse: return '''new IfThenElse<«expr.then.expressionType»>(«expr.condition.compile», «expr.then.compile», «expr.getElse.compile»)'''
+			TimeOffset: return compile(expr as TimeOffset)
 			
 			/* MappingDSL stuff */			
 			CrossReference: {
@@ -260,7 +296,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 					DomainValue:{
 							switch ref.type {
 							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
-							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»", «ref.unit.compile»)'''
+							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»")'''
 							case STRING: return '''new StringDatabaseAccess("«ref.column»")'''
 							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
 						 }
@@ -271,7 +307,6 @@ class MonitorDslGenerator extends AbstractGenerator {
 			}
 			MappingBinary: return compile(expr as MappingBinary)
 			MappingUnary: return compile(expr as MappingUnary)
-
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
@@ -342,25 +377,42 @@ class MonitorDslGenerator extends AbstractGenerator {
 					case "<=":return '''new RelativeTimeInterval(«zeroString», «timeString», true, true)'''
 					case ">": return '''new RelativeTimeInterval(«timeString», «infinityString», false, true)'''
 					case ">=":return '''new RelativeTimeInterval(«timeString», «infinityString», true, true)'''
-					default: throw new Exception()
+					default: throw new IllegalArgumentException("Unknown operator: " + interval.op)
 				}
 			}
-			default: throw new Exception()
+			default: throw new IllegalArgumentException("Unknown interval: " + interval)
+		}
+	}
+	
+	def String compile(TimeOffset expr){
+		var offset = expr.offset
+		switch offset{
+			StateOffset: {
+				var amount = if(offset.op == "+") offset.value else -offset.value
+				return '''new OffsetByStates<«expr.expr.expressionType»>(«expr.expr.compile», «amount»)'''
+				}
+			TimeOffset:{
+				var amount = if(offset.op == "+") offset.value else -offset.value
+				var millis = toMillisec(amount, offset.unit)
+				var durationString = '''Duration.ofMillis(«millis»)'''
+				return '''new OffsetByTime<«expr.expr.expressionType»>(«expr.expr.compile», «durationString»)'''
+			}
+			default: throw new IllegalArgumentException("Unknown Offset: " + offset)
 		}
 	}
 	
 	/* Unit compilation */
 	// Convert to JScience Unit and use that
 	// -- MonitorDSL Unit
-	def String compile(Unit unit){
+	def static String compile(Unit unit){
 		return unit.toJavaUnit.toJavaString
 	}
 	// -- MappingDSL Unit
-	def String compile(bergmann.masterarbeit.mappingdsl.mappingDSL.Unit mappingUnit){
+	def static String compile(bergmann.masterarbeit.mappingdsl.mappingDSL.Unit mappingUnit){
 		return mappingUnit.toJavaUnit.toJavaString
 	}
 	// -- JScience Unit
-	def String toJavaString(javax.measure.unit.Unit<? extends Quantity> u){
+	def static String toJavaString(javax.measure.unit.Unit<? extends Quantity> u){
 		if (u.equals(javax.measure.unit.Unit.ONE))
 			return '''Unit.ONE'''
 		else

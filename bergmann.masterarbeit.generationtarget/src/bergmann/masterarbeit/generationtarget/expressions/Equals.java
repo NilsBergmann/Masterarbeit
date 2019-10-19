@@ -15,9 +15,9 @@ public class Equals<A extends Object, B extends Object> extends BinaryExpression
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<A> a = this.left.evaluate(state, dataSource);
-        Optional<B> b = this.right.evaluate(state, dataSource);
+    public Optional<Boolean> evaluate(State state) {
+        Optional<A> a = this.left.evaluate(state);
+        Optional<B> b = this.right.evaluate(state);
         // One is missing: Return Nothing
         if (!a.isPresent() || !b.isPresent())
             return Optional.empty();
@@ -27,10 +27,7 @@ public class Equals<A extends Object, B extends Object> extends BinaryExpression
         return Optional.of(eq);
     }
 
-    public static void main(String[] args) {
-        StringLiteral a = new StringLiteral("A");
-        StringLiteral b = new StringLiteral("A");
-        Equals h = new Equals(a, b);
+    public String toString() {
+    	return "(" + left + " == "+ right + ") ";
     }
-
 }

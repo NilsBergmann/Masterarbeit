@@ -27,7 +27,16 @@ Assertion:
 ;
 
 Expression:
-	ImplicationExpr
+	TimeOffsetExpr
+;
+
+TimeOffsetExpr returns Expression:
+	ImplicationExpr ({TimeOffset.expr=current} offset=ExpressionTimeOffset)?
+;
+
+ExpressionTimeOffset:
+	{StateOffset}  "[" "at"? op=("+"|"-") value=INT ("state"|"states")"]"
+	| {TimeOffset} "[" "at"? op=("+"|"-") value=INT unit=TIME_UNIT"]"
 ;
 
 ImplicationExpr returns Expression:
@@ -86,6 +95,7 @@ AtomExpr returns Expression:
 	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
 	// MappingVariable
 	| {CrossReference} ref=[ecore::EObject] 
+	| {IfThenElse} "if" condition=Expression "then" then=Expression "else" else=Expression
 ;
 
 
@@ -139,8 +149,7 @@ UnitMultiplication returns Unit:
 ;
 
 UnitExponent returns Unit:
-	{UnitExponent} (value=UnitAtom '^' negative?='-' exponent=INT)
-	| UnitAtom
+	UnitAtom ({UnitExponent.value=current} '^' negative?='-'? exponent=INT)?
 ;
 
 UnitAtom returns Unit:

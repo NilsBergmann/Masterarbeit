@@ -25,29 +25,32 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
+    public Optional<Boolean> evaluate(State state) {
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = dataSource.isRealTime();
+        boolean realTime = state.dataController.isRealTime();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = dataSource.getStatesInInterval(relevantTime);
+            relevantStates = state.dataController.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = dataSource.getAllStatesBefore(state);
+            relevantStates = state.dataController.getAllStatesBefore(state);
+            relevantStates.add(state);
         }
-        // Switch order
-        Collections.reverse(relevantStates);
 
         // Check if any state evaluates to false
         for (State current : relevantStates) {
-            Optional<Boolean> result = expr.evaluate(current, dataSource);
+            Optional<Boolean> result = expr.evaluate(current);
             if (result.isPresent() && result.get() == false)
                 return Optional.of(false);
         }
         // No conflicting state found
 
         return Optional.of(true);
+    }
+
+    public String toString() {
+        return "H" + "(" + expr + ")";
     }
 }

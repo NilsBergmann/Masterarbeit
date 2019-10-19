@@ -14,11 +14,16 @@ public class LTL_Next extends UnaryExpression<Boolean, Boolean> {
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        State next = dataSource.getFollowingState(state);
+    public Optional<Boolean> evaluate(State state) {
+    	if (state == null)
+    		System.out.println("state is null");
+        State next = state.dataController.getFollowingState(state);
         if (next == null) {
             return Optional.empty();
         }
-        return expr.evaluate(next, dataSource);
+        return expr.evaluate(next);
+    }
+    public String toString() {
+    	return "N"+"("+expr+")";
     }
 }

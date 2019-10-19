@@ -7,24 +7,21 @@ import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class NotEquals extends BinaryExpression<Object, Object, Boolean> {
+public class NotEquals<A extends Object, B extends Object> extends BinaryExpression<A, B, Boolean> {
     String operator = null;
+    Expression helper;
 
-    public NotEquals(Expression<Object> left, Expression<Object> right) {
+    public NotEquals(Expression<A> left, Expression<B> right) {
         super(left, right);
+        helper = new BoolNegation(new Equals(left, right));
     }
 
     @Override
-    public Optional<Boolean> evaluate(State state, DataController dataSource) {
-        Optional<Object> a = this.left.evaluate(state, dataSource);
-        Optional<Object> b = this.right.evaluate(state, dataSource);
-        // One is missing: Return Nothing
-        if (!a.isPresent() || !b.isPresent())
-            return Optional.empty();
-        if (a.get() == null || b.get() == null)
-            return Optional.empty();
-        boolean eq = a.get().equals(b.get());
-        return Optional.of(!eq);
+    public Optional<Boolean> evaluate(State state) {
+    	return helper.evaluate(state);
     }
 
+    public String toString() {
+    	return "(" + left + " != "+ right + ") ";
+    }
 }
