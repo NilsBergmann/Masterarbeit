@@ -35,6 +35,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.BaseType
 import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import bergmann.masterarbeit.monitorDsl.StringLiteral
 import bergmann.masterarbeit.monitorDsl.TimeOffset
+import bergmann.masterarbeit.monitorDsl.IfThenElse
 
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
@@ -134,6 +135,19 @@ class ExpressionTypeChecker {
 			MappingUnary: return expr.handleCustomJavaMapping
 			MappingBinary: return expr.handleCustomJavaMapping
 			TimeOffset: return expr.expr.expressionType
+			IfThenElse: {
+				if(expr.condition.isBoolean){
+					var tThen = expr.then.expressionType
+					var tElse = expr.getElse.expressionType
+					if(tThen.equals(tElse)){
+						t = tThen	
+					} else {
+						t=""
+					}
+				} else {
+					t=""
+				}
+			}
 			default: {
 				throw new IllegalArgumentException("Can't parse expr: " + expr)
 			}

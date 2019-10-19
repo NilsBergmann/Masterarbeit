@@ -53,6 +53,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.EcoreUtil2
 import bergmann.masterarbeit.monitorDsl.TimeOffset
 import bergmann.masterarbeit.monitorDsl.StateOffset
+import bergmann.masterarbeit.monitorDsl.IfThenElse
 
 /**
  * Generates code from your model files on save.
@@ -302,6 +303,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 			MappingBinary: return compile(expr as MappingBinary)
 			MappingUnary: return compile(expr as MappingUnary)
 			TimeOffset: return compile(expr as TimeOffset)
+			IfThenElse: return '''new IfThenElse(«expr.condition.compile», «expr.then.compile», «expr.getElse.compile»)'''
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}

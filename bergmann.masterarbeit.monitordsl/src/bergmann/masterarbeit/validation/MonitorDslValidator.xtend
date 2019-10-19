@@ -173,6 +173,18 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 	}
 	
 	@Check 
+	def unitMismatch(IfThenElse expr){
+		if(! (expr.then.isNumber && expr.getElse.isNumber))
+			return
+		var comp = expr.then.isUnitCompatible(expr.getElse)
+		if(!comp){
+			var lUnit = expr.then.unit
+			var rUnit = expr.getElse.unit
+			error("Different, incompatible units for then and else\n then:[" + lUnit + "] else:[" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
+		}
+	}
+	
+	@Check 
 	def EqualsTypeWarning(Rel expr){
 		if(expr.op.equals("==") || expr.op.equals("!=") )
 			if(!expr.left.expressionType.equals(expr.right.expressionType))
