@@ -173,6 +173,15 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 	}
 	
 	@Check 
+	def typeMismatch(IfThenElse expr){
+		var tThen = expr.then.expressionType
+		var tElse = expr.getElse.expressionType
+		if(! tThen.equals(tElse)){
+			error("Different, incompatible types for then and else\n then:[" + tThen + "] else:[" + tElse + "]", expr.eContainer, expr.eContainingFeature, -1) 
+		}
+	}
+	
+	@Check 
 	def unitMismatch(IfThenElse expr){
 		if(! (expr.then.isNumber && expr.getElse.isNumber))
 			return
