@@ -17,20 +17,22 @@ import org.junit.jupiter.api.Test;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.Addition;
 import bergmann.masterarbeit.generationtarget.expressions.Division;
+import bergmann.masterarbeit.generationtarget.expressions.IfThenElse;
 import bergmann.masterarbeit.generationtarget.expressions.Multiplication;
 import bergmann.masterarbeit.generationtarget.expressions.NumberLiteral;
 import bergmann.masterarbeit.generationtarget.expressions.NumberNegation;
 import bergmann.masterarbeit.generationtarget.expressions.Subtraction;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
+import bergmann.masterarbeit.generationtarget.test.utils.Unknown;
 
 class ArithmeticTest {
-	static NumberLiteral leftExpr, rightExpr;
+	static Expression<Amount> leftExpr, rightExpr, unknown;
 	static Amount leftAmount, rightAmount;
 	static State s;
 	
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
-		double leftValue = 2.0;
+		double leftValue = 2;
 		double rightValue = 5.0;
 		
 		Unit leftUnit = SI.KILOMETER;
@@ -38,6 +40,7 @@ class ArithmeticTest {
 		
 		leftExpr = new NumberLiteral(leftValue, leftUnit);
 		rightExpr = new NumberLiteral(rightValue, rightUnit);
+		unknown = new Unknown<Amount>();
 		
 		leftAmount = Amount.valueOf(leftValue, leftUnit);
 		rightAmount = Amount.valueOf(rightValue, rightUnit);
@@ -52,6 +55,19 @@ class ArithmeticTest {
 		Expression expr = new Addition(leftExpr, rightExpr);
 		Amount expected = leftAmount.plus(rightAmount);
 		assertEquals(Optional.of(expected), expr.evaluate(s));
+		
+		//Unknown values
+		Expression leftUnknown = new Addition(unknown, rightExpr);
+		Expression rightUnknown = new Addition(leftExpr, unknown);
+		Expression bothUnknown = new Addition(unknown, unknown);
+		assertEquals(Optional.empty(), leftUnknown.evaluate(s));
+		assertEquals(Optional.empty(), rightUnknown.evaluate(s));
+		assertEquals(Optional.empty(), bothUnknown.evaluate(s));
+		
+		//Nullcheck
+		assertThrows(IllegalArgumentException.class, ()->{new Addition(leftExpr,null);});
+		assertThrows(IllegalArgumentException.class, ()->{new Addition(null,rightExpr);});
+		assertThrows(IllegalArgumentException.class, ()->{new Addition(null,null);});
 	}
 	
 	@Test
@@ -59,6 +75,19 @@ class ArithmeticTest {
 		Expression expr = new Subtraction(leftExpr, rightExpr);
 		Amount expected = leftAmount.minus(rightAmount);
 		assertEquals(Optional.of(expected), expr.evaluate(s));
+		
+		//Unknown values
+		Expression leftUnknown = new Subtraction(unknown, rightExpr);
+		Expression rightUnknown = new Subtraction(leftExpr, unknown);
+		Expression bothUnknown = new Subtraction(unknown, unknown);
+		assertEquals(Optional.empty(), leftUnknown.evaluate(s));
+		assertEquals(Optional.empty(), rightUnknown.evaluate(s));
+		assertEquals(Optional.empty(), bothUnknown.evaluate(s));
+		
+		//Nullcheck
+		assertThrows(IllegalArgumentException.class, ()->{new Subtraction(leftExpr,null);});
+		assertThrows(IllegalArgumentException.class, ()->{new Subtraction(null,rightExpr);});
+		assertThrows(IllegalArgumentException.class, ()->{new Subtraction(null,null);});
 	}
 	
 	@Test
@@ -66,6 +95,19 @@ class ArithmeticTest {
 		Expression expr = new Multiplication(leftExpr, rightExpr);
 		Amount expected = leftAmount.times(rightAmount);
 		assertEquals(Optional.of(expected), expr.evaluate(s));
+		
+		//Unknown values
+		Expression leftUnknown = new Multiplication(unknown, rightExpr);
+		Expression rightUnknown = new Multiplication(leftExpr, unknown);
+		Expression bothUnknown = new Multiplication(unknown, unknown);
+		assertEquals(Optional.empty(), leftUnknown.evaluate(s));
+		assertEquals(Optional.empty(), rightUnknown.evaluate(s));
+		assertEquals(Optional.empty(), bothUnknown.evaluate(s));
+		
+		//Nullcheck
+		assertThrows(IllegalArgumentException.class, ()->{new Multiplication(leftExpr,null);});
+		assertThrows(IllegalArgumentException.class, ()->{new Multiplication(null,rightExpr);});
+		assertThrows(IllegalArgumentException.class, ()->{new Multiplication(null,null);});
 	}
 	
 	@Test
@@ -73,6 +115,25 @@ class ArithmeticTest {
 		Expression expr = new Division(leftExpr, rightExpr);
 		Amount expected = leftAmount.divide(rightAmount);
 		assertEquals(Optional.of(expected), expr.evaluate(s));
+		
+		//Unknown values
+		Expression leftUnknown = new Division(unknown, rightExpr);
+		Expression rightUnknown = new Division(leftExpr, unknown);
+		Expression bothUnknown = new Division(unknown, unknown);
+		assertEquals(Optional.empty(), leftUnknown.evaluate(s));
+		assertEquals(Optional.empty(), rightUnknown.evaluate(s));
+		assertEquals(Optional.empty(), bothUnknown.evaluate(s));
+		
+		//Nullcheck
+		assertThrows(IllegalArgumentException.class, ()->{new Division(leftExpr,null);});
+		assertThrows(IllegalArgumentException.class, ()->{new Division(null,rightExpr);});
+		assertThrows(IllegalArgumentException.class, ()->{new Division(null,null);});
+		
+		// Division by zero
+		Expression zeroExpr = new NumberLiteral(0, Unit.ONE);
+		Expression divideByZero = new Division(leftExpr, zeroExpr);
+		assertEquals(Optional.empty(), divideByZero.evaluate(s));
+	
 	}
 	
 	@Test
@@ -80,6 +141,13 @@ class ArithmeticTest {
 		Expression expr = new NumberNegation(leftExpr);
 		Amount expected = leftAmount.times(-1);
 		assertEquals(Optional.of(expected), expr.evaluate(s));
+		
+		//Unknown values
+		Expression valueUnknown = new NumberNegation(unknown);
+		assertEquals(Optional.empty(), valueUnknown.evaluate(s));
+		//Nullcheck
+		assertThrows(IllegalArgumentException.class, ()->{new NumberNegation(null);});
+
 	}
 	// TODO: Add tests for null cases and incompatible units
 
