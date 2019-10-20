@@ -21,8 +21,8 @@ public class LTL_Until extends BinaryExpression<Boolean, Boolean, Boolean> {
     public LTL_Until(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {
         super(left, right);
         this.interval = interval;
-        // ¬ (φ U ψ) ≡ (¬φ R ¬ψ)
-        // -> (φ U ψ) ≡ ¬ (¬φ R ¬ψ)
+        // not (a U b) = (not a R not b)
+        // -> a U b = not((not a) R (not b))
         helper = new BoolNegation(new LTL_Release(new BoolNegation(left), new BoolNegation(right), interval));
     }
 
@@ -30,8 +30,8 @@ public class LTL_Until extends BinaryExpression<Boolean, Boolean, Boolean> {
     public Optional<Boolean> evaluate(State state) {
         return helper.evaluate(state);
     }
-    
+
     public String toString() {
-    	return "U"+"("+left+","+right+")";
+        return "U" + "(" + left + "," + right + ")";
     }
 }

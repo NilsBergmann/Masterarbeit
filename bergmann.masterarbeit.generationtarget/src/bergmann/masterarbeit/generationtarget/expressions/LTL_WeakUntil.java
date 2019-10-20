@@ -19,10 +19,8 @@ public class LTL_WeakUntil extends BinaryExpression<Boolean, Boolean, Boolean> {
     public LTL_WeakUntil(Expression<Boolean> left, Expression<Boolean> right, RelativeTimeInterval interval) {
         super(left, right);
         this.interval = interval;
-        // φ W ψ ≡ (φ U ψ) ∨ G φ ≡ φ U (ψ ∨ G φ) ≡ ψ R (ψ ∨ φ)
-        // φ W ψ ≡ ψ R (ψ ∨ φ)
-        Expression<Boolean> leftOrRight = new Or(left, right);
-        helper = new LTL_Release(right, leftOrRight, interval);
+        // a W b = (b R (a or b)
+        helper = new LTL_Release(right, new Or(left, right), interval);
     }
 
     @Override
