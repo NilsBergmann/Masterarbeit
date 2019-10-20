@@ -38,13 +38,13 @@ public class And extends BinaryExpression<Boolean, Boolean, Boolean> {
             else
                 return Optional.empty();
         // Should never reach this part
-        System.out.println("Unexpected result in expression");
+        System.err.println("Unexpected result in AND expression " + this.toString());
         return Optional.empty();
 
     }
-    
+
     public String toString() {
-    	return "(" + left + " AND "+ right + ")";
+        return "(" + left + " AND " + right + ")";
     }
 
 }

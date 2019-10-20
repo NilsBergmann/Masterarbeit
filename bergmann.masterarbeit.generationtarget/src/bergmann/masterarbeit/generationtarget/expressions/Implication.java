@@ -2,7 +2,6 @@ package bergmann.masterarbeit.generationtarget.expressions;
 
 import java.util.Optional;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
@@ -38,13 +37,13 @@ public class Implication extends BinaryExpression<Boolean, Boolean, Boolean> {
             else
                 return Optional.empty();
         // Should never reach this part
-        System.out.println("Unexpected Result in Expression");
+        System.err.println("Unexpected result in Implication expression " + this.toString());
         return Optional.empty();
 
     }
-    
+
     public String toString() {
-    	return "(" + left + " -> "+ right + ") ";
+        return "(" + left + " -> " + right + ") ";
     }
 
 }

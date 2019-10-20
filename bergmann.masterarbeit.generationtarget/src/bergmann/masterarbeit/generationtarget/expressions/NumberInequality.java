@@ -46,7 +46,7 @@ public class NumberInequality extends BinaryExpression<Amount, Amount, Boolean> 
                 case "!=":
                     return Optional.of(comparison != 0);
                 default: {
-                    System.out.println("ERROR: Unexpected operator '" + this.operator + "'");
+                    System.err.println("ERROR: Unexpected Inequality operator '" + this.operator + "'");
                     return Optional.empty();
                 }
                 }
@@ -57,8 +57,8 @@ public class NumberInequality extends BinaryExpression<Amount, Amount, Boolean> 
 
         }
     }
-    
+
     public String toString() {
-    	return "(" + left + operator + right + ") ";
+        return "(" + left + operator + right + ") ";
     }
 }
