@@ -147,20 +147,24 @@ public class DataController {
         }
     }
 
-    public boolean timestampIsInRange(Instant timestamp, boolean included) {
-        if (states.isEmpty() || timestamp == null)
-            return false;
-        int diff = states.get(states.size() - 1).timestamp.compareTo(timestamp);
-        if (included)
-            return diff >= 0;
-        else
-            return diff > 0;
-    }
-
     public boolean intervalIsInRange(AbsoluteTimeInterval interval) {
-        boolean start = timestampIsInRange(interval.start, interval.includeLeft);
-        boolean end = timestampIsInRange(interval.end, interval.includeRight);
-        return start && end;
+        if (states.isEmpty())
+            return false;
+        Instant lowestAllowedTimestamp = this.getFirstState().timestamp;
+        Instant highestAllowedTimestamp = this.getLatestState().timestamp;
+        // Check start 
+        boolean startOK = false;
+        if(interval.includeLeft)
+        	startOK = lowestAllowedTimestamp.isBefore(interval.start) || lowestAllowedTimestamp.equals(interval.start);
+        else
+        	startOK = lowestAllowedTimestamp.isBefore(interval.start);
+        // Check end
+        boolean endOK = false;
+        if(interval.includeRight)
+        	endOK = highestAllowedTimestamp.isAfter(interval.end) || highestAllowedTimestamp.equals(interval.end);
+        else
+        	endOK = highestAllowedTimestamp.isAfter(interval.end);
+        return startOK && endOK;
     }
 
     public boolean isRealTime() {
