@@ -18,11 +18,11 @@ import org.jscience.physics.amount.Amount;
 
 public class DatabaseWrapper {
     public static String TIMESTAMP_COLUMN_NAME = "Timestamp";
-    
+
     public Map<String, Unit> numberColumns;
     public List<String> booleanColumns;
     public List<String> stringColumns;
-    
+
     public Connection conn;
     public String tableName = null;
 
@@ -31,8 +31,9 @@ public class DatabaseWrapper {
         this.booleanColumns = new ArrayList<>();
         this.stringColumns = new ArrayList<>();
     }
+
     public DatabaseWrapper(String databaseName) {
-    	this();
+        this();
     }
 
     public DatabaseWrapper(String databaseName, String tableName) {
@@ -80,38 +81,41 @@ public class DatabaseWrapper {
                 long timestamp = rs.getLong(TIMESTAMP_COLUMN_NAME);
                 State current = new State(Instant.ofEpochMilli(timestamp));
                 for (String name : booleanColumns) {
-                	try {
-                		boolean x = rs.getBoolean(name);
-						Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
-						current.store(name, data);
-					} catch (SQLException  e) {
-						System.err.println("Couldnt get boolean '" + name + "' for " + current.toString() + ". Saving Optional.empty " + e);
-						current.store(name, Optional.empty());
-					}
-				}
+                    try {
+                        boolean x = rs.getBoolean(name);
+                        Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
+                        current.store(name, data);
+                    } catch (SQLException e) {
+                        System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
+                                + ". Saving Optional.empty " + e);
+                        current.store(name, Optional.empty());
+                    }
+                }
                 for (String name : stringColumns) {
-                	try { 
-                		String x = rs.getString(name);
-                		Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
-                		current.store(name, data);
-					} catch (SQLException  e) {
-						System.err.println("Couldnt get boolean '" + name + "' for " + current.toString() + ". Saving Optional.empty " + e);
-						current.store(name, Optional.empty());
-					}
-				}
+                    try {
+                        String x = rs.getString(name);
+                        Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
+                        current.store(name, data);
+                    } catch (SQLException e) {
+                        System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
+                                + ". Saving Optional.empty " + e);
+                        current.store(name, Optional.empty());
+                    }
+                }
                 for (Entry<String, Unit> pair : numberColumns.entrySet()) {
-                	Unit unit = pair.getValue();
-                	String name = pair.getKey();
-                	try {
-                		double value = rs.getDouble(name);
-                		Amount x = Amount.valueOf(value, unit);
-						Optional data = rs.wasNull()? Optional.empty() : Optional.of(x);
-						current.store(name, data);
-					} catch (SQLException  e) {
-						System.err.println("Couldnt get boolean '" + name + "' for " + current.toString() + ". Saving Optional.empty " + e);
-						current.store(name, Optional.empty());
-					}
-				}
+                    Unit unit = pair.getValue();
+                    String name = pair.getKey();
+                    try {
+                        double value = rs.getDouble(name);
+                        Amount x = Amount.valueOf(value, unit);
+                        Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
+                        current.store(name, data);
+                    } catch (SQLException e) {
+                        System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
+                                + ". Saving Optional.empty " + e);
+                        current.store(name, Optional.empty());
+                    }
+                }
                 states.add(current);
             }
         } catch (Exception e) {
@@ -130,40 +134,41 @@ public class DatabaseWrapper {
                 names.add(rs.getString(3));
             }
         } catch (Exception e) {
-            System.out.println("ERROR " + e);
+            System.err.println("ERROR " + e);
         }
         return names;
     }
 
     public void setTable(String name) {
-        if (this.getTables().contains(name)) 
+        if (this.getTables().contains(name))
             this.tableName = name;
         else
             throw new IllegalArgumentException("No table with name " + name);
     }
-    
+
     public void registerNumberColumn(String name, Unit unit) {
-    	if(isNotRegistered(name))
-    		this.numberColumns.put(name, unit);
-    	else
-    		System.err.println("Column " + name + " is already registered");
+        if (isNotRegistered(name))
+            this.numberColumns.put(name, unit);
+        else
+            System.err.println("Column " + name + " is already registered");
     }
-    
+
     public void registerStringColumn(String name) {
-    	if(isNotRegistered(name))
-    		this.stringColumns.add(name);
-    	else
-    		System.err.println("Column " + name + " is already registered");
+        if (isNotRegistered(name))
+            this.stringColumns.add(name);
+        else
+            System.err.println("Column " + name + " is already registered");
     }
-    
+
     public void registerBooleanColumn(String name) {
-    	if(isNotRegistered(name))
-    		this.booleanColumns.add(name);
-    	else
-    		System.err.println("Column " + name + " is already registered");
+        if (isNotRegistered(name))
+            this.booleanColumns.add(name);
+        else
+            System.err.println("Column " + name + " is already registered");
     }
 
     private boolean isNotRegistered(String columnName) {
-    	return !numberColumns.containsKey(columnName) && !stringColumns.contains(columnName) && !booleanColumns.contains(columnName) && !columnName.equals(TIMESTAMP_COLUMN_NAME);
+        return !numberColumns.containsKey(columnName) && !stringColumns.contains(columnName)
+                && !booleanColumns.contains(columnName) && !columnName.equals(TIMESTAMP_COLUMN_NAME);
     }
 }
