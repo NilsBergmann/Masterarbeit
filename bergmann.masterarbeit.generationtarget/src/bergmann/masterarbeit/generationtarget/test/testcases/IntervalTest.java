@@ -134,13 +134,34 @@ class IntervalTest {
 		int count = states.size();
 		assertEquals(21, count);
 	}
-	
+		
 	@Test
-	void BelowZeroAbsoluteIntervalTest() {
-		Instant start = Instant.ofEpochMilli(-10000000);
-		Instant end = Instant.ofEpochMilli(0);
-		AbsoluteTimeInterval absInterval = new AbsoluteTimeInterval(start,end,true,true);
-		System.out.println(start);
+	void MaxMinIntervalTest() {
+		// Create [-inf, +inf] interval
+		Duration start = Duration.ofMillis(Long.MIN_VALUE);
+		Duration end = Duration.ofMillis(Long.MAX_VALUE);
+		RelativeTimeInterval interval = new RelativeTimeInterval(start, end, true, true);
+		
+		//Test various offset values to catch errors
+		try {
+		// t=0
+		AbsoluteTimeInterval absInterval = interval.addInstant(Instant.ofEpochMilli(0));
+		List<State> states = ctrl.getStatesInInterval(absInterval);
+		
+		// t=MIN_VALUE
+		AbsoluteTimeInterval absIntervalMoveByMinimum = interval.addInstant(Instant.ofEpochMilli(Long.MIN_VALUE));
+		List<State> statesMin = ctrl.getStatesInInterval(absIntervalMoveByMinimum);
+		
+		// t=MAX_VALUE
+		AbsoluteTimeInterval absIntervalMoveByMaximum = interval.addInstant(Instant.ofEpochMilli(Long.MAX_VALUE));
+		List<State> statesMax = ctrl.getStatesInInterval(absIntervalMoveByMaximum);
+		
+		// t=s.timestamp
+		AbsoluteTimeInterval absIntervalState = interval.addInstant(s.timestamp);
+		List<State> statesS = ctrl.getStatesInInterval(absIntervalState);
+		} catch (Exception e) {
+			fail("[-inf, +inf] interval failed");
+		}
 	}
 
 }
