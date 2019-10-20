@@ -28,9 +28,13 @@ public class Division extends BinaryExpression<Amount, Amount, Amount> {
             Amount bV = b.get();
             try {
                 Amount x = aV.divide(bV);
+                if(!Double.isFinite(x.getEstimatedValue())) {
+                	System.err.println("Division: Nonfinite amount. Returning Optional.empty(). " + aV + " / " +bV+ " = "+x);
+                	return Optional.empty();
+                }
                 return Optional.of(x);
             } catch (ArithmeticException e) {
-                System.err.println("Division: Divide by zero");
+            	System.err.println("Division: Divide by zero");
                 return Optional.empty();
             } catch (ConversionException e) {
                 System.err.println("Division: Incompatible units: " + aV.getUnit() + " and " + bV.getUnit());
@@ -40,6 +44,6 @@ public class Division extends BinaryExpression<Amount, Amount, Amount> {
     }
     
     public String toString() {
-    	return "(" + left + " / "+ right + ") ";
+    	return "(" + left + " / "+ right + ")";
     }
 }
