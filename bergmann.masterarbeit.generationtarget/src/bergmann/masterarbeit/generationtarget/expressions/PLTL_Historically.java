@@ -39,15 +39,18 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
             relevantStates.add(state);
         }
 
-        // Check if any state evaluates to false
+        // If any state evaluates to false, return false
+        boolean atLeastOneUnknown = false;
         for (State current : relevantStates) {
             Optional<Boolean> result = expr.evaluate(current);
-            if (result.isPresent() && result.get() == false)
+            if (!result.isPresent())
+            	atLeastOneUnknown = true;
+            else if (result.get() == false)
                 return Optional.of(false);
         }
         // No conflicting state found
-
-        return Optional.of(true);
+        // If at least one state was unknown, return empty instead of true
+        return atLeastOneUnknown? Optional.empty() : Optional.of(true);
     }
 
     public String toString() {
