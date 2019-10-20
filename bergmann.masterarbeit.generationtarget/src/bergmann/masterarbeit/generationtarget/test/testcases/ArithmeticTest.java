@@ -149,6 +149,4 @@ class ArithmeticTest {
 		assertThrows(IllegalArgumentException.class, ()->{new NumberNegation(null);});
 
 	}
-	// TODO: Add tests for null cases and incompatible units
-
 }
