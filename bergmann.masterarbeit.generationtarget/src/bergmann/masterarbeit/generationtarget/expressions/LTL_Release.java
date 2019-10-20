@@ -1,5 +1,6 @@
 package bergmann.masterarbeit.generationtarget.expressions;
 
+import java.rmi.UnexpectedException;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,47 +46,55 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
         for (State current : relevantStates) {
             // Check if any state has right = false before left becomes true at least once
             if (leftWasTrueOnce.isPresent() && leftWasTrueOnce.get().equals(false)) {
-                // Left was true for at least one state
+                // Left has been false all the time
                 // If right is unknown, return unknown
                 // If right is false, return false
-                // Then continue loop
-                Optional<Boolean> resultLeft = left.evaluate(state);
-                Optional<Boolean> resultRight = left.evaluate(state);
+                Optional<Boolean> resultLeft = left.evaluate(current);
+                Optional<Boolean> resultRight = right.evaluate(current);
+                // Update knowledge about left
+                if (!resultLeft.isPresent())
+                    leftWasTrueOnce = Optional.empty();
+                else if (resultLeft.get().equals(true))
+                    leftWasTrueOnce = Optional.of(true);
+                // Handle right
                 if (!resultRight.isPresent())
                     return Optional.empty();
-                if (resultRight.get().equals(false))
+                else if (resultRight.get().equals(false))
                     return Optional.of(false);
+            } else if (!leftWasTrueOnce.isPresent()) {
+                // left value was unknown for at least one state and hasnt been true yet.
+                // If right is unknown, return unknown
+                // If right is false, return unknown, unless current left is true, in that case return false
+                // Then continue loop
+                Optional<Boolean> resultLeft = left.evaluate(current);
+                Optional<Boolean> resultRight = right.evaluate(current);
                 // Update knowledge about left
                 if (!resultLeft.isPresent())
                     leftWasTrueOnce = Optional.empty();
-                if (resultLeft.get().equals(true))
+                else if (resultLeft.get().equals(true))
                     leftWasTrueOnce = Optional.of(true);
-            } else if (!leftWasTrueOnce.isPresent()) {
-                // left value was unknown for at least one state.
-                // If right is unknown, return unknown
-                // If right is false, return unknown
-                // Then continue loop
-                Optional<Boolean> resultLeft = left.evaluate(state);
-                Optional<Boolean> resultRight = left.evaluate(state);
+                // Handle right
                 if (!resultRight.isPresent())
                     return Optional.empty();
-                if (resultRight.get().equals(false))
-                    return Optional.empty();
-                // Update knowledge about left
-                if (!resultLeft.isPresent())
-                    leftWasTrueOnce = Optional.empty();
-                if (resultLeft.get().equals(true))
-                    leftWasTrueOnce = Optional.of(true);
+                else if (resultRight.get().equals(false))
+                	// Check if current left is true
+                    if(resultLeft.isPresent() && resultLeft.equals(true))
+                    	return Optional.of(false);
+                    else
+                    	return Optional.empty();
+
             } else if (leftWasTrueOnce.isPresent() && leftWasTrueOnce.get().equals(true)) {
+            	// if left is known to have been true: do nothing, everything is okay
                 break;
+            } else {
+            	throw new IllegalArgumentException("LTL_Release: Unexpected state");
             }
-            // if left is known to have been true: do nothing, everything is okay
         }
+        
         if (leftWasTrueOnce.isPresent() && leftWasTrueOnce.get().equals(true)) {
             // left was released and the loop hasnt been cancelled by a conflicting right
             return Optional.of(true);
         }
-
         // No conflicting state found so far, but right (maybe) wasnt released yet
 
         // Handle different evaluation cases
