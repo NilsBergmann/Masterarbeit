@@ -26,7 +26,7 @@ public class AggregateMinimum extends UnaryExpression<Amount, Amount> {
         AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
 
         // Check if data is complete
-        if (realTime && !state.dataController.intervalIsInRange(relevantTime)) {
+        if (!state.dataController.intervalIsInRange(relevantTime)) {
             return Optional.empty();
         }
 
@@ -58,8 +58,8 @@ public class AggregateMinimum extends UnaryExpression<Amount, Amount> {
             return Optional.empty();
         }
     }
-    
+
     public String toString() {
-    	return " MIN[" +interval.toString() + "] (" + expr + ") ";
+        return " MIN[" + interval.toString() + "] (" + expr + ") ";
     }
 }

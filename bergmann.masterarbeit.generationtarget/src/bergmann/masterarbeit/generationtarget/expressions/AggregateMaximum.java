@@ -27,7 +27,7 @@ public class AggregateMaximum extends UnaryExpression<Amount, Amount> {
         AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
 
         // Check if data is complete
-        if (realTime && !state.dataController.intervalIsInRange(relevantTime)) {
+        if (!state.dataController.intervalIsInRange(relevantTime)) {
             return Optional.empty();
         }
 

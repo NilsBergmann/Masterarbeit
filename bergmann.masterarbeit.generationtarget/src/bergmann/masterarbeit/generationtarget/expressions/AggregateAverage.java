@@ -27,7 +27,7 @@ public class AggregateAverage extends UnaryExpression<Amount, Amount> {
         AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
 
         // Check if data is complete
-        if (realTime && !state.dataController.intervalIsInRange(relevantTime)) {
+        if (!state.dataController.intervalIsInRange(relevantTime)) {
             return Optional.empty();
         }
 
@@ -52,7 +52,7 @@ public class AggregateAverage extends UnaryExpression<Amount, Amount> {
                 if (sum == null)
                     sum = current.get();
                 else
-                    sum.plus(current.get());
+                    sum = sum.plus(current.get());
             }
 
             // Divide by n
@@ -60,7 +60,7 @@ public class AggregateAverage extends UnaryExpression<Amount, Amount> {
 
             return Optional.of(result);
         } catch (javax.measure.converter.ConversionException e) {
-            System.err.println("Mismatched units in average calculation, returning UNKNOWN");
+            System.err.println("Mismatched units in average calculation, returning Optional.empty()");
             return Optional.empty();
         }
     }
