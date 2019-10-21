@@ -37,7 +37,7 @@ JavaClassReference:
 
 LiteralJava returns CustomJava:
 	{LiteralJava}
-	"Java" "{"
+	"Java_Literal" "{"
 	(
 		("name:" name=ID) &
 		("type:" type=Type) &
@@ -50,7 +50,7 @@ LiteralJava returns CustomJava:
 
 UnaryJava returns CustomJava:
 	{UnaryJava}
-	"Java" "{"
+	"Java_Unary" "{"
 	(
 		("name:" name=ID) &
 		("type:" type1=Type "->" type2=Type) &
@@ -63,7 +63,7 @@ UnaryJava returns CustomJava:
 
 BinaryJava returns CustomJava:
 	{BinaryJava}
-	"Java" "{"
+	"Java_Binary" "{"
 	(
 		("name:" name=ID) &
 		("type:" type1=Type "->" type2=Type "->" type3=Type) &

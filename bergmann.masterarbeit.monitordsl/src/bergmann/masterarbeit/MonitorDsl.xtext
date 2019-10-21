@@ -40,7 +40,7 @@ ExpressionTimeOffset:
 ;
 
 ImplicationExpr returns Expression:
-	OrExpr ({Implication.left=current} op=('->'|'<->'|'implies'|'iff') right=OrExpr)*
+	OrExpr ({Implication.left=current} op=('->'|'implies') right=OrExpr)*
 ;
 
 OrExpr returns Expression:
@@ -81,7 +81,7 @@ MappingBinary returns Expression:
 ;
 
 MappingUnary returns Expression:
-	AtomExpr | {MappingUnary}  ref=[ecore::EObject]   expr=AtomExpr
+	AtomExpr | {MappingUnary} "<"  ref=[ecore::EObject]  expr=AtomExpr ">"
 ;
 
 AtomExpr returns Expression: 
