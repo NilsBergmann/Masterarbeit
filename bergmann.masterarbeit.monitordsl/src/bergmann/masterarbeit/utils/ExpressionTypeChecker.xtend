@@ -49,6 +49,7 @@ class ExpressionTypeChecker {
 		try {
 			return expr.expressionType != ""
 		} catch (IllegalArgumentException e) {
+			System.err.println(e)
 			return false
 		}
 	}
@@ -57,6 +58,7 @@ class ExpressionTypeChecker {
 		try {
 			return expr.expressionType == BOOLEAN_JAVA_CLASS
 		} catch (IllegalArgumentException e) {
+			System.err.println(e)
 			return false
 		}
 	}
@@ -65,6 +67,7 @@ class ExpressionTypeChecker {
 		try {
 			return expr.expressionType == STRING_JAVA_CLASS
 		} catch (IllegalArgumentException e) {
+			System.err.println(e)
 			return false
 		}
 	}
@@ -73,6 +76,7 @@ class ExpressionTypeChecker {
 		try {
 			return expr.expressionType == NUMBER_JAVA_CLASS
 		} catch (IllegalArgumentException e) {
+			System.err.println(e)
 			return false
 		}
 	}
