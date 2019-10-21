@@ -161,16 +161,17 @@ class ExpressionTypeChecker {
 			case BOOLEAN: return BOOLEAN_JAVA_CLASS
 			case NUMBER: return NUMBER_JAVA_CLASS
 			case STRING: return STRING_JAVA_CLASS
+			case ANY: return OBJECT
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}
 	}
 	
 	def private static String handleCustomJavaMapping(MappingUnary e){
 		try {
-			var domainElement = e.ref as UnaryJava
+			var domainElement = e.ref.ref as UnaryJava
 			var declaredIn = domainElement.type1.handleDomainType
 			var declaredOut = domainElement.type2.handleDomainType
-			if(e.expr.expressionType.equals(declaredIn) || e.expr.expressionType.equals(OBJECT))
+			if(e.expr.expressionType.equals(declaredIn) || (e.expr.isValid && declaredIn.equals(OBJECT)))
 				return declaredOut
 			else
 				return ""
@@ -187,7 +188,7 @@ class ExpressionTypeChecker {
 			var declaredResult = domainElement.type3.handleDomainType
 			var realLeft = e.left.expressionType
 			var realRight = e.right.expressionType
-			if((realLeft.equals(declaredLeft)|| declaredLeft.equals(OBJECT)) && ( realRight.equals(declaredRight) || declaredRight.equals(OBJECT)))
+			if((realLeft.equals(declaredLeft)|| (e.left.isValid && declaredLeft.equals(OBJECT))) && ( realRight.equals(declaredRight) || (e.right.isValid && declaredRight.equals(OBJECT))))
 				return declaredResult
 			else
 				return ""
