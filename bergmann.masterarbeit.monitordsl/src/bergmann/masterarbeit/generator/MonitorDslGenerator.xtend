@@ -69,14 +69,12 @@ class MonitorDslGenerator extends AbstractGenerator {
 //				.map[name]
 //				.join(', '))
 		var monitors = resource.contents.head as Monitors
-		fsa.generateFile("RunEvaluation.java", monitors.compile)		
+		fsa.generateFile(monitors.package.name+"_EvaluationRunner.java", monitors.compile)		
 	}
 	
 	def String compile(Monitors monitors){
 		var assertions = monitors.assertions
 		var userVars = monitors.uservars
-		var databaseFilename = "test.db" //TODO Implement this
-		//TODO: Add imports
 		return '''
 		«monitors.compilePackage»
 		«monitors.compileImports»
