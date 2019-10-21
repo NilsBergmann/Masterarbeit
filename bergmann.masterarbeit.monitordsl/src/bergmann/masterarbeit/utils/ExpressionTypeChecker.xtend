@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BASE_VALUETYPE
-import bergmann.masterarbeit.monitorDsl.MappingUnary
 import bergmann.masterarbeit.monitorDsl.MappingBinary
 import bergmann.masterarbeit.mappingdsl.mappingDSL.CustomJava
 import bergmann.masterarbeit.monitorDsl.CrossReference
@@ -83,6 +82,7 @@ class ExpressionTypeChecker {
 	
 	
 	def static String getExpressionType(Expression expr) {
+		
 		if(expressionTypeMap.containsKey(expr)){
 			return expressionTypeMap.get(expr)
 		}
@@ -136,7 +136,6 @@ class ExpressionTypeChecker {
 				t = BOOLEAN_JAVA_CLASS
 			StringLiteral: t = STRING_JAVA_CLASS
 			CrossReference: return expr.handleCrossreference
-			MappingUnary: return expr.handleCustomJavaMapping
 			MappingBinary: return expr.handleCustomJavaMapping
 			TimeOffset: return expr.expr.expressionType
 			IfThenElse: {
@@ -167,20 +166,6 @@ class ExpressionTypeChecker {
 			case STRING: return STRING_JAVA_CLASS
 			case ANY: return OBJECT
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
-		}
-	}
-	
-	def private static String handleCustomJavaMapping(MappingUnary e){
-		try {
-			var domainElement = e.ref.ref as UnaryJava
-			var declaredIn = domainElement.type1.handleDomainType
-			var declaredOut = domainElement.type2.handleDomainType
-			if(e.expr.expressionType.equals(declaredIn) || (e.expr.isValid && declaredIn.equals(OBJECT)))
-				return declaredOut
-			else
-				return ""
-		} catch (Exception exception) {
-			throw new IllegalArgumentException("Can't parse type of: " + e)
 		}
 	}
 	
@@ -215,13 +200,29 @@ class ExpressionTypeChecker {
 			return 0.class.name
 	}
 	
+	
 	def private static String handleCrossreference(CrossReference e){
-		var referenced = e.ref
+		var referenced = e.ref 
 		switch referenced {
 			UserVariable: return referenced.expr.expressionType 
 			DomainValue: return referenced.type.toExpressionType
 			LiteralJava: return referenced.type.handleDomainType 
-			default: throw new IllegalArgumentException("Typing: Can't parse : " + e)
+			UnaryJava: {
+				try {
+					var domainElement = e.ref as UnaryJava
+					if(e.optionalExpr == null)
+						throw new IllegalArgumentException("Reference to Java_Unary missing Expression. " + e)
+					var declaredIn = domainElement.type1.handleDomainType
+					var declaredOut = domainElement.type2.handleDomainType
+					if(e.optionalExpr.expressionType.equals(declaredIn) || (e.optionalExpr.isValid && declaredIn.equals(OBJECT)))
+						return declaredOut
+					else
+						return ""
+				} catch (Exception exception) {
+					throw new IllegalArgumentException("Can't parse type of: " + e + "! " + exception)
+				}
+			}
+			default: throw new IllegalArgumentException("Typing: Can't parse : " + referenced.class)
 		}
 	}
 }

@@ -13,7 +13,6 @@ import static extension bergmann.masterarbeit.utils.ExpressionUtils.*
 import bergmann.masterarbeit.monitorDsl.Monitors
 import org.eclipse.xtext.scoping.Scopes
 import bergmann.masterarbeit.monitorDsl.MappingBinary
-import bergmann.masterarbeit.monitorDsl.MappingUnary
 import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
 import org.eclipse.emf.ecore.util.EcoreUtil
 import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
@@ -31,25 +30,36 @@ class MonitorDslScopeProvider extends AbstractMonitorDslScopeProvider {
 
 	override getScope(EObject ctx, EReference ref){
 		if(ctx instanceof CrossReference && ref == MonitorDslPackage.Literals.CROSS_REFERENCE__REF){
-			// CrossReference
-			// Refers to UserVariables or to domain java literals / database values
-			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
-			var candidates = new ArrayList<EObject>()
-			candidates.addAll(root.allUserVariables)
-			// Make self reference impossible 
-			// Example def var x := x + 2
-			var EObject parentOfCTX = null
-			for(EObject current : candidates)
-				if(EcoreUtil.isAncestor(current, ctx))
-					parentOfCTX = current
-			if(parentOfCTX != null)
-				candidates.remove(parentOfCTX)
-			// Add imported domain elements
-			for(Domain current : root.importedDomains){
-				candidates.addAll(EcoreUtil2.eAllOfType(current, LiteralJava))
-				candidates.addAll(EcoreUtil2.eAllOfType(current, DomainValue))
+
+			if((ctx as CrossReference).optionalExpr == null){
+				// Doesnt have optionalExpr
+				// Refers to UserVariables or to domain java literals / database values
+				var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
+				var candidates = new ArrayList<EObject>()
+				candidates.addAll(root.allUserVariables)
+				// Make self reference impossible 
+				// Example def var x := x + 2
+				var EObject parentOfCTX = null
+				for(EObject current : candidates)
+					if(EcoreUtil.isAncestor(current, ctx))
+						parentOfCTX = current
+				if(parentOfCTX != null)
+					candidates.remove(parentOfCTX)
+				// Add imported domain elements
+				for(Domain current : root.importedDomains){
+					candidates.addAll(EcoreUtil2.eAllOfType(current, LiteralJava))
+					candidates.addAll(EcoreUtil2.eAllOfType(current, DomainValue))	
+				}
+				return Scopes.scopeFor(candidates)
+			} else {
+				// Has optionalExpr
+				var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
+				var candidates = new ArrayList<EObject>()
+				for(Domain current : root.importedDomains){
+					candidates.addAll(EcoreUtil2.eAllOfType(current, UnaryJava))
+				}
+				return Scopes.scopeFor(candidates)
 			}
-			return Scopes.scopeFor(candidates)
 		} else if (ctx instanceof MappingBinary && ref == MonitorDslPackage.Literals.MAPPING_BINARY__REF){
 			// MappingBinary
 			// Refers to domain BinaryJava elements
@@ -57,15 +67,6 @@ class MonitorDslScopeProvider extends AbstractMonitorDslScopeProvider {
 			var candidates = new ArrayList<EObject>()
 			for(Domain current : root.importedDomains){
 				candidates.addAll(EcoreUtil2.eAllOfType(current, BinaryJava))
-			}
-			return Scopes.scopeFor(candidates)
-		} else if (ctx instanceof MappingUnary && ref == MonitorDslPackage.Literals.MAPPING_UNARY__REF){
-			// MappingUnary
-			// Refers to domain UnaryJava elements
-			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
-			var candidates = new ArrayList<EObject>()
-			for(Domain current : root.importedDomains){
-				candidates.addAll(EcoreUtil2.eAllOfType(current, UnaryJava))
 			}
 			return Scopes.scopeFor(candidates)
 		}
