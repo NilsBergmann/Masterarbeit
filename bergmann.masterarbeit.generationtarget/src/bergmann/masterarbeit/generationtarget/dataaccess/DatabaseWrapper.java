@@ -84,22 +84,22 @@ public class DatabaseWrapper {
                     try {
                         boolean x = rs.getBoolean(name);
                         Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
-                        current.store(name, data);
+                        current.storeDBValue(name, data);
                     } catch (SQLException e) {
                         System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
                                 + ". Saving Optional.empty " + e);
-                        current.store(name, Optional.empty());
+                        current.storeDBValue(name, Optional.empty());
                     }
                 }
                 for (String name : stringColumns) {
                     try {
                         String x = rs.getString(name);
                         Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
-                        current.store(name, data);
+                        current.storeDBValue(name, data);
                     } catch (SQLException e) {
                         System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
                                 + ". Saving Optional.empty " + e);
-                        current.store(name, Optional.empty());
+                        current.storeDBValue(name, Optional.empty());
                     }
                 }
                 for (Entry<String, Unit> pair : numberColumns.entrySet()) {
@@ -109,11 +109,11 @@ public class DatabaseWrapper {
                         double value = rs.getDouble(name);
                         Amount x = Amount.valueOf(value, unit);
                         Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
-                        current.store(name, data);
+                        current.storeDBValue(name, data);
                     } catch (SQLException e) {
                         System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
                                 + ". Saving Optional.empty " + e);
-                        current.store(name, Optional.empty());
+                        current.storeDBValue(name, Optional.empty());
                     }
                 }
                 states.add(current);

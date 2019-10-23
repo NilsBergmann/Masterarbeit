@@ -20,11 +20,15 @@ import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 
 public class DataController {
     private DatabaseWrapper dbWrapper;
-    List<State> states;
-    public boolean isRealTime = false;
+    public StateListHandler stateHandler;
+    private boolean isRealTime = false;
 
-    public DataController(boolean isRealTime) {
-        states = new ArrayList<State>();
+    public void setRealTime(boolean isRealTime) {
+		this.isRealTime = isRealTime;
+	}
+
+	public DataController(boolean isRealTime) {
+    	stateHandler = new StateListHandler(isRealTime);
         this.isRealTime = isRealTime;
         this.dbWrapper = new DatabaseWrapper();
     }
@@ -37,10 +41,12 @@ public class DataController {
     }
 
     public void updateStates() {
-        this.states = this.dbWrapper.getStates();
-        for (State state : states) {
-            state.dataController = this;
-        }
+        List<State> readStates = this.dbWrapper.getStates();
+        for (State state : readStates) {
+			if(!stateHandler.contains(state)) {
+				stateHandler.add(state);				
+			}
+		}
     }
 
     public void selectTable(String tablename) {
@@ -66,105 +72,6 @@ public class DataController {
             return false;
         else
             return this.dbWrapper.isConnected();
-    }
-
-    public State getLatestState() {
-        return states.get(states.size() - 1);
-    }
-
-    public State getFirstState() {
-        return states.get(0);
-    }
-
-    public State getStateOffsetBy(State start, int amount) {
-        int startPos = this.states.indexOf(start);
-        if (startPos == -1)
-            return null;
-        int targetPos = startPos + amount;
-        if (targetPos < 0 || targetPos >= states.size())
-            return null;
-        return this.states.get(targetPos);
-    }
-
-    public List<State> getAllStates() {
-        return this.states;
-    }
-
-    public State getClosestState(Instant timestamp) {
-        Duration minimumDistance = Duration.ofMillis(Long.MAX_VALUE);
-        State minimumState = null;
-        for (State state : this.states) {
-            Duration distance = Duration.between(state.timestamp, timestamp);
-            if (distance.abs().compareTo(minimumDistance) < 0) {
-                minimumDistance = distance;
-                minimumState = state;
-            }
-        }
-        return minimumState;
-    }
-
-    public List<State> getStatesInInterval(AbsoluteTimeInterval interval) {
-        List<State> retVal = new ArrayList<State>();
-        for (State state : this.states) {
-            if (interval.contains(state.timestamp)) {
-                retVal.add(state);
-            }
-        }
-        return retVal;
-    }
-
-    public State getPreviousState(State state) {
-        int index = states.indexOf(state);
-        if (index > 0 && index <= states.size() - 1) {
-            return states.get(index - 1);
-        }
-        return null;
-    }
-
-    public State getFollowingState(State state) {
-        int index = states.indexOf(state);
-        if (index >= 0 && index < states.size() - 1) {
-            return states.get(index + 1);
-        }
-        return null;
-    }
-
-    public List<State> getAllStatesBefore(State state) {
-        int index = states.indexOf(state);
-        try {
-            return new ArrayList(states.subList(0, index));
-        } catch (Exception e) {
-            return new ArrayList<State>();
-        }
-    }
-
-    public List<State> getAllStatesAfter(State state) {
-        int index = states.indexOf(state);
-        try {
-            return new ArrayList(states.subList(index + 1, states.size()));
-        } catch (Exception e) {
-            return new ArrayList<State>();
-        }
-    }
-
-    public boolean intervalIsInRange(AbsoluteTimeInterval interval) {
-        if (states.isEmpty())
-            return false;
-        Instant lowestAllowedTimestamp = this.getFirstState().timestamp;
-        Instant highestAllowedTimestamp = this.getLatestState().timestamp;
-        // Check start 
-        boolean startOK = false;
-        if(interval.includeLeft)
-        	startOK = lowestAllowedTimestamp.isBefore(interval.start) || lowestAllowedTimestamp.equals(interval.start);
-        else
-        	startOK = lowestAllowedTimestamp.isBefore(interval.start);
-        // Check end
-        boolean endOK = false;
-        if(interval.includeRight)
-        	endOK = highestAllowedTimestamp.isAfter(interval.end) || highestAllowedTimestamp.equals(interval.end);
-        else
-        	endOK = highestAllowedTimestamp.isAfter(interval.end);
-        return startOK && endOK;
     }
 
     public boolean isRealTime() {
@@ -199,7 +106,7 @@ public class DataController {
         // Evaluate States
         System.out.println("Running evaluations...\n");
         
-        for (State state : this.getAllStates()) {
+        for (State state : this.stateHandler.getAllStates()) {
         	System.out.println("------------------");
             System.out.println("State " + state.toString()+"\n");
             for (UserVariable userVariable : userVars) {
@@ -214,14 +121,16 @@ public class DataController {
             System.out.println("");
         }
         System.out.println("Evaluation complete!");
-        writeToCSV("Test.csv", states);
+        writeToCSV("tableName", this.stateHandler.getAllStates());
     }
     
     private void writeToCSV(String path, List<State> states) {
     	System.out.println("Writing data to " + path);
     	Set<String> storedValues = new LinkedHashSet<String>();
+    	/*
+    	// TODO: Fix
     	for (State state : states) {
-			storedValues.addAll(state.getStoredKeys());
+			storedValues.addAll(this.stateHandler.getStoredKeys());
 		}
     	try {
     	//Open file
@@ -251,6 +160,7 @@ public class DataController {
     	} catch (IOException e) {
     		System.out.println("Writing results to csv failed. " + e);
     	}
+    	*/
     }
     
 }

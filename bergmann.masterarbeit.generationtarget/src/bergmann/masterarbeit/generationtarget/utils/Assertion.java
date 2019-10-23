@@ -16,14 +16,15 @@ public class Assertion {
     }
 
     public Optional<Boolean> evaluateAt(State state) {
-        Optional<Boolean> result = state.getStored(this.name);
-        if(result.isPresent())
-        	return result;
-        else {
-        	result = expression.evaluate(state);
-       		state.store(this.name, result);
-        	return result;
+    	Optional<Boolean> result = Optional.empty();
+        if(state.getStoredAssertionResults().contains(this.name)) {
+        	result = state.getAssertionResult(this.name);
+    		if (result != null && result.isPresent())
+    			return result;
         }
+    	result = expression.evaluate(state);
+   		state.storeAssertionResult(this.name, result);
+    	return result;
     }
 
     public void setExpression(Expression<Boolean> expr) {
@@ -31,6 +32,6 @@ public class Assertion {
     }
     
     public String toString() {
-		return "Assertion[" + this.name +"]=" + this.expression.toString();
+		return "Assertion['" + this.name +"']=" + this.expression.toString();
     }
 }

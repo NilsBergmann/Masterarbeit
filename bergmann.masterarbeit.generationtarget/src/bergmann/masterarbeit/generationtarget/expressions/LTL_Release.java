@@ -31,14 +31,14 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
          */
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = state.dataController.isRealTime();
+        boolean realTime = state.stateListHandler.isRealTimeEvaluationMode();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = state.dataController.getStatesInInterval(relevantTime);
+            relevantStates = state.stateListHandler.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = state.dataController.getAllStatesAfter(state);
+            relevantStates = state.stateListHandler.getAllStatesAfter(state);
             relevantStates.add(0, state);
         }
 
@@ -102,7 +102,7 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
             // Expr has interval
             if (realTime) {
                 // Realtime mode -> There might be future states coming
-                if (state.dataController.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
+                if (state.stateListHandler.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
                     // Interval is completely inside timeframe of known data when evaluating
                     return leftWasTrueOnce.isPresent() ? Optional.of(true) : Optional.empty();
                 } else {

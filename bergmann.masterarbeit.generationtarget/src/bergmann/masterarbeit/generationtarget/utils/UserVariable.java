@@ -16,17 +16,18 @@ public class UserVariable<T> extends Expression<T> {
     }
 
     public Optional<T> evaluate(State state) {
-        Optional<T> result = state.getStored(this.name);
-        if(result.isPresent())
-        	return result;
-        else {
-        	result = expression.evaluate(state);
-       		state.store(this.name, result);
-        	return result;
+    	Optional<T> result = Optional.empty();
+        if(state.getStoredUserVariableResults().contains(this.name)) {
+        	result = state.getStoredUserVariableResult(this.name);
+    		if (result != null && result.isPresent())
+    			return result;
         }
+    	result = expression.evaluate(state);
+   		state.storeUserVariableResult(this.name, result);
+    	return result;
     }
     
     public String toString() {
-		return "UserVar[" + this.name +"]=" + this.expression.toString();
+		return "UserVar['" + this.name +"']=" + this.expression.toString();
     }
 }

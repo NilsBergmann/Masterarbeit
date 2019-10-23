@@ -23,8 +23,8 @@ public class OffsetByTime<T extends Object> extends UnaryExpression<T, T> {
 	@Override
 	public Optional<T> evaluate(State state) {
 		Instant targetTimestamp = state.timestamp.plus(amount);
-		State target = state.dataController.getClosestState(targetTimestamp);
-		if (target == null || target.equals(state))
+		State target = state.stateListHandler.getClosestState(targetTimestamp);
+		if (target == null)
 			return Optional.empty();
 		return this.expr.evaluate(target);
 	}

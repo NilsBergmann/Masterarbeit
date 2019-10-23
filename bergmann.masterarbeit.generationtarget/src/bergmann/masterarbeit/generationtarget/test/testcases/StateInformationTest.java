@@ -32,13 +32,10 @@ class StateInformationTest {
 
 	@Test
 	void test() {
-		List<State> states = ctrl.getAllStates();
-		System.out.println("start1");
+		List<State> states = ctrl.stateHandler.getAllStates();
 		for (State state : states) {
-			System.out.println(state.toLongString());
 			state.getDBString("Vehicle0ACCState");
 		}
-		System.out.println("done2");
 		fail("Not yet implemented");
 	}
 

@@ -23,16 +23,16 @@ public class AggregateAverage extends UnaryExpression<Amount, Amount> {
 
     @Override
     public Optional<Amount> evaluate(State state) {
-        boolean realTime = state.dataController.isRealTime();
+        boolean realTime = state.stateListHandler.isRealTimeEvaluationMode();
         AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
 
         // Check if data is complete
-        if (!state.dataController.intervalIsInRange(relevantTime)) {
+        if (!state.stateListHandler.intervalIsInRange(relevantTime)) {
             return Optional.empty();
         }
 
         // Get states
-        List<State> relevantStates = state.dataController.getStatesInInterval(relevantTime);
+        List<State> relevantStates = state.stateListHandler.getStatesInInterval(relevantTime);
         if (relevantStates.size() == 0)
             return Optional.empty();
 

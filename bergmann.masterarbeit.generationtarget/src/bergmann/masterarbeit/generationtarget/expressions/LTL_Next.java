@@ -17,7 +17,7 @@ public class LTL_Next extends UnaryExpression<Boolean, Boolean> {
     public Optional<Boolean> evaluate(State state) {
     	if (state == null)
     		System.out.println("state is null");
-        State next = state.dataController.getFollowingState(state);
+        State next = state.stateListHandler.getFollowingState(state);
         if (next == null) {
             return Optional.empty();
         }

@@ -18,7 +18,7 @@ public class OffsetByStates<T extends Object> extends UnaryExpression<T, T>{
 
 	@Override
 	public Optional<T> evaluate(State state) {
-		State target = state.dataController.getStateOffsetBy(state, this.amount);
+		State target = state.stateListHandler.getStateOffsetBy(state, this.amount);
 		if(target == null)
 			return Optional.empty();
 		else

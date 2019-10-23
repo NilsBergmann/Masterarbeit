@@ -49,9 +49,9 @@ class OffsetTest {
 	void OffsetByStatesTest() {
 		int offset = -4;
 		Expression e = new OffsetByStates(subExpr, offset);
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
-			State target = ctrl.getStateOffsetBy(state, offset);
+			State target = ctrl.stateHandler.getStateOffsetBy(state, offset);
 			if(target == null)
 				assertEquals(Optional.empty(), result);
 			else {
@@ -65,13 +65,13 @@ class OffsetTest {
 	void OffsetByTimeTest() {
 		Duration offset = Duration.ofMillis(1); //Roughly 4 states
 		Expression e = new OffsetByTime(subExpr, offset);
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
 			
 			Instant expectedTimestamp = state.timestamp.plus(offset);
-			State target = ctrl.getClosestState(expectedTimestamp);
+			State target = ctrl.stateHandler.getClosestState(expectedTimestamp);
 			
-			if(target == null || target.equals(state))
+			if(target == null)
 				assertEquals(Optional.empty(), result);
 			else {
 				Optional expected = subExpr.evaluate(target);

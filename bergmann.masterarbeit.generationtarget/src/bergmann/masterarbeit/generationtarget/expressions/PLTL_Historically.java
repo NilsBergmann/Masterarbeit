@@ -28,14 +28,13 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
     public Optional<Boolean> evaluate(State state) {
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = state.dataController.isRealTime();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = state.dataController.getStatesInInterval(relevantTime);
+            relevantStates = state.stateListHandler.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = state.dataController.getAllStatesBefore(state);
+            relevantStates = state.stateListHandler.getAllStatesBefore(state);
             relevantStates.add(state);
         }
 

@@ -43,7 +43,7 @@ class PLTL_OperatorTest {
 		
 		Expression e = new PLTL_Once(a);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
@@ -62,7 +62,7 @@ class PLTL_OperatorTest {
 		
 		Expression e = new PLTL_Historically(a);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
 			System.out.println(state.timestamp.toEpochMilli() + ": " + result + " expected " + expectedResult);
@@ -84,9 +84,9 @@ class PLTL_OperatorTest {
 		Expression sub = a;
 		Expression e = new PLTL_Yesterday(sub);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
-			State previous = ctrl.getPreviousState(state);
+			State previous = ctrl.stateHandler.getPreviousState(state);
 			if(previous == null)
 				assertEquals(Optional.of(false), result);
 			else {
@@ -106,9 +106,9 @@ class PLTL_OperatorTest {
 		Expression sub = a;
 		Expression e = new PLTL_Z(sub);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
-			State previous = ctrl.getPreviousState(state);
+			State previous = ctrl.stateHandler.getPreviousState(state);
 			if(previous == null)
 				assertEquals(Optional.of(true), result);
 			else {
