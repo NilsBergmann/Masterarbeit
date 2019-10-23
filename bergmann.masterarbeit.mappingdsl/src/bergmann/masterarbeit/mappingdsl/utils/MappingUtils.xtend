@@ -31,7 +31,7 @@ class MappingUtils {
 			case BOOLEAN: return BOOLEAN_JAVA_CLASS
 			case NUMBER: return NUMBER_JAVA_CLASS
 			case STRING: return STRING_JAVA_CLASS
-			case ANY: return ANY_JAVA_CLASS
+			case ANY: return "T"
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}
 	}

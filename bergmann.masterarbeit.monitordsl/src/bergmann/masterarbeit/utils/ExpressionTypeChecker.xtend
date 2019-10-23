@@ -35,6 +35,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import bergmann.masterarbeit.monitorDsl.StringLiteral
 import bergmann.masterarbeit.monitorDsl.TimeOffset
 import bergmann.masterarbeit.monitorDsl.IfThenElse
+import org.eclipse.emf.ecore.impl.EObjectImpl
 
 class ExpressionTypeChecker {
 	static var expressionTypeMap = new HashMap<Expression, String>()
@@ -210,7 +211,7 @@ class ExpressionTypeChecker {
 			UnaryJava: {
 				try {
 					var domainElement = e.ref as UnaryJava
-					if(e.optionalExpr == null)
+					if(e.optionalExpr == null || e.optionalExpr instanceof EObjectImpl)
 						throw new IllegalArgumentException("Reference to Java_Unary missing Expression. " + e)
 					var declaredIn = domainElement.type1.handleDomainType
 					var declaredOut = domainElement.type2.handleDomainType
@@ -219,10 +220,10 @@ class ExpressionTypeChecker {
 					else
 						return ""
 				} catch (Exception exception) {
-					throw new IllegalArgumentException("Can't parse type of: " + e + "! " + exception)
+					return ""
 				}
 			}
-			default: throw new IllegalArgumentException("Typing: Can't parse : " + referenced.class)
+			default: return ""
 		}
 	}
 }
