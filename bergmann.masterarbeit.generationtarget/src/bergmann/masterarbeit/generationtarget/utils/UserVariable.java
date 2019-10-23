@@ -10,12 +10,20 @@ public class UserVariable<T> extends Expression<T> {
     public Expression<T> expression;
     public String name;
 
+    public UserVariable(String name) {
+    	this(name, null);
+    }
+    
     public UserVariable(String name, Expression<T> expr) {
         this.expression = expr;
         this.name = name;
     }
 
     public Optional<T> evaluate(State state) {
+    	if(expression == null) {
+    		System.err.println("No expression set for assertion " + name);
+    		return Optional.empty();
+    	}
     	Optional<T> result = Optional.empty();
         if(state.getStoredUserVariableResults().contains(this.name)) {
         	result = state.getStoredUserVariableResult(this.name);
@@ -25,6 +33,10 @@ public class UserVariable<T> extends Expression<T> {
     	result = expression.evaluate(state);
    		state.storeUserVariableResult(this.name, result);
     	return result;
+    }
+    
+    public void setExpression(Expression<T> expr) {
+        this.expression = expr;
     }
     
     public String toString() {
