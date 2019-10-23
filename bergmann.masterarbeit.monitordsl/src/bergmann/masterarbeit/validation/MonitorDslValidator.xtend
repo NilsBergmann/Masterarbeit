@@ -63,7 +63,7 @@ class MonitorDslValidator extends AbstractMonitorDslValidator {
 		if(!expr.isValid){
 			var invalidSubexpressionFound = false
 			for(Expression subExpr : expr.subexpressions){
-				if(!subExpr.isValid){
+				if(subExpr != null && !subExpr.isValid){
 					markSubexpressions(subExpr)
 					invalidSubexpressionFound = true
 				}

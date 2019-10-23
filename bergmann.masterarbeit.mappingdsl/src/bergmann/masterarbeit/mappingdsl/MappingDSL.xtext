@@ -90,7 +90,7 @@ Type:
 	{JavaType} type=[JavaDataType] | {BaseType} type=BASE_VALUETYPE
 ;
 enum BASE_VALUETYPE:
-	NUMBER = "number" | STRING = "string" | BOOLEAN = "boolean"
+	NUMBER = "number" | STRING = "string" | BOOLEAN = "boolean" | ANY = "any"
 ;
 
 Unit:

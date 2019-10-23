@@ -40,14 +40,18 @@ class UnitUtils {
 					UserVariable: return ref.expr.unit
 					DomainValue: return ref.unit.toJavaUnit
 					LiteralJava: return ref.unit.toJavaUnit
-					default: return Unit.ONE
+					UnaryJava: return ref.unit.toJavaUnit
+					default:{
+						System.err.println("UnitUtils: Unknown CrossRef" + ref.class)
+						return Unit.ONE
+					} 
 				}
 			}
 			TimeOffset: return expr.expr.unit
 			Subexpression: return expr.expr.unit
 			Negation: return expr.expr.unit
 			MappingBinary: return (expr.ref as BinaryJava).unit.toJavaUnit
-			MappingUnary: return (expr.ref as UnaryJava).unit.toJavaUnit 
+			// MappingUnary: return (expr.ref as UnaryJava).unit.toJavaUnit 
 			IfThenElse: {
 				var uThen = expr.then.unit
 				var uElse = expr.getElse.unit

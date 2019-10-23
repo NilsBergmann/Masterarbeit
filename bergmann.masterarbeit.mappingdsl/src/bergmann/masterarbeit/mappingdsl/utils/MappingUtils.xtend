@@ -13,6 +13,7 @@ class MappingUtils {
 	static var BOOLEAN_JAVA_CLASS = "java.lang.Boolean"
 	static var NUMBER_JAVA_CLASS = "org.jscience.physics.amount.Amount"
 	static var STRING_JAVA_CLASS = "java.lang.String"
+	static var ANY_JAVA_CLASS = "java.lang.Object"
 	
 	static var EXPRESSION_0 = "bergmann.masterarbeit.generationtarget.interfaces.Expression"
 	static var EXPRESSION_1 = "bergmann.masterarbeit.generationtarget.interfaces.UnaryExpression"
@@ -30,6 +31,7 @@ class MappingUtils {
 			case BOOLEAN: return BOOLEAN_JAVA_CLASS
 			case NUMBER: return NUMBER_JAVA_CLASS
 			case STRING: return STRING_JAVA_CLASS
+			case ANY: return "T"
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}
 	}

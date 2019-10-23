@@ -17,7 +17,6 @@ import bergmann.masterarbeit.monitorDsl.IntLiteral
 import bergmann.masterarbeit.monitorDsl.LTL_Binary
 import bergmann.masterarbeit.monitorDsl.LTL_Unary
 import bergmann.masterarbeit.monitorDsl.MappingBinary
-import bergmann.masterarbeit.monitorDsl.MappingUnary
 import bergmann.masterarbeit.monitorDsl.Monitors
 import bergmann.masterarbeit.monitorDsl.Mult
 import bergmann.masterarbeit.monitorDsl.Negation
@@ -69,9 +68,12 @@ class MonitorDslGenerator extends AbstractGenerator {
 //				.map[name]
 //				.join(', '))
 		var monitors = resource.contents.head as Monitors
-		fsa.generateFile(monitors.package.name+"_EvaluationRunner.java", monitors.compile)		
+		fsa.generateFile(monitors.targetClassname + ".java", monitors.compile)		
 	}
 	
+	def static String getTargetClassname(Monitors monitors){
+		return monitors.package.name+"_EvaluationRunner"
+	}
 	def String compile(Monitors monitors){
 		var assertions = monitors.assertions
 		var userVars = monitors.uservars
@@ -79,7 +81,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		«monitors.compilePackage»
 		«monitors.compileImports»
 		@SuppressWarnings("unused")
-		class RunEvaluation {
+		class «monitors.targetClassname» {
 			
 			@SuppressWarnings("rawtypes")
 			public static void main(String args[]) {
@@ -300,11 +302,14 @@ class MonitorDslGenerator extends AbstractGenerator {
 						 }
 						}
 					LiteralJava: return '''new «ref.ref.className»()'''
+					UnaryJava:{
+						var refMapping = expr.ref as UnaryJava
+						return '''new «refMapping.ref.className»(«expr.optionalExpr.compile»)'''
+					}
 					default: throw new IllegalArgumentException("Can't parse expr: " + expr + " referencing " + ref)
 				}
 			}
 			MappingBinary: return compile(expr as MappingBinary)
-			MappingUnary: return compile(expr as MappingUnary)
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
@@ -348,10 +353,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		var refMapping = expr.ref as BinaryJava
 		return '''new «refMapping.ref.className»(«expr.left.compile», «expr.right.compile»)'''
 	}
-	def String compile(MappingUnary expr){
-		var refMapping = expr.ref as UnaryJava
-		return '''new «refMapping.ref.className»(«expr.expr.compile»)'''
-	}
+
 	
 	def String compile(TimeInterval interval){
 		switch interval{
