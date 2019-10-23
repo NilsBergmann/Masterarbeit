@@ -10,7 +10,7 @@ import javax.measure.unit.Unit;
 
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 
-public abstract class EvaluationPackage {
+public abstract class MonitorDeclaration {
 	private List<Assertion> assertionExpressions;
 	private List<UserVariable> userVarExpressions;
     private Map<String, Unit> requiredDataNumbers;
@@ -18,7 +18,7 @@ public abstract class EvaluationPackage {
     private List<String> requiredDataBooleans;
 	private String name = "UNTITLED";
 	
-	public EvaluationPackage() {
+	public MonitorDeclaration() {
 		// TODO Auto-generated constructor stub
 		assertionExpressions = new ArrayList<Assertion>();
 		userVarExpressions = new  ArrayList<UserVariable>();

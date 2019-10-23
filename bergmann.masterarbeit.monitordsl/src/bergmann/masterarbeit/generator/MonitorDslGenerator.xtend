@@ -69,7 +69,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 //				.join(', '))
 		var monitors = resource.contents.head as Monitors
 		fsa.generateFile(monitors.targetClassname + "_StandaloneRunner.java", monitors.createStandaloneRunner)		
-		fsa.generateFile(monitors.targetClassname + "_EvaluationPackage.java", monitors.createEvaluationPackage)		
+		fsa.generateFile(monitors.targetClassname + "_MonitorDeclaration.java", monitors.createEvaluationPackage)		
 	}
 	
 	def static String getTargetClassname(Monitors monitors){
@@ -87,7 +87,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		class «monitors.targetClassname»_EvaluationPackage extends EvaluationPackage {
 			
 			@SuppressWarnings("rawtypes")
-			public «monitors.targetClassname»_EvaluationPackage(){
+			public «monitors.targetClassname»_MonitorDeclaration(){
 				super();
 				
 				this.setName("«monitors.package.name»");
@@ -99,12 +99,13 @@ class MonitorDslGenerator extends AbstractGenerator {
 				«monitors.registerDomainColumns»
 				
 				/**
-				* Declare Assertions and UserVariables
+				* Init Assertions and UserVariables
 				*/
 				
 				«FOR userVar : userVars»
 				UserVariable «userVar.name»_«userVar.positiveHash» = new UserVariable<«userVar.expr.expressionType»>("«userVar.name»");
 				«ENDFOR»
+				
 				«FOR assertion : assertions»
 				Assertion «assertion.name»_«assertion.positiveHash» = new Assertion("«assertion.name»");
 				«ENDFOR»
