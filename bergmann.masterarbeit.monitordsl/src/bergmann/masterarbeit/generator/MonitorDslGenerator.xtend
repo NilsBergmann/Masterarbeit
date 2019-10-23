@@ -84,7 +84,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		«monitors.compileImports»
 		
 		@SuppressWarnings("unused")
-		class «monitors.targetClassname»_MonitorDeclaration extends EvaluationPackage {
+		class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
 			
 			@SuppressWarnings("rawtypes")
 			public «monitors.targetClassname»_MonitorDeclaration(){
