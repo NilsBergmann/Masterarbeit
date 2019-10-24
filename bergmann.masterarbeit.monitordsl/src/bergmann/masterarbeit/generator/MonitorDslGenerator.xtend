@@ -103,7 +103,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 				*/
 				
 				«FOR userVar : userVars»
-				UserVariable «userVar.name»_«userVar.positiveHash» = new UserVariable<«userVar.expr.expressionType»>("«userVar.name»");
+				UserVariable<«userVar.expr.expressionType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«userVar.expr.expressionType»>("«userVar.name»");
 				«ENDFOR»
 				
 				«FOR assertion : assertions»
@@ -143,7 +143,9 @@ class MonitorDslGenerator extends AbstractGenerator {
 			@SuppressWarnings("rawtypes")
 			public static void main(String args[]) {
 				«generateSetup»
-				//TODO
+				
+				MonitorDeclaration monitors = new «monitors.targetClassname»_MonitorDeclaration();
+				dataControl.runEvaluation(monitors,tableSelection); 
 			}
 		
 		}
@@ -194,7 +196,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		System.out.println("Selected " + dbFile.getAbsolutePath());
 		
 		// -- Try Database
-		DataController dataControl = new DataController(isRealTime);
+		StandaloneDataController dataControl = new StandaloneDataController(isRealTime);
 		dataControl.connectToDatabase(dbFile.getAbsolutePath());
 		if (!dataControl.isConnectedToDB()) {
 			UIUtils.showError("Could not open database " + dbFile.getAbsolutePath());
@@ -250,7 +252,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 	
 	def String compile(Assertion assertion){
 		return '''
-		Assertion «assertion.name»_«assertion.positiveHash».setExpression("«assertion.name»", «assertion.expr.compile»);
+		«assertion.name»_«assertion.positiveHash».setExpression(«assertion.expr.compile»);
 		this.getAssertionExpressions().add(«assertion.name»_«assertion.positiveHash»); 
 		''' 
 	}
