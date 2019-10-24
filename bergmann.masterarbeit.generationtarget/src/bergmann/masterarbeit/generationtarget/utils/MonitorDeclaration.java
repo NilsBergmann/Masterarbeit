@@ -2,9 +2,11 @@ package bergmann.masterarbeit.generationtarget.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.measure.unit.Unit;
 
@@ -90,6 +92,22 @@ public abstract class MonitorDeclaration {
 
 	public void setRequiredDataBooleans(List<String> requiredDataBooleans) {
 		this.requiredDataBooleans = requiredDataBooleans;
+	}
+	
+	public Set<String> getDeclaredUserVariableNames(){
+		Set<String> result = new HashSet<String>();
+		for (UserVariable uV : this.userVarExpressions) {
+			result.add(uV.name);
+		}
+		return result;
+	}
+	
+	public Set<String> getDeclaredAssertionNames(){
+		Set<String> result = new HashSet<String>();
+		for (Assertion ass : this.assertionExpressions) {
+			result.add(ass.name);
+		}
+		return result;
 	}
 
 	public String getName() {
