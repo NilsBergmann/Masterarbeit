@@ -13,7 +13,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class UIUtils {
     public static File databaseSelection() {
         JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        chooser.setCurrentDirectory(new java.io.File("."));
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Database file", "db");
         chooser.setFileFilter(filter);
         chooser.setDialogTitle("Select Database");
@@ -44,5 +44,22 @@ public class UIUtils {
     public static void showError(String message) {
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
-
+    
+    public static File folderSelection() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new java.io.File("."));
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setDialogTitle("Where to save evaluation results?");
+        int result = chooser.showOpenDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = chooser.getSelectedFile();
+            return selectedFile;
+        }
+        return null;
+    }
+    
+    public static void main(String[] args) {
+		System.out.println(folderSelection());
+	}
 }

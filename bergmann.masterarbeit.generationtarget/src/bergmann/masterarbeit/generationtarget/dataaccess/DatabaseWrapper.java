@@ -74,6 +74,7 @@ public class DatabaseWrapper {
         if (tableName == null)
             return null;
         List<State> states = new ArrayList<State>();
+        System.out.println("Loading States from DB...");
         try {
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery("SELECT * FROM " + tableName);

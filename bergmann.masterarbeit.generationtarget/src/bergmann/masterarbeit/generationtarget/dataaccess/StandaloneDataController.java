@@ -1,13 +1,17 @@
 package bergmann.masterarbeit.generationtarget.dataaccess;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -16,6 +20,8 @@ import javax.measure.unit.Unit;
 
 import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.Assertion;
+import bergmann.masterarbeit.generationtarget.utils.MonitorDeclaration;
+import bergmann.masterarbeit.generationtarget.utils.UIUtils;
 import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 
 public class StandaloneDataController {
@@ -53,7 +59,7 @@ public class StandaloneDataController {
         if (this.dbWrapper != null && this.dbWrapper.isConnected()) {
             try {
                 this.dbWrapper.setTable(tablename);
-                this.updateStates();
+                this.stateHandler = new StateListHandler(isRealTime);
             } catch (IllegalArgumentException e) {
                 throw e;
             }
@@ -79,66 +85,90 @@ public class StandaloneDataController {
     }
 
     public void registerNumberDBColumn(String name, Unit unit) {
+    	System.out.println("Registered required DB Number: " + name + "["+unit+"]");
         this.dbWrapper.registerNumberColumn(name, unit);
     }
 
     public void registerStringDBColumn(String name) {
+    	System.out.println("Registered required DB String: " + name );
         this.dbWrapper.registerStringColumn(name);
     }
 
     public void registerBooleanDBColumn(String name) {
+    	System.out.println("Registered required DB Boolean: " + name );
         this.dbWrapper.registerBooleanColumn(name);
     }
+    
+    public void registerRequiredData(MonitorDeclaration monitors) {
+    	for (String id : monitors.getRequiredDataStrings()) {
+			this.registerStringDBColumn(id);
+		}
+    	for (String id : monitors.getRequiredDataBooleans()) {
+			this.registerBooleanDBColumn(id);
+		}
+    	for (Map.Entry<String, Unit> entry : monitors.getRequiredDataNumbers().entrySet()) {
+			String id = entry.getKey();
+			Unit unit = entry.getValue();
+			this.registerNumberDBColumn(id, unit);
+		}
+    }
 
-    public void runEvaluation(List<Assertion> assertions, List<UserVariable> userVars, String tableName) {
+    public void runEvaluation(MonitorDeclaration monitors, String tableName) {
         if (this.isRealTime) {
             System.err.println("real time not implemented yet");
             // TODO: Implement real time mode
         } else {
-            this.runNonRealtimeEvaluation(assertions, userVars, tableName);
+            this.runNonRealtimeEvaluation(monitors, tableName);
         }
     }
 
-    private void runNonRealtimeEvaluation(List<Assertion> assertions, List<UserVariable> userVars, String tableName) {
+    private void runNonRealtimeEvaluation(MonitorDeclaration monitors, String tableName) {
+        File folder = UIUtils.folderSelection();
+    	this.registerRequiredData(monitors); 
         this.dbWrapper.setTable(tableName);
         // Get states
         this.updateStates();
         // Evaluate States
         System.out.println("Running evaluations...\n");
-        
+       
         for (State state : this.stateHandler.getAllStates()) {
-        	System.out.println("------------------");
-            System.out.println("State " + state.toString()+"\n");
-            for (UserVariable userVariable : userVars) {
-                Optional result = userVariable.evaluate(state);
-                System.out.println("UserVar: " + userVariable.name + " -> " + result);
-            }
-            System.out.println("");
-            for (Assertion assertion : assertions) {
-                Optional result = assertion.evaluate(state);
-                System.out.println("Assertion: " + assertion.name + " -> " + result);
-            }
-            System.out.println("");
+        	System.out.println("Evaluating: " + state);
+        	Map<String, Optional> result = monitors.evaluateAllAt(state);
         }
         System.out.println("Evaluation complete!");
-        writeToCSV("tableName", this.stateHandler.getAllStates());
+        if(folder != null && folder.isDirectory())
+        	writeToCSV(folder.toString(), tableName, this.stateHandler.getAllStates(), monitors);
     }
     
-    private void writeToCSV(String path, List<State> states) {
+    private void writeToCSV(String mainFolder, String tableName, List<State> states, MonitorDeclaration monitors) {
+    	
+    	String path = mainFolder + "/" + monitors.getName() + "/";
+    	File dir = new File(path);
+    	dir.mkdirs();
+    	File everything = new File(path +tableName+ ".csv");
+    	File onlyAssertions = new File(path + tableName+ "_OnlyAssertions.csv");
     	System.out.println("Writing data to " + path);
-    	Set<String> storedValues = new LinkedHashSet<String>();
-    	/*
-    	// TODO: Fix
-    	for (State state : states) {
-			storedValues.addAll(this.stateHandler.getStoredKeys());
-		}
+    	
+    	Set<String> storedDBValues = new LinkedHashSet<String>();
+    	storedDBValues.addAll(monitors.getRequiredDataBooleans());
+    	storedDBValues.addAll(monitors.getRequiredDataStrings());
+    	storedDBValues.addAll(monitors.getRequiredDataNumbers().keySet());
+    	Set<String> storedUserVars = new LinkedHashSet<String>(monitors.getDeclaredUserVariableNames());
+    	Set<String> storedAssertions = new LinkedHashSet<String>(monitors.getDeclaredAssertionNames());
+    	
     	try {
-    	//Open file
-   		FileWriter fw = new FileWriter(path);
+    	// Write everything.csv
+   		FileWriter fw = new FileWriter(everything);
    		
     	// Create header
     	String header = "Timestamp; ";
-    	for (String string : storedValues) {
+    	for (String string : storedDBValues) {
+    		header += string +";";
+    	}
+    	for (String string : storedUserVars) {
+    		header += string +";";
+    	}
+    	for (String string : storedAssertions) {
     		header += string +";";
     	}
     	header+="\n";
@@ -147,20 +177,57 @@ public class StandaloneDataController {
     	fw.write(header);
     	for (State state : states) {
 			String current = state.timestamp.toString()+ ";";
-			for (String key : storedValues) {
-				Optional data = state.getStored(key);
-				String dataString = data.isPresent() ? data.get().toString() : "UNKNOWN";
+			for (String key : storedDBValues) {
+				Optional data = state.getStoredDBValue(key);
+				String dataString = data.isPresent() ? data.get().toString() : " ";
+				current += dataString + ";";
+			}
+			for (String key : storedUserVars) {
+				Optional data = state.getStoredUserVariableResult(key);
+				String dataString = data.isPresent() ? data.get().toString() : " ";
+				current += dataString + ";";
+			}
+			for (String key : storedAssertions) {
+				Optional data = state.getAssertionResult(key);
+				String dataString = data.isPresent() ? data.get().toString() : " ";
 				current += dataString + ";";
 			}
 			current+="\n";
 			fw.write(current);
 		}
     	fw.close();
-    	System.out.println("Completed!");
     	} catch (IOException e) {
     		System.out.println("Writing results to csv failed. " + e);
     	}
-    	*/
+    	
+    	try {
+    	// Write _OnlyAsssertions.csv
+   		FileWriter fw = new FileWriter(onlyAssertions);
+   		
+    	// Create header
+    	String header = "Timestamp; ";
+    	for (String string : storedAssertions) {
+    		header += string +";";
+    	}
+    	header+="\n";
+    	
+    	// Write state data
+    	fw.write(header);
+    	for (State state : states) {
+			String current = state.timestamp.toString()+ ";";
+			for (String key : storedAssertions) {
+				Optional data = state.getAssertionResult(key);
+				String dataString = data.isPresent() ? data.get().toString() : " ";
+				current += dataString + ";";
+			}
+			current+="\n";
+			fw.write(current);
+		}
+    	fw.close();
+    	} catch (IOException e) {
+    		System.err.println("Writing results to csv failed. " + e);
+    	}
+    	
     }
     
 }
