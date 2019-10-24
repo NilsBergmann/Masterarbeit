@@ -8,18 +8,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
-import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
 class StateInformationTest {
-	static DataController ctrl;
+	static StandaloneDataController ctrl;
 	static Expression a, b, expected;
 	
 	@BeforeAll
 	public static void init() {
-		ctrl = new DataController(false);
+		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
 		ctrl.registerStringDBColumn("Vehicle0ACCState");
 		ctrl.selectTable("Brian_Scenario_Example");

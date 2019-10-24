@@ -1,6 +1,7 @@
 package bergmann.masterarbeit.generationtarget.test.testcases;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Duration;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.AggregateAverage;
 import bergmann.masterarbeit.generationtarget.expressions.AggregateMaximum;
@@ -25,7 +26,7 @@ import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 class AggregateTest {
-	static DataController ctrl;
+	static StandaloneDataController ctrl;
 	static Expression<Amount> subExpr;
 	static RelativeTimeInterval interval;
 	static Unit unit;
@@ -39,7 +40,7 @@ class AggregateTest {
 		interval = new RelativeTimeInterval(Duration.ofMillis(-2), Duration.ofMillis(1), true, true);
 		unit = SI.CENTIMETER.times(SI.SECOND);
 		
-		ctrl = new DataController(false);
+		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
 		ctrl.registerNumberDBColumn("value", unit);
 		

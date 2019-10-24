@@ -3,9 +3,6 @@ package bergmann.masterarbeit.generationtarget.expressions;
 import java.util.List;
 import java.util.Optional;
 
-import javax.swing.plaf.FontUIResource;
-
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;

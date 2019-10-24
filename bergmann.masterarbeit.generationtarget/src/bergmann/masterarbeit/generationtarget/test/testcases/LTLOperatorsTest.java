@@ -1,19 +1,18 @@
 package bergmann.masterarbeit.generationtarget.test.testcases;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.And;
 import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
-import bergmann.masterarbeit.generationtarget.expressions.BoolNegation;
 import bergmann.masterarbeit.generationtarget.expressions.Implication;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Finally;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Global;
@@ -21,7 +20,7 @@ import bergmann.masterarbeit.generationtarget.expressions.LTL_Next;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
 class LTLOperatorsTest {
-	static DataController ctrl;
+	static StandaloneDataController ctrl;
 	static Expression a, b, expected;
 	
 	@BeforeAll
@@ -31,7 +30,7 @@ class LTLOperatorsTest {
 	
 	@BeforeEach
 	void setUp() throws Exception {
-		ctrl = new DataController(false);
+		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
 	}
 

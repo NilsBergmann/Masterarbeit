@@ -1,13 +1,10 @@
 package bergmann.masterarbeit.generationtarget.expressions;
 
-import java.util.List;
 import java.util.Optional;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 import bergmann.masterarbeit.generationtarget.interfaces.UnaryExpression;
-import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 public class LTL_Global extends UnaryExpression<Boolean, Boolean> {

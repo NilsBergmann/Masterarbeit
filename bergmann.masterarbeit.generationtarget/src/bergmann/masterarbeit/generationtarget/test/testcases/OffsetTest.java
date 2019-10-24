@@ -1,13 +1,12 @@
 package bergmann.masterarbeit.generationtarget.test.testcases;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
 import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 
 import org.jscience.physics.amount.Amount;
@@ -15,16 +14,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.NumberDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.expressions.OffsetByStates;
 import bergmann.masterarbeit.generationtarget.expressions.OffsetByTime;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
-import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 class OffsetTest {
-	static DataController ctrl;
+	static StandaloneDataController ctrl;
 	static Expression<Amount> subExpr;
 	static Unit unit;
 	
@@ -36,7 +34,7 @@ class OffsetTest {
 	void setUp() throws Exception {
 		unit = NonSI.KILOMETERS_PER_HOUR;
 		
-		ctrl = new DataController(false);
+		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
 		ctrl.registerNumberDBColumn("Vehicle1ForwardSpeed", unit);
 		

@@ -18,7 +18,7 @@ import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.Assertion;
 import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 
-public class DataController {
+public class StandaloneDataController {
     private DatabaseWrapper dbWrapper;
     public StateListHandler stateHandler;
     private boolean isRealTime = false;
@@ -27,7 +27,7 @@ public class DataController {
 		this.isRealTime = isRealTime;
 	}
 
-	public DataController(boolean isRealTime) {
+	public StandaloneDataController(boolean isRealTime) {
     	stateHandler = new StateListHandler(isRealTime);
         this.isRealTime = isRealTime;
         this.dbWrapper = new DatabaseWrapper();
@@ -115,7 +115,7 @@ public class DataController {
             }
             System.out.println("");
             for (Assertion assertion : assertions) {
-                Optional result = assertion.evaluateAt(state);
+                Optional result = assertion.evaluate(state);
                 System.out.println("Assertion: " + assertion.name + " -> " + result);
             }
             System.out.println("");
