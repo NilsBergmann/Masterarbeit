@@ -23,6 +23,7 @@ public class StateListHandler {
     public StateListHandler() {
     	this(false);
     }
+   
     
     public StateListHandler(boolean realTimeEvaluationMode) {
     	states = new ArrayList<State>();
@@ -161,4 +162,7 @@ public class StateListHandler {
 	public void setRealTimeEvaluationMode(boolean realTimeEvaluationMode) {
 		this.realTimeEvaluationMode = realTimeEvaluationMode;
 	}
+    public boolean isEmpty() {
+    	return states.isEmpty();
+    }
 }

@@ -46,13 +46,18 @@ public class StandaloneDataController {
         dbWrapper.connect(path);
     }
 
-    public void updateStates() {
-        List<State> readStates = this.dbWrapper.getStates();
+    public List<State> updateStates() {
+    	List<State> readStates = new ArrayList<State>();
+    	if(this.stateHandler.isEmpty())
+    		readStates = this.dbWrapper.getStates();
+    	else
+    		readStates = this.dbWrapper.getStatesAfter(this.stateHandler.getLatestState().timestamp);
         for (State state : readStates) {
 			if(!stateHandler.contains(state)) {
 				stateHandler.add(state);				
 			}
 		}
+        return readStates;
     }
 
     public void selectTable(String tablename) {
