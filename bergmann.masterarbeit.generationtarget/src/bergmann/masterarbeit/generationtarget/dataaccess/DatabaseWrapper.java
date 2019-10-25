@@ -69,22 +69,30 @@ public class DatabaseWrapper {
         this.conn = null;
         this.tableName = null;
     }
+    
+    public List<State> getStates(){
+    	return this.getStatesFromSQL("SELECT * FROM " + this.tableName);
+    }
 
-    public List<State> getStates() {
+    public List<State> getStatesAfter(Instant timestamp){
+    	String sql = "SELECT * FROM " + this.tableName + " WHERE " + TIMESTAMP_COLUMN_NAME + " > "+  timestamp.toEpochMilli();
+    	return this.getStatesFromSQL(sql);
+    }
+    
+    private List<State> getStatesFromSQL(String sql) {
         if (tableName == null)
             return null;
         List<State> states = new ArrayList<State>();
-        System.out.println("Loading States from DB...");
         try {
             Statement st = conn.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM " + tableName);
+            ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
                 long timestamp = rs.getLong(TIMESTAMP_COLUMN_NAME);
                 State current = new State(Instant.ofEpochMilli(timestamp));
                 for (String name : booleanColumns) {
                     try {
                         boolean x = rs.getBoolean(name);
-                        Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
+                        Optional<Boolean> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
                         current.storeDBValue(name, data);
                     } catch (SQLException e) {
                         System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
@@ -95,7 +103,7 @@ public class DatabaseWrapper {
                 for (String name : stringColumns) {
                     try {
                         String x = rs.getString(name);
-                        Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
+                        Optional<String> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
                         current.storeDBValue(name, data);
                     } catch (SQLException e) {
                         System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
@@ -109,7 +117,7 @@ public class DatabaseWrapper {
                     try {
                         double value = rs.getDouble(name);
                         Amount x = Amount.valueOf(value, unit);
-                        Optional data = rs.wasNull() ? Optional.empty() : Optional.of(x);
+                        Optional<Amount> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
                         current.storeDBValue(name, data);
                     } catch (SQLException e) {
                         System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
