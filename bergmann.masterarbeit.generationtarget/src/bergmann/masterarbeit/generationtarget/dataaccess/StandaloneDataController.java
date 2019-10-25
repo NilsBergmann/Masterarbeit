@@ -120,14 +120,46 @@ public class StandaloneDataController {
 
     public void runEvaluation(MonitorDeclaration monitors, String tableName) {
         if (this.isRealTime) {
-            System.err.println("real time not implemented yet");
-            // TODO: Implement real time mode
+            this.runRealtimeEvaluation(monitors, tableName);
         } else {
             this.runNonRealtimeEvaluation(monitors, tableName);
         }
     }
 
-    private void runNonRealtimeEvaluation(MonitorDeclaration monitors, String tableName) {
+    private void runRealtimeEvaluation(MonitorDeclaration monitors, String tableName) {
+        File folder = UIUtils.folderSelection();
+        String path = folder.toString() + "/" + monitors.getName() + "/";
+        File dir = new File(path);
+    	dir.mkdirs();
+    	File everything = new File(path +tableName+ ".csv");
+    	File onlyAssertions = new File(path + tableName+ "_OnlyAssertions.csv");
+    	
+    	this.registerRequiredData(monitors); 
+        this.dbWrapper.setTable(tableName);
+
+        try {
+        	while(true) {
+        		Thread.sleep(10);
+        		// Get states
+        		List<State> read = this.updateStates();
+        		// Evaluate States
+        		if(read != null && !read.isEmpty()) {
+        			System.out.println("Found " + read.size() + " new states");
+        			for (State state : read) {
+        				System.out.println("Evaluating: " + state);
+        				Map<String, Optional> result = monitors.evaluateAllAt(state);
+        			}
+        			System.out.println("Evaluation complete! Waiting for new states");
+        		} else {
+        		}
+        	}
+        } catch (InterruptedException e) {
+        	System.err.println("Loop interrupted. " + e);
+        }
+		
+	}
+
+	private void runNonRealtimeEvaluation(MonitorDeclaration monitors, String tableName) {
         File folder = UIUtils.folderSelection();
     	this.registerRequiredData(monitors); 
         this.dbWrapper.setTable(tableName);
@@ -144,22 +176,31 @@ public class StandaloneDataController {
         if(folder != null && folder.isDirectory())
         	writeToCSV(folder.toString(), tableName, this.stateHandler.getAllStates(), monitors);
     }
+	
+	private void writeHeader(File file, List<String> headers) {
+		try {
+			FileWriter fw = new FileWriter(file);
+			String header = "Timestamp;";
+			for (String string : headers) {
+				header += string + ";";
+			}
+			fw.write(header);
+		} catch (Exception e) {
+			System.err.println("Writing header to " + file + "failed. " + e );
+		}
+	}
     
     private void writeToCSV(String mainFolder, String tableName, List<State> states, MonitorDeclaration monitors) {
     	
     	String path = mainFolder + "/" + monitors.getName() + "/";
-    	File dir = new File(path);
-    	dir.mkdirs();
-    	File everything = new File(path +tableName+ ".csv");
-    	File onlyAssertions = new File(path + tableName+ "_OnlyAssertions.csv");
     	System.out.println("Writing data to " + path);
     	
-    	Set<String> storedDBValues = new LinkedHashSet<String>();
+    	List<String> storedDBValues = new ArrayList<String>();
     	storedDBValues.addAll(monitors.getRequiredDataBooleans());
     	storedDBValues.addAll(monitors.getRequiredDataStrings());
     	storedDBValues.addAll(monitors.getRequiredDataNumbers().keySet());
-    	Set<String> storedUserVars = new LinkedHashSet<String>(monitors.getDeclaredUserVariableNames());
-    	Set<String> storedAssertions = new LinkedHashSet<String>(monitors.getDeclaredAssertionNames());
+    	List<String> storedUserVars = new ArrayList<String>(monitors.getDeclaredUserVariableNames());
+    	List<String> storedAssertions = new ArrayList<String>(monitors.getDeclaredAssertionNames());
     	
     	try {
     	// Write everything.csv
