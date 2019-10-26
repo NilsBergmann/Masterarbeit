@@ -24,7 +24,7 @@ public class Assertion extends Expression<Boolean> {
     		return Optional.empty();
     	}
     	Optional<Boolean> result = Optional.empty();
-        if(state.getStoredAssertionResults().contains(this.name)) {
+        if(state.getStoredAssertionIDs().contains(this.name)) {
         	result = state.getAssertionResult(this.name);
     		if (result != null && result.isPresent())
     			return result;

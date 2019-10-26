@@ -25,7 +25,7 @@ public class UserVariable<T> extends Expression<T> {
     		return Optional.empty();
     	}
     	Optional<T> result = Optional.empty();
-        if(state.getStoredUserVariableResults().contains(this.name)) {
+        if(state.getStoredUserVariableIDs().contains(this.name)) {
         	result = state.getStoredUserVariableResult(this.name);
     		if (result != null && result.isPresent())
     			return result;

@@ -55,7 +55,7 @@ public class State implements Comparable<State> {
     	return Optional.empty();
     }
     
-    public Set<String> getStoredDBValues() {
+    public Set<String> getStoredDBValueIDs() {
     	return this.storedDBValues.keySet();
     }
   
@@ -83,7 +83,7 @@ public class State implements Comparable<State> {
      * UserVariable stuff
      */
     
-    public Set<String> getStoredUserVariableResults() {
+    public Set<String> getStoredUserVariableIDs() {
     	return this.storedUserVariables.keySet();
     }
     
@@ -110,7 +110,7 @@ public class State implements Comparable<State> {
      * Assertion stuff
      */
     
-    public Set<String> getStoredAssertionResults() {
+    public Set<String> getStoredAssertionIDs() {
     	return this.storedUserVariables.keySet();
     }
     
