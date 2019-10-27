@@ -32,26 +32,43 @@ public class State implements Comparable<State> {
      */
    
     public Optional<Boolean> getDBBoolean(String key) {
-    	if(storedDBValues.containsKey(key))
-    		return storedDBValues.get(key);
+    	if(storedDBValues.containsKey(key)) {
+    		Optional value = storedDBValues.get(key);
+    		if(value.isPresent() && !(value.get() instanceof Boolean) ) {
+    			System.err.println(this.toString() + " has no boolean " + key + ", instead received a " + value.get().getClass() + ". Returning Optional.empty");
+    			return Optional.empty();
+    		}
+			return value;
+		}
     	else	
-    		System.err.println(this.toString() + " has no boolean " + key);
+    		System.err.println(this.toString() + " has no boolean " + key + ". Returning Optional.empty");
     	return Optional.empty();
     }
     
     public Optional<Amount> getDBAmount(String key) {
-    	if(storedDBValues.containsKey(key))
-    		return storedDBValues.get(key);
+    	if(storedDBValues.containsKey(key)) {
+    		Optional value = storedDBValues.get(key);
+    		if(value.isPresent() && !(value.get() instanceof Amount) ) {
+    			System.err.println(this.toString() + " has no Amount " + key + ", instead received a " + value.get().getClass() + ". Returning Optional.empty");
+    			return Optional.empty();
+    		}
+			return value;
+    	}
     	else	
-    		System.err.println(this.toString() + " has no Amount " + key);
+    		System.err.println(this.toString() + " has no Amount " + key + ". Returning Optional.empty");
     	return Optional.empty();
     }
     
     public Optional<String> getDBString(String key) {
-    	if(storedDBValues.containsKey(key))
-    		return storedDBValues.get(key);
+    	if(storedDBValues.containsKey(key)) {
+    		Optional value = storedDBValues.get(key);
+    		if(value.isPresent() && !(value.get() instanceof String) ) {
+    			return Optional.empty();
+    		}
+			return value;
+    	}
     	else	
-    		System.err.println(this.toString() + " has no String " + key);
+    		System.err.println(this.toString() + " has no String " + key + ". Returning Optional.empty");
     	return Optional.empty();
     }
     
@@ -73,7 +90,7 @@ public class State implements Comparable<State> {
             if (obj != null) 
                 return obj;
         } else {
-        	System.err.println("No DB Value '"+key+"' is stored in this state. Returning Optional.empty().");
+        	System.err.println("No DB Value '"+key+"' is stored in this state. Returning Optional.empty.");
         }
         return Optional.empty();
     }
@@ -101,7 +118,7 @@ public class State implements Comparable<State> {
             if (obj != null) 
                 return obj;
         } else {
-        	System.err.println("No UserVariable result '"+key+"' is stored in this state. Returning Optional.empty().");
+        	System.err.println("No UserVariable result '"+key+"' is stored in this state. Returning Optional.empty.");
         }
         return Optional.empty();
     }
@@ -111,7 +128,7 @@ public class State implements Comparable<State> {
      */
     
     public Set<String> getStoredAssertionIDs() {
-    	return this.storedUserVariables.keySet();
+    	return this.storedAssertions.keySet();
     }
     
     public void storeAssertionResult(String key, Optional<Boolean> value) {
@@ -128,7 +145,7 @@ public class State implements Comparable<State> {
             if (obj != null) 
                 return obj;
         } else {
-        	System.err.println("No AssertionResult '"+key+"' is stored in this state. Returning Optional.empty().");
+        	System.err.println("No AssertionResult '"+key+"' is stored in this state. Returning Optional.empty.");
         }
         return Optional.empty();
     }
