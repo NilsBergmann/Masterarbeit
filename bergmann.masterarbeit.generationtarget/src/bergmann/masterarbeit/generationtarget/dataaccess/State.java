@@ -156,7 +156,7 @@ public class State implements Comparable<State> {
      */
     
     public int compareTo(State state) {
-        return this.compareTo(this.timestamp);
+        return this.compareTo(state.timestamp);
     }
 
     public int compareTo(Instant timestamp) {
