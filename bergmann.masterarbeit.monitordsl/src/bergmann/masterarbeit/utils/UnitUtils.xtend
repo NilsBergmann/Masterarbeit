@@ -16,7 +16,7 @@ class UnitUtils {
 
 	def public static Unit<? extends Quantity> getUnit(Expression expr){
 		if (!expr.isNumber)
-			throw new IllegalArgumentException("Non-Number-Expressions don't have units")
+			throw new IllegalArgumentException("Non-Number-Expressions don't have units: " + expr)
 		switch expr{
 			Add: {
 				var lUnit = expr.left.unit
