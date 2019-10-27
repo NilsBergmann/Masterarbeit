@@ -1,15 +1,15 @@
 package bergmann.masterarbeit.generationtarget.test.testcases;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Historically;
@@ -19,7 +19,7 @@ import bergmann.masterarbeit.generationtarget.expressions.PLTL_Z;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
 class PLTL_OperatorTest {
-	static DataController ctrl;
+	static StandaloneDataController ctrl;
 	static Expression a, b, expected;
 	
 	@BeforeAll
@@ -29,7 +29,7 @@ class PLTL_OperatorTest {
 	
 	@BeforeEach
 	void setUp() throws Exception {
-		ctrl = new DataController(false);
+		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
 	}
 
@@ -43,7 +43,7 @@ class PLTL_OperatorTest {
 		
 		Expression e = new PLTL_Once(a);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
@@ -62,7 +62,7 @@ class PLTL_OperatorTest {
 		
 		Expression e = new PLTL_Historically(a);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
 			System.out.println(state.timestamp.toEpochMilli() + ": " + result + " expected " + expectedResult);
@@ -84,9 +84,9 @@ class PLTL_OperatorTest {
 		Expression sub = a;
 		Expression e = new PLTL_Yesterday(sub);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
-			State previous = ctrl.getPreviousState(state);
+			State previous = ctrl.stateHandler.getPreviousState(state);
 			if(previous == null)
 				assertEquals(Optional.of(false), result);
 			else {
@@ -106,9 +106,9 @@ class PLTL_OperatorTest {
 		Expression sub = a;
 		Expression e = new PLTL_Z(sub);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
-			State previous = ctrl.getPreviousState(state);
+			State previous = ctrl.stateHandler.getPreviousState(state);
 			if(previous == null)
 				assertEquals(Optional.of(true), result);
 			else {

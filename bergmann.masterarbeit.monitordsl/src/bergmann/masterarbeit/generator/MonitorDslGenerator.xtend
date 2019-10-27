@@ -68,50 +68,84 @@ class MonitorDslGenerator extends AbstractGenerator {
 //				.map[name]
 //				.join(', '))
 		var monitors = resource.contents.head as Monitors
-		fsa.generateFile(monitors.targetClassname + ".java", monitors.compile)		
+		fsa.generateFile(monitors.targetClassname + "_StandaloneRunner.java", monitors.createStandaloneRunner)		
+		fsa.generateFile(monitors.targetClassname + "_MonitorDeclaration.java", monitors.createEvaluationPackage)		
 	}
 	
 	def static String getTargetClassname(Monitors monitors){
-		return monitors.package.name+"_EvaluationRunner"
+		return monitors.package.name
 	}
-	def String compile(Monitors monitors){
+	
+	def String createEvaluationPackage(Monitors monitors){
 		var assertions = monitors.assertions
 		var userVars = monitors.uservars
-		return '''
+		return'''
 		«monitors.compilePackage»
 		«monitors.compileImports»
+		
 		@SuppressWarnings("unused")
-		class «monitors.targetClassname» {
+		class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
 			
 			@SuppressWarnings("rawtypes")
-			public static void main(String args[]) {
-				«generateSetup»
-				«monitors.registerDomainColumns»
+			public «monitors.targetClassname»_MonitorDeclaration(){
+				super();
+				
+				this.setName("«monitors.package.name»");
+				
 				/**
-				 * User Variables 
-				 */
-				 
+				* Required Data
+				*/
+				
+				«monitors.registerDomainColumns»
+				
+				/**
+				* Init Assertions and UserVariables
+				*/
+				
+				«FOR userVar : userVars»
+				UserVariable<«userVar.expr.expressionType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«userVar.expr.expressionType»>("«userVar.name»");
+				«ENDFOR»
+				
+				«FOR assertion : assertions»
+				Assertion «assertion.name»_«assertion.positiveHash» = new Assertion("«assertion.name»");
+				«ENDFOR»
+				
+				/**
+				* Set UserVariable expressions
+				*/
+				
 				«FOR userVar : userVars»
 				«userVar.compile»
 				
 				«ENDFOR»
 				
 				/**
-				 * Assertions
-				 */
-				 
-				 «FOR assertion : assertions»
-				 «assertion.compile»
-				 
-				 «ENDFOR»
-				 
-				 System.out.println("Setup completed successfully");
-				 System.out.println("Starting evaluation");
-				 /**
-				 * Run evaluation
-				 */
-				 
-				 dataControl.runEvaluation(assertions, userVars, tableSelection);
+				* Set Assertion expressions
+				*/
+				
+				«FOR assertion : assertions»
+				«assertion.compile»
+				
+				«ENDFOR»
+			}
+		}
+		'''
+	}
+	def String createStandaloneRunner(Monitors monitors){
+		var assertions = monitors.assertions
+		var userVars = monitors.uservars
+		return '''
+		«monitors.compilePackage»
+		«monitors.compileImports»
+		@SuppressWarnings("unused")
+		class «monitors.targetClassname»_StandaloneRunner {
+			
+			@SuppressWarnings("rawtypes")
+			public static void main(String args[]) {
+				«generateSetup»
+				
+				MonitorDeclaration monitors = new «monitors.targetClassname»_MonitorDeclaration();
+				dataControl.runEvaluation(monitors,tableSelection); 
 			}
 		
 		}
@@ -119,11 +153,12 @@ class MonitorDslGenerator extends AbstractGenerator {
 	}
 	
 	def static String registerDomainColumns(Monitors monitors){
-		var s = "// Register domain columns\n"
+		var s = ""
 		var domains = monitors.importedDomains
 		for (currentDomain : domains) {
 			s+= "// Domain: " + currentDomain.package.name + "\n"
 			for (dv : EcoreUtil2.eAllOfType(currentDomain, DomainValue)) {
+				s+= if(dv.description != null) "// " +dv.description +"\n" else "// No Description given.\n"
 				s+= dv.registerDomainColumn + "\n"
 			}  
 			s+= "\n"
@@ -133,9 +168,9 @@ class MonitorDslGenerator extends AbstractGenerator {
 	
 	def static String registerDomainColumn(DomainValue dv){
 		switch dv.type {
-			case BOOLEAN: return '''dataControl.registerBooleanDBColumn("«dv.column»");'''
-			case NUMBER: return  '''dataControl.registerNumberDBColumn("«dv.column»", «dv.unit.compile»);'''
-			case STRING: return '''dataControl.registerStringDBColumn("«dv.column»");'''
+			case BOOLEAN: return '''this.getRequiredDataBooleans().add("«dv.column»");'''
+			case NUMBER: return  '''this.getRequiredDataNumbers().put("«dv.column»", «dv.unit.compile»);'''
+			case STRING: return '''this.getRequiredDataStrings().add("«dv.column»");'''
 			default:  throw new IllegalArgumentException("Can't parse type: " + dv.type)
 		}
 	}
@@ -162,7 +197,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		System.out.println("Selected " + dbFile.getAbsolutePath());
 		
 		// -- Try Database
-		DataController dataControl = new DataController(isRealTime);
+		StandaloneDataController dataControl = new StandaloneDataController(isRealTime);
 		dataControl.connectToDatabase(dbFile.getAbsolutePath());
 		if (!dataControl.isConnectedToDB()) {
 			UIUtils.showError("Could not open database " + dbFile.getAbsolutePath());
@@ -181,10 +216,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 			System.exit(1);
 		}
 		dataControl.selectTable(tableSelection);
-		
-		// Create lists
-		ArrayList<Assertion> assertions = new ArrayList<Assertion>();
-		ArrayList<UserVariable> userVars = new ArrayList<UserVariable>();'''
+		'''
 	}
 	def static String compilePackage(Monitors monitors){
 		return ''''''; //TODO: PackageName
@@ -194,6 +226,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		'''
 		import java.io.File;
 		import java.time.Duration;
+		import java.time.Instant;
 		import java.util.ArrayList;
 		import java.util.List;
 		
@@ -201,7 +234,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		
 		import org.jscience.physics.amount.Amount;
 		
-		import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+		import bergmann.masterarbeit.generationtarget.dataaccess.*;
 		import bergmann.masterarbeit.generationtarget.expressions.*;
 		import bergmann.masterarbeit.generationtarget.interfaces.*;
 		import bergmann.masterarbeit.generationtarget.utils.*;
@@ -213,17 +246,15 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
-		System.out.println("Generating userVariable «userVar.name»");
-		UserVariable<«javaType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«javaType»>("«userVar.name»", «userVar.expr.compile»);
-		userVars.add(«userVar.name»_«userVar.positiveHash»); 
+		«userVar.name»_«userVar.positiveHash».setExpression(«userVar.expr.compile»);
+		this.getUserVarExpressions().add(«userVar.name»_«userVar.positiveHash»); 
 		'''
 	}
 	
 	def String compile(Assertion assertion){
 		return '''
-		System.out.println("Generating assertion «assertion.name»");
-		Assertion «assertion.name»_«assertion.positiveHash» = new Assertion("«assertion.name»", «assertion.expr.compile»);
-		assertions.add(«assertion.name»_«assertion.positiveHash»); 
+		«assertion.name»_«assertion.positiveHash».setExpression(«assertion.expr.compile»);
+		this.getAssertionExpressions().add(«assertion.name»_«assertion.positiveHash»); 
 		''' 
 	}
 	

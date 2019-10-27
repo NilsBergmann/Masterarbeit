@@ -2,7 +2,6 @@ package bergmann.masterarbeit.generationtarget.expressions;
 
 import java.util.Optional;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;

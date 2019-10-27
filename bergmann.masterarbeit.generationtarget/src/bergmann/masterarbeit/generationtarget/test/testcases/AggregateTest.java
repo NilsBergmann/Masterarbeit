@@ -1,6 +1,7 @@
 package bergmann.masterarbeit.generationtarget.test.testcases;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Duration;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.AggregateAverage;
 import bergmann.masterarbeit.generationtarget.expressions.AggregateMaximum;
@@ -25,7 +26,7 @@ import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 class AggregateTest {
-	static DataController ctrl;
+	static StandaloneDataController ctrl;
 	static Expression<Amount> subExpr;
 	static RelativeTimeInterval interval;
 	static Unit unit;
@@ -39,7 +40,7 @@ class AggregateTest {
 		interval = new RelativeTimeInterval(Duration.ofMillis(-2), Duration.ofMillis(1), true, true);
 		unit = SI.CENTIMETER.times(SI.SECOND);
 		
-		ctrl = new DataController(false);
+		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
 		ctrl.registerNumberDBColumn("value", unit);
 		
@@ -52,18 +53,18 @@ class AggregateTest {
 	void avgTest() {
 		Expression e = new AggregateAverage(subExpr,interval);
 		
-		loop: for (State state : ctrl.getAllStates()) {
+		loop: for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Amount> realResult = e.evaluate(state);
 			
 			// Manually calculate avg to compare
 			AbsoluteTimeInterval abs = interval.addInstant(state.timestamp);
 			// If Interval is not in data: expect Optional.empty
-			if(!ctrl.intervalIsInRange(abs)) {
+			if(!ctrl.stateHandler.intervalIsInRange(abs)) {
 				assertEquals(Optional.empty(), realResult);
 				continue loop;
 			}
 			
-			List<State> relevantStates = ctrl.getStatesInInterval(abs);
+			List<State> relevantStates = ctrl.stateHandler.getStatesInInterval(abs);
 			Amount avg = Amount.valueOf(0,unit);
 			for (State i : relevantStates) {
 				Optional<Amount> current = subExpr.evaluate(i);
@@ -89,18 +90,18 @@ class AggregateTest {
 	void minTest() {
 		Expression e = new AggregateMinimum(subExpr,interval);
 		
-		loop: for (State state : ctrl.getAllStates()) {
+		loop: for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Amount> realResult = e.evaluate(state);
 			
 			// Manually calculate min to compare
 			AbsoluteTimeInterval abs = interval.addInstant(state.timestamp);
 			// If Interval is not in data: expect Optional.empty
-			if(!ctrl.intervalIsInRange(abs)) {
+			if(!ctrl.stateHandler.intervalIsInRange(abs)) {
 				assertEquals(Optional.empty(), realResult);
 				continue loop;
 			}
 	
-			List<State> relevantStates = ctrl.getStatesInInterval(abs);
+			List<State> relevantStates = ctrl.stateHandler.getStatesInInterval(abs);
 			Amount min = Amount.valueOf(Long.MAX_VALUE,unit);
 			for (State i : relevantStates) {
 				Optional<Amount> current = subExpr.evaluate(i);
@@ -122,18 +123,18 @@ class AggregateTest {
 	void maxTest() {
 		Expression e = new AggregateMaximum(subExpr,interval);
 		
-		loop: for (State state : ctrl.getAllStates()) {
+		loop: for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Amount> realResult = e.evaluate(state);
 			
 			// Manually calculate max to compare
 			AbsoluteTimeInterval abs = interval.addInstant(state.timestamp);
 			// If Interval is not in data: expect Optional.empty
-			if(!ctrl.intervalIsInRange(abs)) {
+			if(!ctrl.stateHandler.intervalIsInRange(abs)) {
 				assertEquals(Optional.empty(), realResult);
 				continue loop;
 			}
 	
-			List<State> relevantStates = ctrl.getStatesInInterval(abs);
+			List<State> relevantStates = ctrl.stateHandler.getStatesInInterval(abs);
 			Amount max = Amount.valueOf(Long.MIN_VALUE,unit);
 			for (State i : relevantStates) {
 				Optional<Amount> current = subExpr.evaluate(i);

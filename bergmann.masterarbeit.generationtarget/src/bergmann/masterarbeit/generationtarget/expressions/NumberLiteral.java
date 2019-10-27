@@ -6,7 +6,6 @@ import javax.measure.unit.Unit;
 
 import org.jscience.physics.amount.Amount;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 

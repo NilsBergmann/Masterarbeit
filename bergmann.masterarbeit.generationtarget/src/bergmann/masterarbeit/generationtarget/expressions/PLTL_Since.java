@@ -3,9 +3,6 @@ package bergmann.masterarbeit.generationtarget.expressions;
 import java.util.List;
 import java.util.Optional;
 
-import javax.swing.plaf.FontUIResource;
-
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.BinaryExpression;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
@@ -26,18 +23,17 @@ public class PLTL_Since extends BinaryExpression<Boolean, Boolean, Boolean> {
 
     @Override
     public Optional<Boolean> evaluate(State state) {
-        // The S(for “Since”) operator is the temporal dual of U(until), so that (x S y)
+        // The S(for Since) operator is the temporal dual of U(until), so that (x S y)
         // is true iff y holds somewhere in the past and x is true from then up to now.
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = state.dataController.isRealTime();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = state.dataController.getStatesInInterval(relevantTime);
+            relevantStates = state.stateListHandler.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = state.dataController.getAllStatesBefore(state);
+            relevantStates = state.stateListHandler.getAllStatesBefore(state);
             relevantStates.add(state);
         }
 

@@ -1,11 +1,8 @@
 package bergmann.masterarbeit.generationtarget.expressions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 import bergmann.masterarbeit.generationtarget.interfaces.UnaryExpression;
@@ -28,14 +25,13 @@ public class PLTL_Historically extends UnaryExpression<Boolean, Boolean> {
     public Optional<Boolean> evaluate(State state) {
         List<State> relevantStates = null;
         boolean hasInterval = this.interval != null;
-        boolean realTime = state.dataController.isRealTime();
 
         // Get relevant states
         if (hasInterval) {
             AbsoluteTimeInterval relevantTime = this.interval.addInstant(state.timestamp);
-            relevantStates = state.dataController.getStatesInInterval(relevantTime);
+            relevantStates = state.stateListHandler.getStatesInInterval(relevantTime);
         } else {
-            relevantStates = state.dataController.getAllStatesBefore(state);
+            relevantStates = state.stateListHandler.getAllStatesBefore(state);
             relevantStates.add(state);
         }
 

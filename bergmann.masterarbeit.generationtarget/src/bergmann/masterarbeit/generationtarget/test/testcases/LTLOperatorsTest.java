@@ -1,19 +1,18 @@
 package bergmann.masterarbeit.generationtarget.test.testcases;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import bergmann.masterarbeit.generationtarget.dataaccess.DataController;
+import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.And;
 import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
-import bergmann.masterarbeit.generationtarget.expressions.BoolNegation;
 import bergmann.masterarbeit.generationtarget.expressions.Implication;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Finally;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Global;
@@ -21,7 +20,7 @@ import bergmann.masterarbeit.generationtarget.expressions.LTL_Next;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
 class LTLOperatorsTest {
-	static DataController ctrl;
+	static StandaloneDataController ctrl;
 	static Expression a, b, expected;
 	
 	@BeforeAll
@@ -31,13 +30,13 @@ class LTLOperatorsTest {
 	
 	@BeforeEach
 	void setUp() throws Exception {
-		ctrl = new DataController(false);
+		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
 	}
 
 	@Test
 	void nextTest() {
-		ctrl.isRealTime = false;
+		ctrl.setRealTime(true);
 		ctrl.registerBooleanDBColumn("A");
 		a = new BoolDatabaseAccess("A");
 		ctrl.registerBooleanDBColumn("B");
@@ -49,7 +48,7 @@ class LTLOperatorsTest {
 		// a -> Next(b) == expected?
 		Expression e = new Implication(a, new LTL_Next(b));
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
 			assertEquals(expectedResult, result, "Timestamp " + state.timestamp.toEpochMilli());
@@ -58,7 +57,7 @@ class LTLOperatorsTest {
 	
 	@Test
 	void globalTest() {
-		ctrl.isRealTime = false;
+		ctrl.setRealTime(true);
 		ctrl.registerBooleanDBColumn("A");
 		a = new BoolDatabaseAccess("A");
 		ctrl.registerBooleanDBColumn("B");
@@ -74,7 +73,7 @@ class LTLOperatorsTest {
 		// Expression e4 = new BoolNegation(e3);
 		Expression e = new LTL_Global(new And(a,b));
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
 			
@@ -98,7 +97,7 @@ class LTLOperatorsTest {
 	
 	@Test 
 	void finallyTest() {
-		ctrl.isRealTime = false;
+		ctrl.setRealTime(false);
 		ctrl.registerBooleanDBColumn("A");
 		a = new BoolDatabaseAccess("A");
 		ctrl.registerBooleanDBColumn("B");
@@ -110,7 +109,7 @@ class LTLOperatorsTest {
 		// Finally(a) == expected?
 		Expression e = new LTL_Finally(a);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
@@ -120,7 +119,7 @@ class LTLOperatorsTest {
 	}
 	@Test
 	void finallyTestRealTime() {
-		ctrl.isRealTime = true;
+		ctrl.setRealTime(true);
 		ctrl.registerBooleanDBColumn("A");
 		a = new BoolDatabaseAccess("A");
 		ctrl.registerBooleanDBColumn("B");
@@ -132,7 +131,7 @@ class LTLOperatorsTest {
 		// Finally(a) == expected?
 		Expression e = new LTL_Finally(a);
 		
-		for (State state : ctrl.getAllStates()) {
+		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
 			//System.out.println(state.timestamp.toEpochMilli() + ": " + result + " expected " + expectedResult);
