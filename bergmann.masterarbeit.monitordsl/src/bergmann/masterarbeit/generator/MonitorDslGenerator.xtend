@@ -68,8 +68,8 @@ class MonitorDslGenerator extends AbstractGenerator {
 //				.map[name]
 //				.join(', '))
 		var monitors = resource.contents.head as Monitors
-		fsa.generateFile(monitors.targetClassname + "_StandaloneRunner.java", monitors.createStandaloneRunner)		
-		fsa.generateFile(monitors.targetClassname + "_MonitorDeclaration.java", monitors.createEvaluationPackage)		
+		fsa.generateFile("bergmann/masterarbeit/generated/"+monitors.targetClassname + "_StandaloneRunner.java", monitors.createStandaloneRunner)		
+		fsa.generateFile("bergmann/masterarbeit/generated/"+monitors.targetClassname + "_MonitorDeclaration.java", monitors.createEvaluationPackage)		
 	}
 	
 	def static String getTargetClassname(Monitors monitors){
@@ -84,7 +84,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		«monitors.compileImports»
 		
 		@SuppressWarnings("unused")
-		class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
+		public class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
 			
 			@SuppressWarnings("rawtypes")
 			public «monitors.targetClassname»_MonitorDeclaration(){
@@ -138,7 +138,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		«monitors.compilePackage»
 		«monitors.compileImports»
 		@SuppressWarnings("unused")
-		class «monitors.targetClassname»_StandaloneRunner {
+		public class «monitors.targetClassname»_StandaloneRunner {
 			
 			@SuppressWarnings("rawtypes")
 			public static void main(String args[]) {
@@ -219,7 +219,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		'''
 	}
 	def static String compilePackage(Monitors monitors){
-		return ''''''; //TODO: PackageName
+		return '''package bergmann.masterarbeit.generated;'''; //TODO: PackageName
 	}
 	
 	def static String compileImports(Monitors monitors){
