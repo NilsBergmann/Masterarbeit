@@ -27,16 +27,7 @@ Assertion:
 ;
 
 Expression:
-	TimeOffsetExpr
-;
-
-TimeOffsetExpr returns Expression:
-	ImplicationExpr ({TimeOffset.expr=current} offset=ExpressionTimeOffset)?
-;
-
-ExpressionTimeOffset:
-	{StateOffset}  "[" "at"? op=("+"|"-") value=INT ("state"|"states")"]"
-	| {TimeOffset} "[" "at"? op=("+"|"-") value=INT unit=TIME_UNIT"]"
+	ImplicationExpr
 ;
 
 ImplicationExpr returns Expression:
@@ -77,21 +68,31 @@ UnExpr returns Expression:
 ;
 
 MappingBinary returns Expression:
-	AtomExpr ({MappingBinary.left=current} ref=[ecore::EObject]  right=AtomExpr)*
+	TimeOffsetExpr ({MappingBinary.left=current} ref=[ecore::EObject]  right=TimeOffsetExpr)*
+;
+
+TimeOffsetExpr returns Expression:
+	AtomExpr ({TimeOffset.expr=current} offset=ExpressionTimeOffset)?
+;
+
+ExpressionTimeOffset:
+	{StateOffset}  "[" "at"? op=("+"|"-") value=INT ("state"|"states")"]"
+	| {TimeOffset} "[" "at"? op=("+"|"-") value=INT unit=TIME_UNIT"]"
 ;
 
 AtomExpr returns Expression: 
 	{Subexpression} '(' expr=Expression ')'
+	| {IfThenElse} "if" condition=Expression "then" then=Expression "else" else=Expression
 	// Literals
 	| {IntLiteral} value=INT unit=Unit?
 	| {FloatLiteral} value=FLOAT unit=Unit?
 	| {BoolLiteral} value=("true" | "false")	
 	| {StringLiteral} value=STRING
-	// User Variable
+	// AVG, MIN, MAX
 	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
-	// MappingVariable
+	// UserVar reference, Mapping reference
 	| {CrossReference} ref=[ecore::EObject] ("("optionalExpr=Expression")")?
-	| {IfThenElse} "if" condition=Expression "then" then=Expression "else" else=Expression
+	
 ;
 
 
