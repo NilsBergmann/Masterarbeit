@@ -158,6 +158,7 @@ class MonitorDslGenerator extends AbstractGenerator {
 		for (currentDomain : domains) {
 			s+= "// Domain: " + currentDomain.package.name + "\n"
 			for (dv : EcoreUtil2.eAllOfType(currentDomain, DomainValue)) {
+				s+= if(dv.description != null) "// " +dv.description +"\n" else "// No Description given.\n"
 				s+= dv.registerDomainColumn + "\n"
 			}  
 			s+= "\n"
