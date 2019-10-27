@@ -31,11 +31,13 @@ public class StateListHandler {
 	}
 
 	public State createStateFromTimestamp(Instant timestamp) {
-    	return new State(timestamp);
+		State s = new State(timestamp);
+		this.add(s);
+    	return s;
     }
     
     public State createStateFromEpochMilli(long epochMillis) {
-    	return new State(Instant.ofEpochMilli(epochMillis));
+    	return this.createStateFromTimestamp(Instant.ofEpochMilli(epochMillis));
     }
     
     public void add(State s) {
