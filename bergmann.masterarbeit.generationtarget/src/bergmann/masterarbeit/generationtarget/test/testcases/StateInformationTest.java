@@ -40,7 +40,7 @@ class StateInformationTest {
 	@Test
 	void test() {
 		for(int i = 0; i < 100; i++) {
-			State current = states.createStateFromEpochMilli(i);
+			State current = new State(i);
 			Amount test = Amount.valueOf(i, SI.METER);
 			current.storeDBValue("Test", Optional.of(test));
 			states.add(current);

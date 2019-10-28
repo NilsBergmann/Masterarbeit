@@ -26,6 +26,9 @@ public class State implements Comparable<State> {
         storedAssertions = new HashMap<String, Optional>();
     }
 
+    public State(long epochMillis) {
+    	this(Instant.ofEpochMilli(epochMillis));
+    }
     
     /** 
      * Database value stuff 
@@ -82,11 +85,9 @@ public class State implements Comparable<State> {
         storedDBValues.put(key, value);
     }   
     
-    public <T> Optional<T> getStoredDBValue(String key) {
-        Optional obj = Optional.empty();
+    public <T extends Object> Optional<T> getStoredDBValue(String key) {
         if (storedDBValues.containsKey(key)) {
-            // Return cached if it exists
-            obj = storedDBValues.get(key);
+        	Optional obj = storedDBValues.get(key);
             if (obj != null) 
                 return obj;
         } else {

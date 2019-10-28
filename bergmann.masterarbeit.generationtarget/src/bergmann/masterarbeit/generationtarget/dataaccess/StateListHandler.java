@@ -29,16 +29,6 @@ public class StateListHandler {
     	states = new ArrayList<State>();
     	this.realTimeEvaluationMode = realTimeEvaluationMode;
 	}
-
-	public State createStateFromTimestamp(Instant timestamp) {
-		State s = new State(timestamp);
-		this.add(s);
-    	return s;
-    }
-    
-    public State createStateFromEpochMilli(long epochMillis) {
-    	return this.createStateFromTimestamp(Instant.ofEpochMilli(epochMillis));
-    }
     
     public void add(State s) {
     	this.states.add(s);
