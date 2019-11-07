@@ -447,6 +447,11 @@ class MonitorDslGenerator extends AbstractGenerator {
 		if (u.equals(javax.measure.unit.Unit.ONE))
 			return '''Unit.ONE'''
 		else
-			return '''Unit.valueOf("«u.toString»")'''
+		{
+			var unitS =  u.toString
+			unitS = unitS.replace("²","^2")
+			unitS = unitS.replace("³","^3")
+			return '''Unit.valueOf("«unitS»")'''		
+		}
 	}
 }
