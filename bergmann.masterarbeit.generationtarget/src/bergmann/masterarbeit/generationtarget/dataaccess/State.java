@@ -26,9 +26,18 @@ public class State implements Comparable<State> {
         storedUserVariables = new HashMap<String, Optional>();
         storedAssertions = new HashMap<String, Optional>();
     }
+    public State(Instant timestamp, MonitorDeclaration declr) {
+        this(timestamp);
+        if(declr != null)
+        	this.initUnknowns(declr);
+    }
 
     public State(long epochMillis) {
         this(Instant.ofEpochMilli(epochMillis));
+    }
+
+    public State(long epochMillis, MonitorDeclaration declr) {
+        this(Instant.ofEpochMilli(epochMillis), declr);
     }
 
     /**
