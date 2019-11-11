@@ -17,6 +17,7 @@ import bergmann.masterarbeit.generationtarget.expressions.PLTL_Once;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Yesterday;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Z;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
+import bergmann.masterarbeit.generationtarget.test.utils.TestMonitorDeclaration;
 
 class PLTL_OperatorTest {
 	static StandaloneDataController ctrl;
@@ -30,15 +31,19 @@ class PLTL_OperatorTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		ctrl = new StandaloneDataController(false);
+		TestMonitorDeclaration decl = new TestMonitorDeclaration();
+		decl.addDBBoolean("A");
+		decl.addDBBoolean("B");
+		decl.addDBBoolean("Expected");
+		ctrl.registerRequiredData(decl);
 		ctrl.connectToDatabase("Testcases.db");
+		
+		a = new BoolDatabaseAccess("A");
+		expected = new BoolDatabaseAccess("Expected");
 	}
 
 	@Test
 	void onceTest() {
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
-		ctrl.registerBooleanDBColumn("Expected");
-		expected = new BoolDatabaseAccess("Expected");
 		ctrl.selectTable("PLTL_Once");
 		
 		Expression e = new PLTL_Once(a);
@@ -54,10 +59,6 @@ class PLTL_OperatorTest {
 	
 	@Test
 	void HistoricallyTest() {
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
-		ctrl.registerBooleanDBColumn("Expected");
-		expected = new BoolDatabaseAccess("Expected");
 		ctrl.selectTable("PLTL_Historically");
 		
 		Expression e = new PLTL_Historically(a);
@@ -77,8 +78,6 @@ class PLTL_OperatorTest {
 	
 	@Test
 	void YesterdayTest() {
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
 		ctrl.selectTable("PLTL_Yesterday");
 		
 		Expression sub = a;
@@ -99,8 +98,6 @@ class PLTL_OperatorTest {
 	@Test
 	void ZTest() {
 		// Same as Y, except its true at state 0
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
 		ctrl.selectTable("PLTL_Yesterday");
 		
 		Expression sub = a;

@@ -16,29 +16,31 @@ import javax.measure.unit.Unit;
 
 import org.jscience.physics.amount.Amount;
 
+import bergmann.masterarbeit.generationtarget.utils.MonitorDeclaration;
+
 public class DatabaseWrapper {
     public static String TIMESTAMP_COLUMN_NAME = "Timestamp";
 
-    public Map<String, Unit> numberColumns;
-    public List<String> booleanColumns;
-    public List<String> stringColumns;
+    private MonitorDeclaration monitors;
 
     public Connection conn;
     public String tableName = null;
 
     public DatabaseWrapper() {
-        this.numberColumns = new HashMap<String, Unit>();
-        this.booleanColumns = new ArrayList<>();
-        this.stringColumns = new ArrayList<>();
+
     }
 
-    public DatabaseWrapper(String databaseName) {
+    public DatabaseWrapper(MonitorDeclaration monitors) {
         this();
+        this.monitors = monitors;
     }
 
-    public DatabaseWrapper(String databaseName, String tableName) {
-        this(databaseName);
-        this.setTable(tableName);
+    public MonitorDeclaration getMonitors() {
+        return monitors;
+    }
+
+    public void setMonitors(MonitorDeclaration monitors) {
+        this.monitors = monitors;
     }
 
     public boolean isConnected() {
@@ -69,16 +71,17 @@ public class DatabaseWrapper {
         this.conn = null;
         this.tableName = null;
     }
-    
-    public List<State> getStates(){
-    	return this.getStatesFromSQL("SELECT * FROM " + this.tableName);
+
+    public List<State> getStates() {
+        return this.getStatesFromSQL("SELECT * FROM " + this.tableName);
     }
 
-    public List<State> getStatesAfter(Instant timestamp){
-    	String sql = "SELECT * FROM " + this.tableName + " WHERE " + TIMESTAMP_COLUMN_NAME + " > "+  timestamp.toEpochMilli();
-    	return this.getStatesFromSQL(sql);
+    public List<State> getStatesAfter(Instant timestamp) {
+        String sql = "SELECT * FROM " + this.tableName + " WHERE " + TIMESTAMP_COLUMN_NAME + " > "
+                + timestamp.toEpochMilli();
+        return this.getStatesFromSQL(sql);
     }
-    
+
     private List<State> getStatesFromSQL(String sql) {
         if (tableName == null)
             return null;
@@ -89,29 +92,24 @@ public class DatabaseWrapper {
             while (rs.next()) {
                 long timestamp = rs.getLong(TIMESTAMP_COLUMN_NAME);
                 State current = new State(Instant.ofEpochMilli(timestamp));
-                for (String name : booleanColumns) {
+                current.initUnknowns(this.monitors);
+                for (String name : monitors.getRequiredDataBooleans()) {
                     try {
                         boolean x = rs.getBoolean(name);
                         Optional<Boolean> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
                         current.storeDBValue(name, data);
                     } catch (SQLException e) {
-                        System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
-                                + ". Saving Optional.empty " + e);
-                        current.storeDBValue(name, Optional.empty());
                     }
                 }
-                for (String name : stringColumns) {
+                for (String name : monitors.getRequiredDataStrings()) {
                     try {
                         String x = rs.getString(name);
                         Optional<String> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
                         current.storeDBValue(name, data);
                     } catch (SQLException e) {
-                        System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
-                                + ". Saving Optional.empty " + e);
-                        current.storeDBValue(name, Optional.empty());
                     }
                 }
-                for (Entry<String, Unit> pair : numberColumns.entrySet()) {
+                for (Entry<String, Unit> pair : monitors.getRequiredDataNumbers().entrySet()) {
                     Unit unit = pair.getValue();
                     String name = pair.getKey();
                     try {
@@ -120,9 +118,6 @@ public class DatabaseWrapper {
                         Optional<Amount> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
                         current.storeDBValue(name, data);
                     } catch (SQLException e) {
-                        System.err.println("Couldnt get boolean '" + name + "' for " + current.toString()
-                                + ". Saving Optional.empty " + e);
-                        current.storeDBValue(name, Optional.empty());
                     }
                 }
                 states.add(current);
@@ -155,29 +150,4 @@ public class DatabaseWrapper {
             throw new IllegalArgumentException("No table with name " + name);
     }
 
-    public void registerNumberColumn(String name, Unit unit) {
-        if (isNotRegistered(name))
-            this.numberColumns.put(name, unit);
-        else
-            System.err.println("Column " + name + " is already registered");
-    }
-
-    public void registerStringColumn(String name) {
-        if (isNotRegistered(name))
-            this.stringColumns.add(name);
-        else
-            System.err.println("Column " + name + " is already registered");
-    }
-
-    public void registerBooleanColumn(String name) {
-        if (isNotRegistered(name))
-            this.booleanColumns.add(name);
-        else
-            System.err.println("Column " + name + " is already registered");
-    }
-
-    private boolean isNotRegistered(String columnName) {
-        return !numberColumns.containsKey(columnName) && !stringColumns.contains(columnName)
-                && !booleanColumns.contains(columnName) && !columnName.equals(TIMESTAMP_COLUMN_NAME);
-    }
 }

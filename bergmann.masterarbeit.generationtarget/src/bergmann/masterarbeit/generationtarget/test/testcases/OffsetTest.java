@@ -20,6 +20,7 @@ import bergmann.masterarbeit.generationtarget.expressions.NumberDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.expressions.OffsetByStates;
 import bergmann.masterarbeit.generationtarget.expressions.OffsetByTime;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
+import bergmann.masterarbeit.generationtarget.test.utils.TestMonitorDeclaration;
 
 class OffsetTest {
 	static StandaloneDataController ctrl;
@@ -36,7 +37,10 @@ class OffsetTest {
 		
 		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
-		ctrl.registerNumberDBColumn("Vehicle1ForwardSpeed", unit);
+		
+		TestMonitorDeclaration decl = new TestMonitorDeclaration();
+		decl.addDBAmount("Vehicle1ForwardSpeed", unit);
+		ctrl.registerRequiredData(decl);
 		
 		ctrl.selectTable("Brian_Scenario_Example");
 

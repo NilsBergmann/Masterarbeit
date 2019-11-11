@@ -10,12 +10,13 @@ import javax.measure.unit.Unit;
 
 import org.jscience.physics.amount.Amount;
 
+import bergmann.masterarbeit.generationtarget.utils.MonitorDeclaration;
 import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 
 public class State implements Comparable<State> {
     public Instant timestamp;
     public StateListHandler stateListHandler;
-	public Map<String, Optional> storedDBValues;
+    public Map<String, Optional> storedDBValues;
     public Map<String, Optional> storedUserVariables;
     public Map<String, Optional> storedAssertions;
 
@@ -27,135 +28,159 @@ public class State implements Comparable<State> {
     }
 
     public State(long epochMillis) {
-    	this(Instant.ofEpochMilli(epochMillis));
+        this(Instant.ofEpochMilli(epochMillis));
     }
-    
-    /** 
-     * Database value stuff 
+
+    /**
+     * Database value stuff
      */
-   
+
+    public void initUnknowns(MonitorDeclaration decl) {
+        for (String identifier : decl.getRequiredDataBooleans()) {
+        	if(!this.storedDBValues.containsKey(identifier))
+        		this.storedDBValues.put(identifier, Optional.empty());
+        }
+        for (String identifier : decl.getRequiredDataNumbers().keySet()) {
+        	if(!this.storedDBValues.containsKey(identifier))
+        		this.storedDBValues.put(identifier, Optional.empty());
+        }
+        for (String identifier : decl.getRequiredDataStrings()) {
+        	if(!this.storedDBValues.containsKey(identifier))
+        		this.storedDBValues.put(identifier, Optional.empty());
+        }
+        for (String identifier : decl.getDeclaredAssertionNames()) {
+        	if(!this.storedAssertions.containsKey(identifier))
+        		this.storedAssertions.put(identifier, Optional.empty());
+        }
+        for (String identifier : decl.getDeclaredUserVariableNames()) {
+        	if(!this.storedUserVariables.containsKey(identifier))
+        		this.storedUserVariables.put(identifier, Optional.empty());
+        }
+    }
+
     public Optional<Boolean> getDBBoolean(String key) {
-    	if(storedDBValues.containsKey(key)) {
-    		Optional value = storedDBValues.get(key);
-    		if(value.isPresent() && !(value.get() instanceof Boolean) ) {
-    			System.err.println(this.toString() + " has no boolean " + key + ", instead received a " + value.get().getClass() + ". Returning Optional.empty");
-    			return Optional.empty();
-    		}
-			return value;
-		}
-    	else	
-    		System.err.println(this.toString() + " has no boolean " + key + ". Returning Optional.empty");
-    	return Optional.empty();
+        if (storedDBValues.containsKey(key)) {
+            Optional value = storedDBValues.get(key);
+            if (value.isPresent() && !(value.get() instanceof Boolean)) {
+                System.err.println(this.toString() + " has no boolean " + key + ", instead received a "
+                        + value.get().getClass() + ". Returning Optional.empty");
+                return Optional.empty();
+            }
+            return value;
+        } else
+            System.err.println(this.toString() + " has no boolean " + key + ". Returning Optional.empty");
+        return Optional.empty();
     }
-    
+
     public Optional<Amount> getDBAmount(String key) {
-    	if(storedDBValues.containsKey(key)) {
-    		Optional value = storedDBValues.get(key);
-    		if(value.isPresent() && !(value.get() instanceof Amount) ) {
-    			System.err.println(this.toString() + " has no Amount " + key + ", instead received a " + value.get().getClass() + ". Returning Optional.empty");
-    			return Optional.empty();
-    		}
-			return value;
-    	}
-    	else	
-    		System.err.println(this.toString() + " has no Amount " + key + ". Returning Optional.empty");
-    	return Optional.empty();
+        if (storedDBValues.containsKey(key)) {
+            Optional value = storedDBValues.get(key);
+            if (value.isPresent() && !(value.get() instanceof Amount)) {
+                System.err.println(this.toString() + " has no Amount " + key + ", instead received a "
+                        + value.get().getClass() + ". Returning Optional.empty");
+                return Optional.empty();
+            }
+            return value;
+        } else
+            System.err.println(this.toString() + " has no Amount " + key + ". Returning Optional.empty");
+        return Optional.empty();
     }
-    
+
     public Optional<String> getDBString(String key) {
-    	if(storedDBValues.containsKey(key)) {
-    		Optional value = storedDBValues.get(key);
-    		if(value.isPresent() && !(value.get() instanceof String) ) {
-    			return Optional.empty();
-    		}
-			return value;
-    	}
-    	else	
-    		System.err.println(this.toString() + " has no String " + key + ". Returning Optional.empty");
-    	return Optional.empty();
+        if (storedDBValues.containsKey(key)) {
+            Optional value = storedDBValues.get(key);
+            if (value.isPresent() && !(value.get() instanceof String)) {
+                return Optional.empty();
+            }
+            return value;
+        } else
+            System.err.println(this.toString() + " has no String " + key + ". Returning Optional.empty");
+        return Optional.empty();
     }
-    
+
     public Set<String> getStoredDBValueIDs() {
-    	return this.storedDBValues.keySet();
+        return this.storedDBValues.keySet();
     }
-  
+
     public void storeDBValue(String key, Optional value) {
         if (value == null || key == null)
-            throw new IllegalArgumentException("Can't store DB Value because at least one parameter is null: ("+key+", "+value+")");
+            throw new IllegalArgumentException(
+                    "Can't store DB Value because at least one parameter is null: (" + key + ", " + value + ")");
         storedDBValues.put(key, value);
-    }   
-    
+    }
+
     public <T extends Object> Optional<T> getStoredDBValue(String key) {
         if (storedDBValues.containsKey(key)) {
-        	Optional obj = storedDBValues.get(key);
-            if (obj != null) 
+            Optional obj = storedDBValues.get(key);
+            if (obj != null)
                 return obj;
         } else {
-        	System.err.println("No DB Value '"+key+"' is stored in this state. Returning Optional.empty.");
+            System.err.println("No DB Value '" + key + "' is stored in this state. Returning Optional.empty.");
         }
         return Optional.empty();
     }
-    
 
     /**
      * UserVariable stuff
      */
-    
+
     public Set<String> getStoredUserVariableIDs() {
-    	return this.storedUserVariables.keySet();
+        return this.storedUserVariables.keySet();
     }
-    
+
     public void storeUserVariableResult(String key, Optional value) {
         if (value == null || key == null)
-            throw new IllegalArgumentException("Can't store DB Value because at least one parameter is null: ("+key+", "+value+")");
+            throw new IllegalArgumentException(
+                    "Can't store DB Value because at least one parameter is null: (" + key + ", " + value + ")");
         this.storedUserVariables.put(key, value);
     }
-    
+
     public Optional getStoredUserVariableResult(String key) {
         Optional obj = Optional.empty();
         if (storedUserVariables.containsKey(key)) {
             // Return cached if it exists
             obj = storedUserVariables.get(key);
-            if (obj != null) 
+            if (obj != null)
                 return obj;
         } else {
-        	System.err.println("No UserVariable result '"+key+"' is stored in this state. Returning Optional.empty.");
+            System.err
+                    .println("No UserVariable result '" + key + "' is stored in this state. Returning Optional.empty.");
         }
         return Optional.empty();
     }
-    
+
     /**
      * Assertion stuff
      */
-    
+
     public Set<String> getStoredAssertionIDs() {
-    	return this.storedAssertions.keySet();
+        return this.storedAssertions.keySet();
     }
-    
+
     public void storeAssertionResult(String key, Optional<Boolean> value) {
         if (value == null || key == null)
-            throw new IllegalArgumentException("Can't store DB Value because at least one parameter is null: ("+key+", "+value+")");
+            throw new IllegalArgumentException(
+                    "Can't store DB Value because at least one parameter is null: (" + key + ", " + value + ")");
         this.storedAssertions.put(key, value);
     }
-    
+
     public Optional<Boolean> getAssertionResult(String key) {
         Optional obj = Optional.empty();
         if (storedAssertions.containsKey(key)) {
             // Return cached if it exists
             obj = storedAssertions.get(key);
-            if (obj != null) 
+            if (obj != null)
                 return obj;
         } else {
-        	System.err.println("No AssertionResult '"+key+"' is stored in this state. Returning Optional.empty.");
+            System.err.println("No AssertionResult '" + key + "' is stored in this state. Returning Optional.empty.");
         }
         return Optional.empty();
     }
-    
-    
+
     /**
      * General stuff
      */
-    
+
     public int compareTo(State state) {
         return this.compareTo(state.timestamp);
     }
@@ -174,30 +199,30 @@ public class State implements Comparable<State> {
             return false;
         } else {
             State otherS = (State) other;
-            return this.timestamp.equals(otherS.timestamp) 
-            		&& this.storedDBValues.equals(otherS.storedDBValues)
-            		&& this.storedAssertions.equals(otherS.storedAssertions)
-            		&& this.storedUserVariables.equals(otherS.storedUserVariables);
+            return this.timestamp.equals(otherS.timestamp) && this.storedDBValues.equals(otherS.storedDBValues)
+                    && this.storedAssertions.equals(otherS.storedAssertions)
+                    && this.storedUserVariables.equals(otherS.storedUserVariables);
         }
     }
-    
-    public String toString() {
-    	return "State[" + timestamp.toEpochMilli() + "]";
-    }
-    
-    public String toLongString() {
-    	return this.toString() + " -> " + this.storedDataToString();
-    }
-    
-    private String storedDataToString() {
-    	return "DBValues=" + this.storedDBValues.toString() + " UserVariables=" + this.storedUserVariables.toString() + " Assertions=" + this.storedAssertions.toString();
-    }
-    
-    public StateListHandler getStateListHandler() {
-		return stateListHandler;
-	}
 
-	public void setStateListHandler(StateListHandler stateListHandler) {
-		this.stateListHandler = stateListHandler;
-	}
+    public String toString() {
+        return "State[" + timestamp.toEpochMilli() + "]";
+    }
+
+    public String toLongString() {
+        return this.toString() + " -> " + this.storedDataToString();
+    }
+
+    private String storedDataToString() {
+        return "DBValues=" + this.storedDBValues.toString() + " UserVariables=" + this.storedUserVariables.toString()
+                + " Assertions=" + this.storedAssertions.toString();
+    }
+
+    public StateListHandler getStateListHandler() {
+        return stateListHandler;
+    }
+
+    public void setStateListHandler(StateListHandler stateListHandler) {
+        this.stateListHandler = stateListHandler;
+    }
 }

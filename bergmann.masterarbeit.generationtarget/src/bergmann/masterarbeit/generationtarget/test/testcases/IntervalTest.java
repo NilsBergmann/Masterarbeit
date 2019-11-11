@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
+import bergmann.masterarbeit.generationtarget.test.utils.TestMonitorDeclaration;
 import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
@@ -23,6 +24,7 @@ class IntervalTest {
 	public static void init() {
 		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
+		ctrl.registerRequiredData(new TestMonitorDeclaration());
 		ctrl.selectTable("IntervalTest");
 		// Table has timestamp 1000000000 to 1000000040 in 1ms steps
 		ctrl.updateStates();

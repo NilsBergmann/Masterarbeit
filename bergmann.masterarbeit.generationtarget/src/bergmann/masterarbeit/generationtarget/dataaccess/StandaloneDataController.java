@@ -78,33 +78,9 @@ public class StandaloneDataController {
 		return this.isRealTime;
 	}
 
-	public void registerNumberDBColumn(String name, Unit unit) {
-		System.out.println("Registered required DB Number: " + name + "[" + unit + "]");
-		this.dbWrapper.registerNumberColumn(name, unit);
-	}
-
-	public void registerStringDBColumn(String name) {
-		System.out.println("Registered required DB String: " + name);
-		this.dbWrapper.registerStringColumn(name);
-	}
-
-	public void registerBooleanDBColumn(String name) {
-		System.out.println("Registered required DB Boolean: " + name);
-		this.dbWrapper.registerBooleanColumn(name);
-	}
 
 	public void registerRequiredData(MonitorDeclaration monitors) {
-		for (String id : monitors.getRequiredDataStrings()) {
-			this.registerStringDBColumn(id);
-		}
-		for (String id : monitors.getRequiredDataBooleans()) {
-			this.registerBooleanDBColumn(id);
-		}
-		for (Map.Entry<String, Unit> entry : monitors.getRequiredDataNumbers().entrySet()) {
-			String id = entry.getKey();
-			Unit unit = entry.getValue();
-			this.registerNumberDBColumn(id, unit);
-		}
+		this.dbWrapper.setMonitors(monitors);
 	}
 
 	public void runEvaluation(MonitorDeclaration monitors, String tableName) {

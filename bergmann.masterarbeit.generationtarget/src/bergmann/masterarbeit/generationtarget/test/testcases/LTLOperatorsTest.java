@@ -18,6 +18,7 @@ import bergmann.masterarbeit.generationtarget.expressions.LTL_Finally;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Global;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Next;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
+import bergmann.masterarbeit.generationtarget.test.utils.TestMonitorDeclaration;
 
 class LTLOperatorsTest {
 	static StandaloneDataController ctrl;
@@ -31,18 +32,21 @@ class LTLOperatorsTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		ctrl = new StandaloneDataController(false);
+		TestMonitorDeclaration decl = new TestMonitorDeclaration();
+		decl.addDBBoolean("A");
+		decl.addDBBoolean("B");
+		decl.addDBBoolean("Expected");
+		ctrl.registerRequiredData(decl);
 		ctrl.connectToDatabase("Testcases.db");
+		
+		a = new BoolDatabaseAccess("A");
+		b = new BoolDatabaseAccess("B");
+		expected = new BoolDatabaseAccess("Expected");
 	}
 
 	@Test
 	void nextTest() {
 		ctrl.setRealTime(true);
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
-		ctrl.registerBooleanDBColumn("B");
-		b = new BoolDatabaseAccess("B");
-		ctrl.registerBooleanDBColumn("Expected");
-		expected = new BoolDatabaseAccess("Expected");
 		ctrl.selectTable("LTL_Next");
 		
 		// a -> Next(b) == expected?
@@ -58,12 +62,6 @@ class LTLOperatorsTest {
 	@Test
 	void globalTest() {
 		ctrl.setRealTime(true);
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
-		ctrl.registerBooleanDBColumn("B");
-		b = new BoolDatabaseAccess("B");
-		ctrl.registerBooleanDBColumn("Expected");
-		expected = new BoolDatabaseAccess("Expected");
 		ctrl.selectTable("LTL_Global");
 		
 		// Global(a) == expected?
@@ -98,12 +96,6 @@ class LTLOperatorsTest {
 	@Test 
 	void finallyTest() {
 		ctrl.setRealTime(false);
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
-		ctrl.registerBooleanDBColumn("B");
-		b = new BoolDatabaseAccess("B");
-		ctrl.registerBooleanDBColumn("Expected");
-		expected = new BoolDatabaseAccess("Expected");
 		ctrl.selectTable("LTL_Finally");
 		
 		// Finally(a) == expected?
@@ -120,12 +112,6 @@ class LTLOperatorsTest {
 	@Test
 	void finallyTestRealTime() {
 		ctrl.setRealTime(true);
-		ctrl.registerBooleanDBColumn("A");
-		a = new BoolDatabaseAccess("A");
-		ctrl.registerBooleanDBColumn("B");
-		b = new BoolDatabaseAccess("B");
-		ctrl.registerBooleanDBColumn("Expected");
-		expected = new BoolDatabaseAccess("Expected");
 		ctrl.selectTable("LTL_Finally_Realtime");
 		
 		// Finally(a) == expected?

@@ -22,6 +22,7 @@ import bergmann.masterarbeit.generationtarget.expressions.AggregateMaximum;
 import bergmann.masterarbeit.generationtarget.expressions.AggregateMinimum;
 import bergmann.masterarbeit.generationtarget.expressions.NumberDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
+import bergmann.masterarbeit.generationtarget.test.utils.TestMonitorDeclaration;
 import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
@@ -41,9 +42,12 @@ class AggregateTest {
 		unit = SI.CENTIMETER.times(SI.SECOND);
 		
 		ctrl = new StandaloneDataController(false);
-		ctrl.connectToDatabase("Testcases.db");
-		ctrl.registerNumberDBColumn("value", unit);
 		
+		TestMonitorDeclaration decl = new TestMonitorDeclaration();
+		decl.addDBAmount("value", unit);
+		ctrl.registerRequiredData(decl);
+		
+		ctrl.connectToDatabase("Testcases.db");
 		ctrl.selectTable("AggregateTest");
 
 		subExpr = new NumberDatabaseAccess("value");
