@@ -72,7 +72,8 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 	def markSubexpressions(Expression expr){
 		if(!expr.isValid){
 			var invalidSubexpressionFound = false
-			for(Expression subExpr : expr.subexpressions){
+			var subexpressions = expr.subexpressions
+			for(Expression subExpr : subexpressions){
 				if(subExpr != null && !subExpr.isValid){
 					markSubexpressions(subExpr)
 					invalidSubexpressionFound = true
@@ -80,11 +81,17 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			}
 			if(!invalidSubexpressionFound){
 				// Error must be in how this expression is used, not in some subexpression
-				var joiner = new StringJoiner(" , ", "[", "]")
-				for(Expression subExpr : expr.subexpressions){
-					joiner.add(subExpr.expressionType)
+				var errorString = "Subexpression can't be resolved to a valid type. "
+				errorString += expr.shortName + " is not defined"
+			
+				if(subexpressions.size != 0){
+					var joiner = new StringJoiner(" , ", "[", "]")
+					for(Expression subExpr : subexpressions){
+						joiner.add(subExpr.expressionType)
+					}
+					errorString += " for given inputs " + joiner.toString
 				}
-				error("Subexpression can't be resolved to a valid type\n"+ expr.shortName + " is not defined for " + joiner.toString, expr.eContainer, expr.eContainingFeature, -1)
+				error(errorString, expr.eContainer, expr.eContainingFeature, -1)
 			}
 		}
 	}
