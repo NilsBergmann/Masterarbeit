@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+Automatic-Module-Name: bergmann.masterarbeit.monitordsl
 Bundle-ManifestVersion: 2
 Bundle-Name: bergmann.masterarbeit.monitordsl
 Bundle-Vendor: My Company
@@ -9,25 +10,24 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
  org.eclipse.equinox.common;bundle-version="3.5.0",
  org.eclipse.emf.ecore,
- org.eclipse.xtext.xbase.lib,
- org.antlr.runtime,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
  org.eclipse.xtext.util,
- org.eclipse.xtend.lib,
  org.eclipse.emf.common,
- bergmann.masterarbeit.mappingdsl;bundle-version="1.0.0",
- org.eclipse.core.resources;bundle-version="3.12.0"
+ org.eclipse.xtend.lib;bundle-version="2.14.0",
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
+ bergmann.masterarbeit.mappingdsl;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: bergmann.masterarbeit.monitorDsl.impl,
- bergmann.masterarbeit.generator,
- bergmann.masterarbeit,
- bergmann.masterarbeit.monitorDsl,
- bergmann.masterarbeit.monitorDsl.util,
- bergmann.masterarbeit.validation,
- bergmann.masterarbeit.scoping,
- bergmann.masterarbeit.parser.antlr.internal,
- bergmann.masterarbeit.serializer,
- bergmann.masterarbeit.parser.antlr,
- bergmann.masterarbeit.services
+Export-Package: bergmann.masterarbeit.monitordsl.parser.antlr,
+ bergmann.masterarbeit.monitordsl.serializer,
+ bergmann.masterarbeit.monitordsl,
+ bergmann.masterarbeit.monitordsl.validation,
+ bergmann.masterarbeit.monitordsl.monitorDSL.impl,
+ bergmann.masterarbeit.monitordsl.monitorDSL.util,
+ bergmann.masterarbeit.monitordsl.generator,
+ bergmann.masterarbeit.monitordsl.services,
+ bergmann.masterarbeit.monitordsl.parser.antlr.internal,
+ bergmann.masterarbeit.monitordsl.monitorDSL,
+ bergmann.masterarbeit.monitordsl.scoping
 Import-Package: org.apache.log4j
-Bundle-ClassPath: .,
- lib/jscience-4.3.1.jar
+Bundle-ClassPath: lib/jscience-4.3.1.jar,
+ .
