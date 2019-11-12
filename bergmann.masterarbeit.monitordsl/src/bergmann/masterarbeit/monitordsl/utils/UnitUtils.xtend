@@ -192,9 +192,9 @@ class UnitUtils {
 		else
 		{
 			var unitS =  u.toString
-			unitS = unitS.replace("ï¿½","^2")
-			unitS = unitS.replace("ï¿½","^3")
-			return '''Unit.valueOf("ï¿½unitSï¿½")'''		
+			unitS = unitS.replace("²","^2")
+			unitS = unitS.replace("³","^3")
+			return '''Unit.valueOf("«unitS»")'''		
 		}
 	}
 }
