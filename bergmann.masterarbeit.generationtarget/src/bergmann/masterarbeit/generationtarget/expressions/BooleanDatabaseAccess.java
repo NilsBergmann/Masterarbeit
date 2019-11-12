@@ -5,10 +5,10 @@ import java.util.Optional;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class BoolDatabaseAccess extends Expression<Boolean> {
+public class BooleanDatabaseAccess extends Expression<Boolean> {
     public String columnName;
 
-    public BoolDatabaseAccess(String columnName) {
+    public BooleanDatabaseAccess(String columnName) {
         this.columnName = columnName;
     }
 

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.dataaccess.StateListHandler;
-import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
+import bergmann.masterarbeit.generationtarget.expressions.BooleanDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.expressions.BoolLiteral;
 import bergmann.masterarbeit.generationtarget.expressions.NumberDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.expressions.StringDatabaseAccess;
@@ -49,7 +49,7 @@ class StateInformationTest {
 		
 		Expression getTestExpr= new NumberDatabaseAccess("Test");
 		Expression getWrongType = new StringDatabaseAccess("Test");
-		Expression getUndefinedValueExpr = new BoolDatabaseAccess("Undefined");
+		Expression getUndefinedValueExpr = new BooleanDatabaseAccess("Undefined");
 		
 		UserVariable userVar = new UserVariable<>("UserVariableTest", getTestExpr);
 		Assertion assertion = new Assertion("AssertionTest", getTestExpr);
