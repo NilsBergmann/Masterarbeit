@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.expressions.And;
-import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
+import bergmann.masterarbeit.generationtarget.expressions.BooleanDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.expressions.Implication;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Finally;
 import bergmann.masterarbeit.generationtarget.expressions.LTL_Global;
@@ -39,9 +39,9 @@ class LTLOperatorsTest {
 		ctrl.registerRequiredData(decl);
 		ctrl.connectToDatabase("Testcases.db");
 		
-		a = new BoolDatabaseAccess("A");
-		b = new BoolDatabaseAccess("B");
-		expected = new BoolDatabaseAccess("Expected");
+		a = new BooleanDatabaseAccess("A");
+		b = new BooleanDatabaseAccess("B");
+		expected = new BooleanDatabaseAccess("Expected");
 	}
 
 	@Test
