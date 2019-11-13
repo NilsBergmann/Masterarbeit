@@ -35,26 +35,25 @@ import bergmann.masterarbeit.monitordsl.monitorDSL.MonitorDSLPackage
 import java.util.StringJoiner
 
 /**
- * This class contains custom validation rules. 
+ * This class contains custom validation rules.
  *
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class MonitorDSLValidator extends AbstractMonitorDSLValidator {
-	
+
 //	public static val INVALID_NAME = 'invalidName'
 //
 //	@Check
 //	def checkGreetingStartsWithCapital(Greeting greeting) {
 //		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
+//			warning('Name should start with a capital',
 //					MonitorDSLPackage.Literals.GREETING__NAME,
 //					INVALID_NAME)
 //		}
-//	}	
+//	}
 
 	@Check
 	def checkExpressionType(UserVariable userVar){
-		println("test")
 		if(!userVar.expr.isValid){
 			markSubexpressions(userVar.expr)
 			error("Invalid User Variable. Can not resolve to a valid type", MonitorDSLPackage.Literals.USER_VARIABLE__NAME)
@@ -83,7 +82,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 				// Error must be in how this expression is used, not in some subexpression
 				var errorString = "Subexpression can't be resolved to a valid type. "
 				errorString += expr.shortName + " is not defined"
-			
+
 				if(subexpressions.size != 0){
 					var joiner = new StringJoiner(" , ", "[", "]")
 					for(Expression subExpr : subexpressions){
@@ -102,7 +101,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			error("Interval start must be before end", t.eContainer, t.eContainingFeature, -1)
 		}
 	}
-	
+
 	@Check
 	def checkTimeIntervals(LTL_Binary expr){
 		if(expr.time == null){
@@ -117,7 +116,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			return
 		}
 		switch expr.op {
-			//LTL 
+			//LTL
 			case UNTIL,
 			case WEAK_UNTIL,
 			case RELEASE:{
@@ -143,21 +142,21 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 		}
 		if (expr.time.isZero){
 			warning("Given interval equals zero and can be removed.", MonitorDSLPackage.Literals.LTL_UNARY__TIME)
-			return 
+			return
 		}
 		if(expr.time.containsNegative && expr.time.containsPositive){
 			error("Mismatching signs for start and end are disallowed for '"+ expr.op +"'.", MonitorDSLPackage.Literals.LTL_UNARY__TIME)
 			return
 		}
 		switch expr.op {
-			//LTL 
+			//LTL
 			case NEXT,
 			case FINALLY,
 			case GLOBAL:{
 				if(expr.time.containsNegative){
 					error("Negative time interval for LTL operator.", MonitorDSLPackage.Literals.LTL_UNARY__TIME)
 				}
-			} 
+			}
 			// PLTL
 			case YESTERDAY,
 			case Z,
@@ -176,35 +175,35 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 	def unitMismatch(Add expr){
 		if(! (expr.left.isNumber && expr.right.isNumber))
 			return
-		var comp = expr.left.isUnitCompatible(expr.right)		 
+		var comp = expr.left.isUnitCompatible(expr.right)
 		if (!comp){
 			var lUnit = expr.left.unit
 			var rUnit = expr.right.unit
 			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
-		}	
+		}
 	}
 	@Check
 	def unitMismatch(Rel expr){
 		if(! (expr.left.isNumber && expr.right.isNumber))
 			return
-		var comp = expr.left.isUnitCompatible(expr.right)		 
+		var comp = expr.left.isUnitCompatible(expr.right)
 		if (!comp){
 			var lUnit = expr.left.unit
 			var rUnit = expr.right.unit
 			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
-		}		
+		}
 	}
-	
-	@Check 
+
+	@Check
 	def typeMismatch(IfThenElse expr){
 		var tThen = expr.then.expressionType
 		var tElse = expr.getElse.expressionType
 		if(! tThen.equals(tElse)){
-			error("Different, incompatible types for then and else\n then:[" + tThen + "] else:[" + tElse + "]", expr.eContainer, expr.eContainingFeature, -1) 
+			error("Different, incompatible types for then and else\n then:[" + tThen + "] else:[" + tElse + "]", expr.eContainer, expr.eContainingFeature, -1)
 		}
 	}
-	
-	@Check 
+
+	@Check
 	def unitMismatch(IfThenElse expr){
 		if(! (expr.then.isNumber && expr.getElse.isNumber))
 			return
@@ -215,18 +214,18 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			error("Different, incompatible units for then and else\n then:[" + lUnit + "] else:[" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
 		}
 	}
-	
-	@Check 
+
+	@Check
 	def EqualsTypeWarning(Rel expr){
 		if(expr.op.equals("==") || expr.op.equals("!=") )
 			if(!expr.left.expressionType.equals(expr.right.expressionType))
 				warning("Comparing two different datatypes: " + expr.left.expressionType + " and " + expr.right.expressionType + ". Resulting behaviour may be unpredictable",  expr.eContainer, expr.eContainingFeature, -1 )
 	}
-	
+
 	@Check
 	def IntervallAllowedCheck(LTL_Unary expr) {
 		if(expr.time == null){
-			return 
+			return
 		}
 		switch  expr.op {
 			case NEXT,
@@ -240,7 +239,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 	def checkNamesAreUnique(Monitors monitors){
 		var userVars = EcoreUtil2.eAllOfType(monitors, UserVariable)
 		var assertions = EcoreUtil2.eAllOfType(monitors, Assertion)
-		
+
 		// Get names defined in imported domain files
 		var domainNames = new HashMap<Import, ArrayList<String>>()
 		for (Import i : monitors.imports){
@@ -251,11 +250,11 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			elems.addAll(EcoreUtil2.eAllOfType(d, UnaryJava))
 			elems.addAll(EcoreUtil2.eAllOfType(d, BinaryJava))
 			elems.addAll(EcoreUtil2.eAllOfType(d, DomainValue))
-			for (j : elems) 
+			for (j : elems)
 				names.add(j.name)
 			domainNames.put(i, names)
 		}
-		
+
 		for(entry : domainNames.entrySet){
 			var domain = entry.key
 			var elems = entry.value
@@ -266,7 +265,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 						if(domain != domain2){
 							var elems2 = entry2.value
 							if(elems2.contains(e)){
-								error("Duplicate Identifier: " + e + ". Also used in domain " + domain2.ref.name, domain,MonitorDSLPackage.Literals.IMPORT__REF )								
+								error("Duplicate Identifier: " + e + ". Also used in domain " + domain2.ref.name, domain,MonitorDSLPackage.Literals.IMPORT__REF )
 							}
 						}
 					}
