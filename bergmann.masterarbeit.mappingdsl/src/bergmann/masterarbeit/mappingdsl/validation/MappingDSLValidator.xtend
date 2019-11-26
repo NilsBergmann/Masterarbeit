@@ -5,17 +5,20 @@ package bergmann.masterarbeit.mappingdsl.validation
 
 import org.eclipse.xtext.validation.Check
 import bergmann.masterarbeit.mappingdsl.mappingDSL.*
-import static extension bergmann.masterarbeit.mappingdsl.utils.MappingUtils.* 
+import static extension bergmann.masterarbeit.mappingdsl.utils.MappingUtils.*
 import org.eclipse.emf.common.util.EList
 import org.eclipse.xtext.common.types.JvmTypeReference
+import java.util.ArrayList
+import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 /**
  * This class contains custom validation rules. 
- *
+ * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class MappingDSLValidator extends AbstractMappingDSLValidator {
-	
+
 //	public static val INVALID_NAME = 'invalidName'
 //
 //	@Check
@@ -26,44 +29,61 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 //					INVALID_NAME)
 //		}
 //	}
-	
-	@Check 
-	def checkTypeMatching(CustomJava cj){
-		var expectedInterface = cj.expectedQualifiedExpressionName			
+	@Check
+	def checkTypeMatching(CustomJava cj) {
+		var expectedInterface = cj.expectedQualifiedExpressionName
 		var referenced = cj.ref.javaType
 		var EList<JvmTypeReference> superTypes = referenced.superTypes
 		var found = false
-		for (JvmTypeReference t : superTypes){
-			if(t.qualifiedName.equals(expectedInterface))
+		for (JvmTypeReference t : superTypes) {
+			if (t.qualifiedName.equals(expectedInterface))
 				found = true
 		}
 		if (!found)
-			error("Referenced class doesn't implement the expected interface:\n\n" + expectedInterface,cj.ref, MappingDSLPackage.Literals.JAVA_CLASS_REFERENCE__JAVA_TYPE, -1)
+			error("Referenced class doesn't implement the expected interface:\n\n" + expectedInterface, cj.ref,
+				MappingDSLPackage.Literals.JAVA_CLASS_REFERENCE__JAVA_TYPE, -1)
 		return
 	}
-	
+
 	@Check
-	def checkUnit(DomainValue dv){
-		if(dv.type != BASE_VALUETYPE.NUMBER && dv.unit != null)
+	def checkUnit(DomainValue dv) {
+		if (dv.type != BASE_VALUETYPE.NUMBER && dv.unit != null)
 			error("Values of type " + dv.type + " can not have a unit", MappingDSLPackage.Literals.DOMAIN_VALUE__UNIT)
 	}
-	
+
 	@Check
-	def checkUnit(CustomJava jv){
-		if(jv.unit==null)
+	def checkUnit(CustomJava jv) {
+		if (jv.unit == null)
 			return
-		else{
+		else {
 			var Type relevantType
 			switch jv {
 				LiteralJava: relevantType = jv.type
 				UnaryJava: relevantType = jv.type2
 				BinaryJava: relevantType = jv.type3
-				default: throw new IllegalArgumentException("Unknown CustomJava element: " +jv)
+				default: throw new IllegalArgumentException("Unknown CustomJava element: " + jv)
 			}
 			if (!(relevantType instanceof BaseType) || (relevantType as BaseType).type != BASE_VALUETYPE.NUMBER)
 				error("Type " + relevantType + " can not have a unit", MappingDSLPackage.Literals.CUSTOM_JAVA__UNIT)
-			else 
-				info("There is no verification of the actual return unit. Make sure the actual return type is comaptible", MappingDSLPackage.Literals.CUSTOM_JAVA__UNIT)
+			else
+				info(
+					"There is no verification of the actual return unit. Make sure the actual return type is comaptible",
+					MappingDSLPackage.Literals.CUSTOM_JAVA__UNIT)
 		}
+	}
+
+	@Check
+	def checkNames(DomainElement e) {
+		var domain = EcoreUtil.getRootContainer(e)
+		var elems = new ArrayList<DomainElement>()
+		elems.addAll(EcoreUtil2.eAllOfType(domain, DomainElement))
+		for (otherElement : elems) {
+			if (!e.equals(otherElement)) {
+				if (e.name.equals(otherElement.name)) {
+					error("Duplicate Identifier: " + e.name, MappingDSLPackage.Literals.DOMAIN_ELEMENT__NAME)
+				}
+			}
+		}
+
 	}
 }
