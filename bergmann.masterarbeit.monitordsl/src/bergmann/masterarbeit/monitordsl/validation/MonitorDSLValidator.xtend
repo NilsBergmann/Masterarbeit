@@ -3,10 +3,10 @@
  */
 package bergmann.masterarbeit.monitordsl.validation
 
-
 import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.monitordsl.utils.UnitUtils.*
+import static extension bergmann.masterarbeit.monitordsl.utils.ImportUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.TimeUtils.*
 
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
@@ -18,7 +18,6 @@ import bergmann.masterarbeit.monitordsl.monitorDSL.Add
 import bergmann.masterarbeit.monitordsl.monitorDSL.Assertion
 import bergmann.masterarbeit.monitordsl.monitorDSL.Expression
 import bergmann.masterarbeit.monitordsl.monitorDSL.IfThenElse
-import bergmann.masterarbeit.monitordsl.monitorDSL.Import
 import bergmann.masterarbeit.monitordsl.monitorDSL.LTL_Binary
 import bergmann.masterarbeit.monitordsl.monitorDSL.LTL_Unary
 import bergmann.masterarbeit.monitordsl.monitorDSL.Monitors
@@ -33,10 +32,13 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.validation.Check
 import bergmann.masterarbeit.monitordsl.monitorDSL.MonitorDSLPackage
 import java.util.StringJoiner
+import bergmann.masterarbeit.monitordsl.monitorDSL.ImportDomain
+import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
+import bergmann.masterarbeit.monitordsl.monitorDSL.ImportMonitor
 
 /**
  * This class contains custom validation rules.
- *
+ * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class MonitorDSLValidator extends AbstractMonitorDSLValidator {
@@ -51,41 +53,42 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 //					INVALID_NAME)
 //		}
 //	}
-
 	@Check
-	def checkExpressionType(UserVariable userVar){
-		if(!userVar.expr.isValid){
+	def checkExpressionType(UserVariable userVar) {
+		if (!userVar.expr.isValid) {
 			markSubexpressions(userVar.expr)
-			error("Invalid User Variable. Can not resolve to a valid type", MonitorDSLPackage.Literals.USER_VARIABLE__NAME)
+			error("Invalid User Variable. Can not resolve to a valid type",
+				MonitorDSLPackage.Literals.USER_VARIABLE__NAME)
 		}
 	}
 
 	@Check
-	def checkExpressionType(Assertion assertion){
-		if(!assertion.expr.isBoolean){
+	def checkExpressionType(Assertion assertion) {
+		if (!assertion.expr.isBoolean) {
 			markSubexpressions(assertion.expr)
-			error("Invalid Assertion. Can not resolve expression to boolean", MonitorDSLPackage.Literals.ASSERTION__NAME)
+			error("Invalid Assertion. Can not resolve expression to boolean",
+				MonitorDSLPackage.Literals.ASSERTION__NAME)
 		}
 	}
 
-	def markSubexpressions(Expression expr){
-		if(!expr.isValid){
+	def markSubexpressions(Expression expr) {
+		if (!expr.isValid) {
 			var invalidSubexpressionFound = false
 			var subexpressions = expr.subexpressions
-			for(Expression subExpr : subexpressions){
-				if(subExpr != null && !subExpr.isValid){
+			for (Expression subExpr : subexpressions) {
+				if (subExpr != null && !subExpr.isValid) {
 					markSubexpressions(subExpr)
 					invalidSubexpressionFound = true
 				}
 			}
-			if(!invalidSubexpressionFound){
+			if (!invalidSubexpressionFound) {
 				// Error must be in how this expression is used, not in some subexpression
 				var errorString = "Subexpression can't be resolved to a valid type. "
 				errorString += expr.shortName + " is not defined"
 
-				if(subexpressions.size != 0){
+				if (subexpressions.size != 0) {
 					var joiner = new StringJoiner(" , ", "[", "]")
-					for(Expression subExpr : subexpressions){
+					for (Expression subExpr : subexpressions) {
 						joiner.add(subExpr.expressionType)
 					}
 					errorString += " for given inputs " + joiner.toString
@@ -96,64 +99,68 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 	}
 
 	@Check
-	def checkTimeIntervals(TimeIntervalSimple t){
-		if(!(t.start.toMillisec <= t.end.toMillisec)){
+	def checkTimeIntervals(TimeIntervalSimple t) {
+		if (!(t.start.toMillisec <= t.end.toMillisec)) {
 			error("Interval start must be before end", t.eContainer, t.eContainingFeature, -1)
 		}
 	}
 
 	@Check
-	def checkTimeIntervals(LTL_Binary expr){
-		if(expr.time == null){
+	def checkTimeIntervals(LTL_Binary expr) {
+		if (expr.time == null) {
 			return
 		}
-		if (expr.time.isZero){
+		if (expr.time.isZero) {
 			warning("Given interval equals zero and can be removed.", MonitorDSLPackage.Literals.LTL_BINARY__TIME)
 			return
 		}
-		if(expr.time.containsNegative && expr.time.containsPositive){
-			error("Mismatching signs for start and end are disallowed for '"+ expr.op +"'.", MonitorDSLPackage.Literals.LTL_BINARY__TIME)
+		if (expr.time.containsNegative && expr.time.containsPositive) {
+			error("Mismatching signs for start and end are disallowed for '" + expr.op + "'.",
+				MonitorDSLPackage.Literals.LTL_BINARY__TIME)
 			return
 		}
 		switch expr.op {
-			//LTL
+			// LTL
 			case UNTIL,
 			case WEAK_UNTIL,
-			case RELEASE:{
-				if(expr.time.containsNegative){
+			case RELEASE: {
+				if (expr.time.containsNegative) {
 					error("Negative time interval for LTL operator.", MonitorDSLPackage.Literals.LTL_BINARY__TIME)
 				}
 			}
 			// PLTL
 			case TRIGGER,
-			case SINCE:{
-				if(expr.time.containsPositive){
+			case SINCE: {
+				if (expr.time.containsPositive) {
 					error("Positive time interval for PLTL operator.", MonitorDSLPackage.Literals.LTL_BINARY__TIME)
 				}
 			}
 			// default
-			default: throw new IllegalArgumentException("Unknown binary (P)LTL operator " + expr.op)
+			default:
+				throw new IllegalArgumentException("Unknown binary (P)LTL operator " + expr.op)
 		}
 	}
-		@Check
-	def checkTimeIntervals(LTL_Unary expr){
-		if(expr.time == null){
+
+	@Check
+	def checkTimeIntervals(LTL_Unary expr) {
+		if (expr.time == null) {
 			return
 		}
-		if (expr.time.isZero){
+		if (expr.time.isZero) {
 			warning("Given interval equals zero and can be removed.", MonitorDSLPackage.Literals.LTL_UNARY__TIME)
 			return
 		}
-		if(expr.time.containsNegative && expr.time.containsPositive){
-			error("Mismatching signs for start and end are disallowed for '"+ expr.op +"'.", MonitorDSLPackage.Literals.LTL_UNARY__TIME)
+		if (expr.time.containsNegative && expr.time.containsPositive) {
+			error("Mismatching signs for start and end are disallowed for '" + expr.op + "'.",
+				MonitorDSLPackage.Literals.LTL_UNARY__TIME)
 			return
 		}
 		switch expr.op {
-			//LTL
+			// LTL
 			case NEXT,
 			case FINALLY,
-			case GLOBAL:{
-				if(expr.time.containsNegative){
+			case GLOBAL: {
+				if (expr.time.containsNegative) {
 					error("Negative time interval for LTL operator.", MonitorDSLPackage.Literals.LTL_UNARY__TIME)
 				}
 			}
@@ -161,128 +168,196 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			case YESTERDAY,
 			case Z,
 			case HISTORICALLY,
-			case ONCE:{
-				if(expr.time.containsPositive){
+			case ONCE: {
+				if (expr.time.containsPositive) {
 					error("Positive time interval for PLTL operator.", MonitorDSLPackage.Literals.LTL_UNARY__TIME)
 				}
 			}
 			// default
-			default: throw new IllegalArgumentException("Unknown binary (P)LTL operator " + expr.op)
+			default:
+				throw new IllegalArgumentException("Unknown binary (P)LTL operator " + expr.op)
 		}
 	}
 
 	@Check
-	def unitMismatch(Add expr){
-		if(! (expr.left.isNumber && expr.right.isNumber))
+	def unitMismatch(Add expr) {
+		if (! (expr.left.isNumber && expr.right.isNumber))
 			return
 		var comp = expr.left.isUnitCompatible(expr.right)
-		if (!comp){
+		if (!comp) {
 			var lUnit = expr.left.unit
 			var rUnit = expr.right.unit
-			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
-		}
-	}
-	@Check
-	def unitMismatch(Rel expr){
-		if(! (expr.left.isNumber && expr.right.isNumber))
-			return
-		var comp = expr.left.isUnitCompatible(expr.right)
-		if (!comp){
-			var lUnit = expr.left.unit
-			var rUnit = expr.right.unit
-			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
+			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]",
+				expr.eContainer, expr.eContainingFeature, -1)
 		}
 	}
 
 	@Check
-	def typeMismatch(IfThenElse expr){
+	def unitMismatch(Rel expr) {
+		if (! (expr.left.isNumber && expr.right.isNumber))
+			return
+		var comp = expr.left.isUnitCompatible(expr.right)
+		if (!comp) {
+			var lUnit = expr.left.unit
+			var rUnit = expr.right.unit
+			error("Incompatible units for operator " + expr.op + "\n\n[" + lUnit + "] " + expr.op + " [" + rUnit + "]",
+				expr.eContainer, expr.eContainingFeature, -1)
+		}
+	}
+
+	@Check
+	def typeMismatch(IfThenElse expr) {
 		var tThen = expr.then.expressionType
 		var tElse = expr.getElse.expressionType
-		if(! tThen.equals(tElse)){
-			error("Different, incompatible types for then and else\n then:[" + tThen + "] else:[" + tElse + "]", expr.eContainer, expr.eContainingFeature, -1)
+		if (! tThen.equals(tElse)) {
+			error("Different, incompatible types for then and else\n then:[" + tThen + "] else:[" + tElse + "]",
+				expr.eContainer, expr.eContainingFeature, -1)
 		}
 	}
 
 	@Check
-	def unitMismatch(IfThenElse expr){
-		if(! (expr.then.isNumber && expr.getElse.isNumber))
+	def unitMismatch(IfThenElse expr) {
+		if (! (expr.then.isNumber && expr.getElse.isNumber))
 			return
 		var comp = expr.then.isUnitCompatible(expr.getElse)
-		if(!comp){
+		if (!comp) {
 			var lUnit = expr.then.unit
 			var rUnit = expr.getElse.unit
-			error("Different, incompatible units for then and else\n then:[" + lUnit + "] else:[" + rUnit + "]", expr.eContainer, expr.eContainingFeature, -1)
+			error("Different, incompatible units for then and else\n then:[" + lUnit + "] else:[" + rUnit + "]",
+				expr.eContainer, expr.eContainingFeature, -1)
 		}
 	}
 
 	@Check
-	def EqualsTypeWarning(Rel expr){
-		if(expr.op.equals("==") || expr.op.equals("!=") )
-			if(!expr.left.expressionType.equals(expr.right.expressionType))
-				warning("Comparing two different datatypes: " + expr.left.expressionType + " and " + expr.right.expressionType + ". Resulting behaviour may be unpredictable",  expr.eContainer, expr.eContainingFeature, -1 )
+	def EqualsTypeWarning(Rel expr) {
+		if (expr.op.equals("==") || expr.op.equals("!="))
+			if (!expr.left.expressionType.equals(expr.right.expressionType))
+				warning(
+					"Comparing two different datatypes: " + expr.left.expressionType + " and " +
+						expr.right.expressionType + ". Resulting behaviour may be unpredictable", expr.eContainer,
+					expr.eContainingFeature, -1)
 	}
 
 	@Check
 	def IntervallAllowedCheck(LTL_Unary expr) {
-		if(expr.time == null){
+		if (expr.time == null) {
 			return
 		}
-		switch  expr.op {
+		switch expr.op {
 			case NEXT,
 			case YESTERDAY,
-			case Z: error("Time constraints are currently not supported for given operator " + expr.op, MonitorDSLPackage.Literals.LTL_UNARY__TIME)
+			case Z:
+				error("Time constraints are currently not supported for given operator " + expr.op,
+					MonitorDSLPackage.Literals.LTL_UNARY__TIME)
 		}
 	}
 
-
 	@Check
-	def checkNamesAreUnique(Monitors monitors){
-		var userVars = EcoreUtil2.eAllOfType(monitors, UserVariable)
-		var assertions = EcoreUtil2.eAllOfType(monitors, Assertion)
-
-		// Get names defined in imported domain files
-		var domainNames = new HashMap<Import, ArrayList<String>>()
-		for (Import i : monitors.imports){
-			var d = EcoreUtil.getRootContainer(i.ref)
-			var names = new ArrayList<String>()
-			var elems = new ArrayList<DomainElement>()
-			elems.addAll(EcoreUtil2.eAllOfType(d, LiteralJava))
-			elems.addAll(EcoreUtil2.eAllOfType(d, UnaryJava))
-			elems.addAll(EcoreUtil2.eAllOfType(d, BinaryJava))
-			elems.addAll(EcoreUtil2.eAllOfType(d, DomainValue))
-			for (j : elems)
-				names.add(j.name)
-			domainNames.put(i, names)
-		}
-
-		for(entry : domainNames.entrySet){
-			var domain = entry.key
-			var elems = entry.value
-			// Compare other domains
-			for (e : elems) {
-				for(entry2 : domainNames.entrySet){
-					var domain2 = entry2.key
-						if(domain != domain2){
-							var elems2 = entry2.value
-							if(elems2.contains(e)){
-								error("Duplicate Identifier: " + e + ". Also used in domain " + domain2.ref.name, domain,MonitorDSLPackage.Literals.IMPORT__REF )
-							}
-						}
-					}
-
-				// Compare userVars
-				for (uVar : userVars) {
-					if(uVar.name.equals(e)){
-						error("Duplicate Identifier: " + e + ". Also used in domain " + domain.ref.name, uVar,MonitorDSLPackage.Literals.USER_VARIABLE__NAME )
-					}
+	def checkNamesAreUnique(ImportMonitor imp) {
+		var containingMonitor = EcoreUtil.getRootContainer(imp) as Monitors
+		var importedNames = (EcoreUtil.getRootContainer(imp.ref) as Monitors).allNamedObjectsRecursive
+		for (imported : importedNames.entrySet()) {
+			// Check UserVars & Assertions
+			for (current : containingMonitor.allNamedObjects.entrySet) {
+				if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
+					error("Causes duplicate definition of " + current.value, imp,
+						MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
 				}
-				// Compare assertions
-				for (ass  : assertions) {
-					if(ass.name.equals(e)){
-						error("Duplicate Identifier: " + e + ". Also used in domain " + domain.ref.name, ass,MonitorDSLPackage.Literals.ASSERTION__NAME )
+			}
+			// Check imported domains
+			for (importedDomain : containingMonitor.nonRecursiveImportedDomains) {
+				for (current : importedDomain.allNamedObjects.entrySet) {
+					if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
+						error("Causes duplicate definition of " + current.value, imp,
+							MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
 					}
 				}
 			}
+			// Check imported monitors
+			for (importedMonitor : containingMonitor.nonRecursiveImportedMonitors) {
+				if (importedMonitor != imp.ref) {
+					for (current : (importedMonitor as Monitors).allNamedObjectsRecursive.entrySet) {
+						if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
+							error("Causes duplicate definition of " + current.value, imp,
+								MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@Check
+	def checkNamesAreUnique(ImportDomain imp) {
+		var containingMonitor = EcoreUtil.getRootContainer(imp) as Monitors
+		var importedNames = (EcoreUtil.getRootContainer(imp.ref) as Domain).allNamedObjects
+		for (imported : importedNames.entrySet()) {
+			// Check UserVars & Assertions
+			for (current : containingMonitor.allNamedObjects.entrySet) {
+				if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
+					error("Causes duplicate definition of " + current.value, imp,
+						MonitorDSLPackage.Literals.IMPORT_DOMAIN__REF)
+				}
+			}
+			// Check imported domains
+			for (importedDomain : containingMonitor.nonRecursiveImportedDomains) {
+				if (importedDomain != imp.ref) {
+					for (current : importedDomain.allNamedObjects.entrySet) {
+						if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
+							error("Causes duplicate definition of " + current.value, imp,
+								MonitorDSLPackage.Literals.IMPORT_DOMAIN__REF)
+						}
+					}
+				}
+			}
+			// Check imported monitors
+			for (importedMonitor : containingMonitor.nonRecursiveImportedMonitors) {
+				for (current : (importedMonitor as Monitors).allNamedObjectsRecursive.entrySet) {
+					if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
+						error("Causes duplicate definition of " + current.value, imp,
+							MonitorDSLPackage.Literals.IMPORT_DOMAIN__REF)
+					}
+				}
+			}
+		}
+	}
+
+	@Check
+	def checkNameIsUnused(Assertion ass) {
+		var containingMonitor = EcoreUtil.getRootContainer(ass) as Monitors
+		var names = containingMonitor.allNamedObjectsRecursive
+		for (pair : names.entrySet) {
+			var name = pair.value
+			var obj = pair.key
+			if (name.equals(ass.name) && !obj.equals(ass)) {
+				error(ass.name + " is already in use", ass, MonitorDSLPackage.Literals.ASSERTION__NAME)
+			}
+		}
+	}
+
+	@Check
+	def checkNameIsUnused(UserVariable uv) {
+		var containingMonitor = EcoreUtil.getRootContainer(uv) as Monitors
+		var names = containingMonitor.allNamedObjectsRecursive
+		for (pair : names.entrySet) {
+			var name = pair.value
+			var obj = pair.key
+			if (name.equals(uv.name) && !obj.equals(uv)) {
+				error(uv.name + " is already in use", uv, MonitorDSLPackage.Literals.USER_VARIABLE__NAME)
+			}
+		}
+	}
+
+	@Check
+	def checkSelfImports(ImportMonitor imp) {
+		var containingMonitor = EcoreUtil.getRootContainer(imp) as Monitors
+		var referenced = EcoreUtil.getRootContainer(imp.ref)
+		var referencedMonitor = referenced as Monitors
+		if (containingMonitor.equals(referenced)) {
+			error("Can't import self", imp, MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
+		}
+		if (referencedMonitor.recursiveImportedMonitors.contains(containingMonitor)) {
+			error("Cyclic import", imp, MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
 		}
 	}
 }

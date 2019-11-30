@@ -4,6 +4,7 @@
 package bergmann.masterarbeit.monitordsl.scoping
 
 import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionUtils.*
+import static extension bergmann.masterarbeit.monitordsl.utils.ImportUtils.*
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
 import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
@@ -37,7 +38,7 @@ class MonitorDSLScopeProvider extends AbstractMonitorDSLScopeProvider {
 				// Refers to UserVariables or to domain java literals / database values
 				var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
 				var candidates = new ArrayList<EObject>()
-				candidates.addAll(root.allUserVariables)
+				candidates.addAll(root.recursiveUserVariables)
 				// Make self reference impossible 
 				// Example def var x := x + 2
 				var EObject parentOfCTX = null
@@ -47,7 +48,7 @@ class MonitorDSLScopeProvider extends AbstractMonitorDSLScopeProvider {
 				if(parentOfCTX != null)
 					candidates.remove(parentOfCTX)
 				// Add imported domain elements
-				for(Domain current : root.importedDomains){
+				for(Domain current : root.recursiveImportedDomains){
 					candidates.addAll(EcoreUtil2.eAllOfType(current, LiteralJava))
 					candidates.addAll(EcoreUtil2.eAllOfType(current, DomainValue))	
 				}
@@ -56,7 +57,7 @@ class MonitorDSLScopeProvider extends AbstractMonitorDSLScopeProvider {
 				// Has optionalExpr
 				var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
 				var candidates = new ArrayList<EObject>()
-				for(Domain current : root.importedDomains){
+				for(Domain current : root.recursiveImportedDomains){
 					candidates.addAll(EcoreUtil2.eAllOfType(current, UnaryJava))
 				}
 				return Scopes.scopeFor(candidates)
@@ -66,7 +67,7 @@ class MonitorDSLScopeProvider extends AbstractMonitorDSLScopeProvider {
 			// Refers to domain BinaryJava elements
 			var Monitors root = EcoreUtil2.getRootContainer(ctx) as Monitors
 			var candidates = new ArrayList<EObject>()
-			for(Domain current : root.importedDomains){
+			for(Domain current : root.recursiveImportedDomains){
 				candidates.addAll(EcoreUtil2.eAllOfType(current, BinaryJava))
 			}
 			return Scopes.scopeFor(candidates)

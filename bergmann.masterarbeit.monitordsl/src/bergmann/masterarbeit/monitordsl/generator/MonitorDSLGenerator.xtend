@@ -48,6 +48,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 
 import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionTypeChecker.*
 import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionUtils.*
+import static extension bergmann.masterarbeit.monitordsl.utils.ImportUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.TimeUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.UnitUtils.*
 
@@ -74,16 +75,24 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 	}
 	
 	def String createEvaluationPackage(Monitors monitors){
-		var assertions = monitors.assertions
-		var userVars = monitors.uservars
+		var assertions = monitors.recursiveAssertions
+		var userVars = monitors.recursiveUserVariables
 		return'''
 		«monitors.compilePackage»
 		«monitors.compileImports»
 		
 		@SuppressWarnings("unused")
 		public class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
-			
-			@SuppressWarnings("rawtypes")
+			/**
+			«FOR mon : monitors.recursiveImportedMonitors»
+			* Includes monitors «mon.getTargetClassname»
+			«ENDFOR»
+			*
+			«FOR dom : monitors.recursiveImportedDomains»
+			* Includes domain «dom.package.name»
+			«ENDFOR»
+			*/
+			@SuppressWarnings({"rawtypes", "unchecked"})
 			public «monitors.targetClassname»_MonitorDeclaration(){
 				super();
 				
@@ -100,11 +109,11 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 				*/
 				
 				«FOR userVar : userVars»
-				UserVariable<«userVar.expr.expressionType»> «userVar.name»_«userVar.positiveHash» = new UserVariable<«userVar.expr.expressionType»>("«userVar.name»");
+				UserVariable<«userVar.expr.expressionType»> «userVar.name» = new UserVariable<«userVar.expr.expressionType»>("«userVar.name»");
 				«ENDFOR»
 				
 				«FOR assertion : assertions»
-				Assertion «assertion.name»_«assertion.positiveHash» = new Assertion("«assertion.name»");
+				Assertion «assertion.name» = new Assertion("«assertion.name»");
 				«ENDFOR»
 				
 				/**
@@ -129,8 +138,8 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		'''
 	}
 	def String createStandaloneRunner(Monitors monitors){
-		var assertions = monitors.assertions
-		var userVars = monitors.uservars
+		var assertions = monitors.recursiveAssertions
+		var userVars = monitors.recursiveUserVariables
 		return '''
 		«monitors.compilePackage»
 		«monitors.compileImports»
@@ -151,7 +160,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 	
 	def static String registerDomainColumns(Monitors monitors){
 		var s = ""
-		var domains = monitors.importedDomains
+		var domains = monitors.recursiveImportedDomains
 		for (currentDomain : domains) {
 			s+= "// Domain: " + currentDomain.package.name + "\n"
 			for (dv : EcoreUtil2.eAllOfType(currentDomain, DomainValue)) {
@@ -243,15 +252,15 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
-		«userVar.name»_«userVar.positiveHash».setExpression(«userVar.expr.compile»);
-		this.getUserVarExpressions().add(«userVar.name»_«userVar.positiveHash»); 
+		«userVar.name».setExpression(«userVar.expr.compile»);
+		this.getUserVarExpressions().add(«userVar.name»); 
 		'''
 	}
 	
 	def String compile(Assertion assertion){
 		return '''
-		«assertion.name»_«assertion.positiveHash».setExpression(«assertion.expr.compile»);
-		this.getAssertionExpressions().add(«assertion.name»_«assertion.positiveHash»); 
+		«assertion.name».setExpression(«assertion.expr.compile»);
+		this.getAssertionExpressions().add(«assertion.name»); 
 		''' 
 	}
 	
@@ -320,7 +329,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			CrossReference: {
 				var ref = expr.ref
 				switch ref{
-					UserVariable: return ref.name+"_"+ref.positiveHash
+					UserVariable: return ref.name
 					DomainValue:{
 							switch ref.type {
 							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
