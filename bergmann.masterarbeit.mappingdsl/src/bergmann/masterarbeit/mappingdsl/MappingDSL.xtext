@@ -27,7 +27,7 @@ JavaDataType:
 "}"
 ;
 
-CustomJava:
+CustomJava returns NamedDomainElement:
 	LiteralJava | UnaryJava | BinaryJava
 ;
 
@@ -37,7 +37,7 @@ JavaClassReference:
 
 LiteralJava returns CustomJava:
 	{LiteralJava}
-	"Java_Literal" "{"
+	'Java_Literal' "{"
 	(
 		("name:" name=ID) &
 		("type:" type=Type) &
@@ -73,15 +73,15 @@ BinaryJava returns CustomJava:
 	)
 	"}"
 ;
-DomainValue:
+DomainValue returns NamedDomainElement:
 	{DomainValue}
-	"databaseValue:" "{"
+	"DomainValue:" "{"
 	(
 		("name:" name=ID) &
 		("type:" type=BASE_VALUETYPE) &
 		("unit:" unit=Unit)? &
 		("description:" description=STRING)? &
-		("column:" column=STRING) 
+		("identifier:" column=STRING) 
 	)
 	"}"
 ;
@@ -111,9 +111,12 @@ UnitExponent returns Unit:
 
 UnitAtom returns Unit:
 	{UnitBraces} '(' unit=Unit ')'
-	| {UnitLiteralAtom} unit=(LengthUnitLiteral  | TimeUnitLiteral)
+	| {UnitLiteralAtom} unit=UnitLiteral
 ;
 
+UnitLiteral:
+	LengthUnitLiteral  | TimeUnitLiteral
+;
 
 LengthUnitLiteral returns UnitLiteral:
 	{LengthUnitLiteral} unit=LENGTH_UNIT

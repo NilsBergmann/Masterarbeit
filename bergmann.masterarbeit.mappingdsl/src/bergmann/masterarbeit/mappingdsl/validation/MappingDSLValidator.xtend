@@ -48,7 +48,7 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 	@Check
 	def checkUnit(DomainValue dv) {
 		if (dv.type != BASE_VALUETYPE.NUMBER && dv.unit != null)
-			error("Values of type " + dv.type + " can not have a unit", MappingDSLPackage.Literals.DOMAIN_VALUE__UNIT)
+			error("Values of type " + dv.type + " can not have a unit", MappingDSLPackage.Literals.NAMED_DOMAIN_ELEMENT__UNIT)
 	}
 
 	@Check
@@ -64,11 +64,11 @@ class MappingDSLValidator extends AbstractMappingDSLValidator {
 				default: throw new IllegalArgumentException("Unknown CustomJava element: " + jv)
 			}
 			if (!(relevantType instanceof BaseType) || (relevantType as BaseType).type != BASE_VALUETYPE.NUMBER)
-				error("Type " + relevantType + " can not have a unit", MappingDSLPackage.Literals.CUSTOM_JAVA__UNIT)
+				error("Return type " + relevantType + " can not have a unit", MappingDSLPackage.Literals.NAMED_DOMAIN_ELEMENT__UNIT)
 			else
 				info(
-					"There is no verification of the actual return unit. Make sure the actual return type is comaptible",
-					MappingDSLPackage.Literals.CUSTOM_JAVA__UNIT)
+					"There is no verification of the actual return unit. Make sure the actual return type is compatible",
+					MappingDSLPackage.Literals.NAMED_DOMAIN_ELEMENT__UNIT)
 		}
 	}
 
