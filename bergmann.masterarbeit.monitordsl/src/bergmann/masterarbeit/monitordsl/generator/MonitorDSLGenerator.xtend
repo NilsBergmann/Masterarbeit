@@ -79,19 +79,22 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		var userVars = monitors.recursiveUserVariables
 		return'''
 		«monitors.compilePackage»
+		
+		/* Imports */
 		«monitors.compileImports»
+		/* Imports end */
+		
+		/**
+		«FOR mon : monitors.recursiveImportedMonitors»
+		* Includes monitors «mon.getTargetClassname»
+		«ENDFOR»
+		«FOR dom : monitors.recursiveImportedDomains»
+		* Includes domain «dom.package.name»
+		«ENDFOR»
+		*/
 		
 		@SuppressWarnings("unused")
 		public class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
-			/**
-			«FOR mon : monitors.recursiveImportedMonitors»
-			* Includes monitors «mon.getTargetClassname»
-			«ENDFOR»
-			*
-			«FOR dom : monitors.recursiveImportedDomains»
-			* Includes domain «dom.package.name»
-			«ENDFOR»
-			*/
 			@SuppressWarnings({"rawtypes", "unchecked"})
 			public «monitors.targetClassname»_MonitorDeclaration(){
 				super();
