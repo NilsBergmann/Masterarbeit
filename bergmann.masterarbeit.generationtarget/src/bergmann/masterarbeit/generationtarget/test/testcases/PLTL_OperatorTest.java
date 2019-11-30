@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
-import bergmann.masterarbeit.generationtarget.expressions.BoolDatabaseAccess;
+import bergmann.masterarbeit.generationtarget.expressions.BooleanDatabaseAccess;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Historically;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Once;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Yesterday;
@@ -38,8 +38,8 @@ class PLTL_OperatorTest {
 		ctrl.registerRequiredData(decl);
 		ctrl.connectToDatabase("Testcases.db");
 		
-		a = new BoolDatabaseAccess("A");
-		expected = new BoolDatabaseAccess("Expected");
+		a = new BooleanDatabaseAccess("A");
+		expected = new BooleanDatabaseAccess("Expected");
 	}
 
 	@Test

@@ -1,0 +1,177 @@
+grammar bergmann.masterarbeit.monitordsl.MonitorDSL with org.eclipse.xtext.common.Terminals
+
+generate monitorDSL "http://www.masterarbeit.bergmann/monitordsl/MonitorDSL"
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore 
+import "http://www.masterarbeit.bergmann/mappingdsl/MappingDSL" as mapping
+
+Monitors:
+	{Monitors} package=PackageDeclaration (domainImports+=ImportDomain | monitorImports+=ImportMonitor)* (assertions+=Assertion | uservars+=UserVariable)*
+;
+
+PackageDeclaration:
+	{PackageDeclaration} "monitor" name=ID
+;
+
+ImportDomain:
+	{ImportDomain} 'import' "domain" ref=[mapping::PackageDeclaration]
+;
+
+ImportMonitor:
+	 {ImportMonitor} "import" "monitor" ref=[PackageDeclaration]
+;
+
+UserVariable:
+	{UserVariable} "def" "var" name=ID ":=" expr=Expression	
+;
+
+Assertion: 
+	{Assertion} "def" "assertion" name=ID ':=' expr=Expression
+;
+
+Expression:
+	ImplicationExpr
+;
+
+ImplicationExpr returns Expression:
+	OrExpr ({Implication.left=current} op=('->'|'implies') right=OrExpr)*
+;
+
+OrExpr returns Expression:
+	AndExpr ({Or.left=current} op=('or'|'|'|'||') right=AndExpr)*
+;
+
+AndExpr returns Expression:
+	LTLInfixExpression ({And.left=current} op=('and'|'&'|'&&') right=LTLInfixExpression)*
+;
+
+LTLInfixExpression returns Expression:
+	LTLUnaryExpression ({LTL_Binary.left=current} op=BINARY_LTL_OPERATOR (time=TimeInterval)? right=LTLUnaryExpression)*
+;
+
+LTLUnaryExpression returns Expression:
+	RelExpr | {LTL_Unary} op=UNARY_LTL_OPERATOR (time=TimeInterval)? expr=RelExpr
+;
+
+RelExpr returns Expression:
+	AddExpr ({Rel.left=current} op=('<'|'<='|'=='|'='|'!='|'>'|'>=') right=AddExpr)*
+;
+
+AddExpr returns Expression:
+	MultExpr ({Add.left=current} op=('+'|'-') right=MultExpr)*
+;
+
+MultExpr returns Expression:
+	UnExpr ({Mult.left=current} op=('*'|'/') right=UnExpr)*
+;
+
+UnExpr returns Expression: 
+	{Negation} op=('!'|"-"|'not') expr=MappingBinary 
+	| MappingBinary
+;
+
+MappingBinary returns Expression:
+	TimeOffsetExpr ({MappingBinary.left=current} ref=[ecore::EObject]  right=TimeOffsetExpr)*
+;
+
+TimeOffsetExpr returns Expression:
+	AtomExpr ({TimeOffset.expr=current} offset=ExpressionTimeOffset)?
+;
+
+ExpressionTimeOffset:
+	{StateOffset}  "[" "at"? op=("+"|"-") value=INT ("state"|"states")"]"
+	| {TimeOffset} "[" "at"? op=("+"|"-") value=INT unit=TIME_UNIT"]"
+;
+
+AtomExpr returns Expression: 
+	{Subexpression} '(' expr=Expression ')'
+	| {IfThenElse} "if" condition=Expression "then" then=Expression "else" else=Expression
+	// Literals
+	| {IntLiteral} value=INT unit=Unit?
+	| {FloatLiteral} value=FLOAT unit=Unit?
+	| {BoolLiteral} value=("true" | "false")	
+	| {StringLiteral} value=STRING
+	// AVG, MIN, MAX
+	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
+	// UserVar reference, Mapping reference
+	| {CrossReference} ref=[ecore::EObject] ("("optionalExpr=Expression")")?
+	
+;
+
+
+TimeInterval:
+	{TimeIntervalSimple} left=('['|'(') start=TimeAtom ',' end=TimeAtom right=(']'|')')
+	| {TimeIntervalSingleton} '[' value=TimeAtom ']'
+	| {TimeIntervalInequalityNotation} '[' op=('<'|'<='|'>'|'>=') value=TimeAtom ']'
+	
+;
+
+TimeAtom:
+	{TimeLiteral} neg?="-"? value=INT unit=TIME_UNIT
+	| {InfinityTimeAtom} neg?="-"? value="infinity"
+;
+
+enum AGGREGATE_OPERATOR:
+	AVG = "avg" | AVG = "average"
+	| MIN = "min" | MIN = "minimum"
+	| MAX = "max" | MAX = "maximum"
+;
+
+enum UNARY_LTL_OPERATOR:
+	NEXT =  'next' | NEXT = 'X' 
+	| FINALLY = 'finally' | FINALLY = 'F' 
+	| GLOBAL = 'globally' | GLOBAL = 'G' 
+	| YESTERDAY = 'yesterday' | YESTERDAY = 'Y' 
+	| ONCE = 'once' | ONCE = 'O'  
+	| HISTORICALLY = 'historically' | HISTORICALLY =  'H'
+	| Z = "Z"
+;
+
+enum BINARY_LTL_OPERATOR:
+	  UNTIL = 'until' | UNTIL = 'U' 
+	| RELEASE = 'release' | RELEASE = 'R' 
+	| WEAK_UNTIL = 'weak_until' | WEAK_UNTIL = 'W' 
+	| SINCE = 'since' | SINCE = 'S' 
+	| TRIGGER = 'trigger' | TRIGGER = 'T'
+;
+
+
+Unit:
+ 	UnitDivision
+;
+
+UnitDivision returns Unit:
+	UnitMultiplication ({UnitDiv.left=current} "/" right=UnitMultiplication)*
+;
+
+UnitMultiplication returns Unit:
+	UnitExponent ({UnitMult.left=current} "*" right=UnitExponent)*
+;
+
+UnitExponent returns Unit:
+	UnitAtom ({UnitExponent.value=current} '^' negative?='-'? exponent=INT)?
+;
+
+UnitAtom returns Unit:
+	{UnitBraces} '(' unit=Unit ')'
+	| {UnitLiteralAtom} unit=(LengthUnitLiteral  | TimeUnitLiteral)
+;
+
+
+LengthUnitLiteral returns UnitLiteral:
+	{LengthUnitLiteral} unit=LENGTH_UNIT
+;
+TimeUnitLiteral returns UnitLiteral:
+	{TimeUnitLiteral} unit=TIME_UNIT
+;
+
+terminal TIME_UNIT:
+	"ms" | "s"| "min" | "h"
+;
+
+terminal LENGTH_UNIT:
+	'mm' | 'cm' | 'm' | 'km'
+;
+
+terminal FLOAT returns ecore::EFloat: INT '.' INT;
+FQN: ID ("." ID)*;

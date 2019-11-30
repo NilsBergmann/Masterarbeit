@@ -89,3 +89,7 @@ local.properties
 bergmann.masterarbeit.generationtarget/.vscode/
 
 *.db-journal
+
+*.xtendbin
+
+bergmann.masterarbeit.monitordsl.tests/test-bin/
