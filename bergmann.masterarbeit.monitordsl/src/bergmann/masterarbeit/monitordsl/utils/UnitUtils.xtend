@@ -34,6 +34,8 @@ import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionTypeChe
 class UnitUtils {
 
 	def public static Unit getUnit(Expression expr){
+		if(expr == null)
+			return null
 		if (!expr.isNumber)
 			throw new IllegalArgumentException("Non-Number-Expressions don't have units: " + expr)
 		switch expr{

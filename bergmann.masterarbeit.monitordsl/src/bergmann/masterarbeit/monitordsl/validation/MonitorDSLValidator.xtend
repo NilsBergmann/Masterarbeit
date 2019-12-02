@@ -260,7 +260,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			// Check UserVars & Assertions
 			for (current : containingMonitor.allNamedObjects.entrySet) {
 				if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
-					error("Causes duplicate definition of " + current.value, imp,
+					error("Import of "+imp.ref.name + " causes duplicate definition of " + current.value, imp,
 						MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
 				}
 			}
@@ -268,7 +268,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			for (importedDomain : containingMonitor.nonRecursiveImportedDomains) {
 				for (current : importedDomain.allNamedObjects.entrySet) {
 					if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
-						error("Causes duplicate definition of " + current.value, imp,
+						error("Import of "+imp.ref.name + " causes duplicate definition of " + current.value, imp,
 							MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
 					}
 				}
@@ -278,7 +278,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 				if (importedMonitor != imp.ref) {
 					for (current : (importedMonitor as Monitors).allNamedObjectsRecursive.entrySet) {
 						if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
-							error("Causes duplicate definition of " + current.value, imp,
+							error("Import of "+imp.ref.name + " causes duplicate definition of " + current.value, imp,
 								MonitorDSLPackage.Literals.IMPORT_MONITOR__REF)
 						}
 					}
@@ -295,7 +295,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			// Check UserVars & Assertions
 			for (current : containingMonitor.allNamedObjects.entrySet) {
 				if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
-					error("Causes duplicate definition of " + current.value, imp,
+					error("Import of "+imp.ref.name + " causes duplicate definition of " + current.value, imp,
 						MonitorDSLPackage.Literals.IMPORT_DOMAIN__REF)
 				}
 			}
@@ -304,7 +304,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 				if (importedDomain != imp.ref) {
 					for (current : importedDomain.allNamedObjects.entrySet) {
 						if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
-							error("Causes duplicate definition of " + current.value, imp,
+							error("Import of "+imp.ref.name + " causes duplicate definition of " + current.value, imp,
 								MonitorDSLPackage.Literals.IMPORT_DOMAIN__REF)
 						}
 					}
@@ -314,7 +314,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 			for (importedMonitor : containingMonitor.nonRecursiveImportedMonitors) {
 				for (current : (importedMonitor as Monitors).allNamedObjectsRecursive.entrySet) {
 					if (imported.value.equals(current.value) && (!imported.key.equals(current.key))) {
-						error("Causes duplicate definition of " + current.value, imp,
+						error("Import of "+imp.ref.name + " causes duplicate definition of " + current.value, imp,
 							MonitorDSLPackage.Literals.IMPORT_DOMAIN__REF)
 					}
 				}
