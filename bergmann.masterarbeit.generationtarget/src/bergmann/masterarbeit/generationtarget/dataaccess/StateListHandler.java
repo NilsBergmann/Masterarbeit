@@ -60,6 +60,9 @@ public class StateListHandler {
         return new ArrayList<State>(this.states);
     }
     
+    public void clear() {
+    	this.states.clear();   
+    }
     public State getStateOffsetBy(State start, int amount) {
     	int startPos = this.states.indexOf(start);
     	if (startPos < 0)
