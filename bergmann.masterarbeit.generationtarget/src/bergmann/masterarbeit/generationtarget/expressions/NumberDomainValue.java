@@ -9,20 +9,20 @@ import org.jscience.physics.amount.Amount;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class NumberDatabaseAccess extends Expression<Amount> {
+public class NumberDomainValue extends Expression<Amount> {
     public String columnName;
 
-    public NumberDatabaseAccess(String columnName) {
+    public NumberDomainValue(String columnName) {
         super();
         this.columnName = columnName;
     }
 
     public Optional<Amount> evaluate(State state) {
-        Optional<Amount> retVal =  state.getDBAmount(this.columnName);
+        Optional<Amount> retVal = state.getDomainAmount(this.columnName);
         return retVal;
     }
-    
+
     public String toString() {
-    	return "DB_NUMBER[" + columnName + "]";
+        return "Domain_AMOUNT[" + columnName + "]";
     }
 }

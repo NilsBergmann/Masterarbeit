@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
-import bergmann.masterarbeit.generationtarget.expressions.NumberDatabaseAccess;
+import bergmann.masterarbeit.generationtarget.expressions.NumberDomainValue;
 import bergmann.masterarbeit.generationtarget.expressions.OffsetByStates;
 import bergmann.masterarbeit.generationtarget.expressions.OffsetByTime;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
@@ -26,7 +26,7 @@ class OffsetTest {
 	static StandaloneDataController ctrl;
 	static Expression<Amount> subExpr;
 	static Unit unit;
-	
+
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
 	}
@@ -34,17 +34,17 @@ class OffsetTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		unit = NonSI.KILOMETERS_PER_HOUR;
-		
+
 		ctrl = new StandaloneDataController(false);
 		ctrl.connectToDatabase("Testcases.db");
-		
+
 		TestMonitorDeclaration decl = new TestMonitorDeclaration();
-		decl.addDBAmount("Vehicle1ForwardSpeed", unit);
+		decl.addDomainAmount("Vehicle1ForwardSpeed", unit);
 		ctrl.registerRequiredData(decl);
-		
+
 		ctrl.selectTable("Brian_Scenario_Example");
 
-		subExpr = new NumberDatabaseAccess("Vehicle1ForwardSpeed");
+		subExpr = new NumberDomainValue("Vehicle1ForwardSpeed");
 	}
 
 	@Test
@@ -54,30 +54,30 @@ class OffsetTest {
 		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
 			State target = ctrl.stateHandler.getStateOffsetBy(state, offset);
-			if(target == null)
+			if (target == null)
 				assertEquals(Optional.empty(), result);
 			else {
 				Optional expected = subExpr.evaluate(target);
-				assertEquals(expected, result, "Timestamp:" +state.timestamp.toEpochMilli());
+				assertEquals(expected, result, "Timestamp:" + state.timestamp.toEpochMilli());
 			}
 		}
 	}
-	
+
 	@Test
 	void OffsetByTimeTest() {
-		Duration offset = Duration.ofMillis(1); //Roughly 4 states
+		Duration offset = Duration.ofMillis(1); // Roughly 4 states
 		Expression e = new OffsetByTime(subExpr, offset);
 		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
-			
+
 			Instant expectedTimestamp = state.timestamp.plus(offset);
 			State target = ctrl.stateHandler.getClosestState(expectedTimestamp);
-			
-			if(target == null)
+
+			if (target == null)
 				assertEquals(Optional.empty(), result);
 			else {
 				Optional expected = subExpr.evaluate(target);
-				assertEquals(expected, result, "Timestamp:" +state.timestamp.toEpochMilli());
+				assertEquals(expected, result, "Timestamp:" + state.timestamp.toEpochMilli());
 			}
 		}
 	}

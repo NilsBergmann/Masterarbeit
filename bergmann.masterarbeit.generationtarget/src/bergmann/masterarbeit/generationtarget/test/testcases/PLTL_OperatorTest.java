@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import bergmann.masterarbeit.generationtarget.dataaccess.StandaloneDataController;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
-import bergmann.masterarbeit.generationtarget.expressions.BooleanDatabaseAccess;
+import bergmann.masterarbeit.generationtarget.expressions.BooleanDomainValue;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Historically;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Once;
 import bergmann.masterarbeit.generationtarget.expressions.PLTL_Yesterday;
@@ -22,32 +22,32 @@ import bergmann.masterarbeit.generationtarget.test.utils.TestMonitorDeclaration;
 class PLTL_OperatorTest {
 	static StandaloneDataController ctrl;
 	static Expression a, b, expected;
-	
+
 	@BeforeAll
 	public static void init() {
 
 	}
-	
+
 	@BeforeEach
 	void setUp() throws Exception {
 		ctrl = new StandaloneDataController(false);
 		TestMonitorDeclaration decl = new TestMonitorDeclaration();
-		decl.addDBBoolean("A");
-		decl.addDBBoolean("B");
-		decl.addDBBoolean("Expected");
+		decl.addDomainBoolean("A");
+		decl.addDomainBoolean("B");
+		decl.addDomainBoolean("Expected");
 		ctrl.registerRequiredData(decl);
 		ctrl.connectToDatabase("Testcases.db");
-		
-		a = new BooleanDatabaseAccess("A");
-		expected = new BooleanDatabaseAccess("Expected");
+
+		a = new BooleanDomainValue("A");
+		expected = new BooleanDomainValue("Expected");
 	}
 
 	@Test
 	void onceTest() {
 		ctrl.selectTable("PLTL_Once");
-		
+
 		Expression e = new PLTL_Once(a);
-		
+
 		for (State state : ctrl.stateHandler.getAllStates()) {
 
 			Optional<Boolean> result = e.evaluate(state);
@@ -56,13 +56,13 @@ class PLTL_OperatorTest {
 			assertEquals(expectedResult, result, "Timestamp " + state.timestamp.toEpochMilli());
 		}
 	}
-	
+
 	@Test
 	void HistoricallyTest() {
 		ctrl.selectTable("PLTL_Historically");
-		
+
 		Expression e = new PLTL_Historically(a);
-		
+
 		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional<Boolean> result = e.evaluate(state);
 			Optional<Boolean> expectedResult = expected.evaluate(state);
@@ -70,23 +70,23 @@ class PLTL_OperatorTest {
 			assertEquals(expectedResult, result, "Timestamp " + state.timestamp.toEpochMilli());
 		}
 	}
-	
+
 	@Test
 	void sinceTest() {
 		fail("Not implemented yet");
 	}
-	
+
 	@Test
 	void YesterdayTest() {
 		ctrl.selectTable("PLTL_Yesterday");
-		
+
 		Expression sub = a;
 		Expression e = new PLTL_Yesterday(sub);
-		
+
 		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
 			State previous = ctrl.stateHandler.getPreviousState(state);
-			if(previous == null)
+			if (previous == null)
 				assertEquals(Optional.of(false), result);
 			else {
 				Optional previousValue = sub.evaluate(previous);
@@ -94,19 +94,19 @@ class PLTL_OperatorTest {
 			}
 		}
 	}
-	
+
 	@Test
 	void ZTest() {
 		// Same as Y, except its true at state 0
 		ctrl.selectTable("PLTL_Yesterday");
-		
+
 		Expression sub = a;
 		Expression e = new PLTL_Z(sub);
-		
+
 		for (State state : ctrl.stateHandler.getAllStates()) {
 			Optional result = e.evaluate(state);
 			State previous = ctrl.stateHandler.getPreviousState(state);
-			if(previous == null)
+			if (previous == null)
 				assertEquals(Optional.of(true), result);
 			else {
 				Optional previousValue = sub.evaluate(previous);
@@ -114,7 +114,7 @@ class PLTL_OperatorTest {
 			}
 		}
 	}
-	
+
 	@Test
 	void TriggerTest() {
 		fail("Not implemented yet");

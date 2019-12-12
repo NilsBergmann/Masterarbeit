@@ -97,7 +97,7 @@ public class DatabaseWrapper {
                     try {
                         boolean x = rs.getBoolean(name);
                         Optional<Boolean> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
-                        current.storeDBValue(name, data);
+                        current.storeDomainValue(name, data);
                     } catch (SQLException e) {
                     }
                 }
@@ -105,7 +105,7 @@ public class DatabaseWrapper {
                     try {
                         String x = rs.getString(name);
                         Optional<String> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
-                        current.storeDBValue(name, data);
+                        current.storeDomainValue(name, data);
                     } catch (SQLException e) {
                     }
                 }
@@ -116,7 +116,7 @@ public class DatabaseWrapper {
                         double value = rs.getDouble(name);
                         Amount x = Amount.valueOf(value, unit);
                         Optional<Amount> data = rs.wasNull() ? Optional.empty() : Optional.of(x);
-                        current.storeDBValue(name, data);
+                        current.storeDomainValue(name, data);
                     } catch (SQLException e) {
                     }
                 }

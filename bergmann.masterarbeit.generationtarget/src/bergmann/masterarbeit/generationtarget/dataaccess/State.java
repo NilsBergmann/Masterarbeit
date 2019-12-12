@@ -16,20 +16,21 @@ import bergmann.masterarbeit.generationtarget.utils.UserVariable;
 public class State implements Comparable<State> {
     public Instant timestamp;
     public StateListHandler stateListHandler;
-    public Map<String, Optional> storedDBValues;
+    public Map<String, Optional> storedDomainValues;
     public Map<String, Optional> storedUserVariables;
     public Map<String, Optional> storedAssertions;
 
     public State(Instant timestamp) {
         this.timestamp = timestamp;
-        storedDBValues = new HashMap<String, Optional>();
+        storedDomainValues = new HashMap<String, Optional>();
         storedUserVariables = new HashMap<String, Optional>();
         storedAssertions = new HashMap<String, Optional>();
     }
+
     public State(Instant timestamp, MonitorDeclaration declr) {
         this(timestamp);
-        if(declr != null)
-        	this.initUnknowns(declr);
+        if (declr != null)
+            this.initUnknowns(declr);
     }
 
     public State(long epochMillis) {
@@ -41,35 +42,35 @@ public class State implements Comparable<State> {
     }
 
     /**
-     * Database value stuff
+     * DomainValue stuff
      */
 
     public void initUnknowns(MonitorDeclaration decl) {
         for (String identifier : decl.getRequiredDataBooleans()) {
-        	if(!this.storedDBValues.containsKey(identifier))
-        		this.storedDBValues.put(identifier, Optional.empty());
+            if (!this.storedDomainValues.containsKey(identifier))
+                this.storedDomainValues.put(identifier, Optional.empty());
         }
         for (String identifier : decl.getRequiredDataNumbers().keySet()) {
-        	if(!this.storedDBValues.containsKey(identifier))
-        		this.storedDBValues.put(identifier, Optional.empty());
+            if (!this.storedDomainValues.containsKey(identifier))
+                this.storedDomainValues.put(identifier, Optional.empty());
         }
         for (String identifier : decl.getRequiredDataStrings()) {
-        	if(!this.storedDBValues.containsKey(identifier))
-        		this.storedDBValues.put(identifier, Optional.empty());
+            if (!this.storedDomainValues.containsKey(identifier))
+                this.storedDomainValues.put(identifier, Optional.empty());
         }
         for (String identifier : decl.getDeclaredAssertionNames()) {
-        	if(!this.storedAssertions.containsKey(identifier))
-        		this.storedAssertions.put(identifier, Optional.empty());
+            if (!this.storedAssertions.containsKey(identifier))
+                this.storedAssertions.put(identifier, Optional.empty());
         }
         for (String identifier : decl.getDeclaredUserVariableNames()) {
-        	if(!this.storedUserVariables.containsKey(identifier))
-        		this.storedUserVariables.put(identifier, Optional.empty());
+            if (!this.storedUserVariables.containsKey(identifier))
+                this.storedUserVariables.put(identifier, Optional.empty());
         }
     }
 
-    public Optional<Boolean> getDBBoolean(String key) {
-        if (storedDBValues.containsKey(key)) {
-            Optional value = storedDBValues.get(key);
+    public Optional<Boolean> getDomainBoolean(String key) {
+        if (storedDomainValues.containsKey(key)) {
+            Optional value = storedDomainValues.get(key);
             if (value.isPresent() && !(value.get() instanceof Boolean)) {
                 System.err.println(this.toString() + " has no boolean " + key + ", instead received a "
                         + value.get().getClass() + ". Returning Optional.empty");
@@ -81,9 +82,9 @@ public class State implements Comparable<State> {
         return Optional.empty();
     }
 
-    public Optional<Amount> getDBAmount(String key) {
-        if (storedDBValues.containsKey(key)) {
-            Optional value = storedDBValues.get(key);
+    public Optional<Amount> getDomainAmount(String key) {
+        if (storedDomainValues.containsKey(key)) {
+            Optional value = storedDomainValues.get(key);
             if (value.isPresent() && !(value.get() instanceof Amount)) {
                 System.err.println(this.toString() + " has no Amount " + key + ", instead received a "
                         + value.get().getClass() + ". Returning Optional.empty");
@@ -95,9 +96,9 @@ public class State implements Comparable<State> {
         return Optional.empty();
     }
 
-    public Optional<String> getDBString(String key) {
-        if (storedDBValues.containsKey(key)) {
-            Optional value = storedDBValues.get(key);
+    public Optional<String> getDomainString(String key) {
+        if (storedDomainValues.containsKey(key)) {
+            Optional value = storedDomainValues.get(key);
             if (value.isPresent() && !(value.get() instanceof String)) {
                 return Optional.empty();
             }
@@ -107,24 +108,24 @@ public class State implements Comparable<State> {
         return Optional.empty();
     }
 
-    public Set<String> getStoredDBValueIDs() {
-        return this.storedDBValues.keySet();
+    public Set<String> getStoredDomainIDs() {
+        return this.storedDomainValues.keySet();
     }
 
-    public void storeDBValue(String key, Optional value) {
+    public void storeDomainValue(String key, Optional value) {
         if (value == null || key == null)
             throw new IllegalArgumentException(
-                    "Can't store DB Value because at least one parameter is null: (" + key + ", " + value + ")");
-        storedDBValues.put(key, value);
+                    "Can't store domain value because at least one parameter is null: (" + key + ", " + value + ")");
+        storedDomainValues.put(key, value);
     }
 
-    public <T extends Object> Optional<T> getStoredDBValue(String key) {
-        if (storedDBValues.containsKey(key)) {
-            Optional obj = storedDBValues.get(key);
+    public <T extends Object> Optional<T> getDomainValue(String key) {
+        if (storedDomainValues.containsKey(key)) {
+            Optional obj = storedDomainValues.get(key);
             if (obj != null)
                 return obj;
         } else {
-            System.err.println("No DB Value '" + key + "' is stored in this state. Returning Optional.empty.");
+            System.err.println("No domain value '" + key + "' is stored in this state. Returning Optional.empty.");
         }
         return Optional.empty();
     }
@@ -140,7 +141,7 @@ public class State implements Comparable<State> {
     public void storeUserVariableResult(String key, Optional value) {
         if (value == null || key == null)
             throw new IllegalArgumentException(
-                    "Can't store DB Value because at least one parameter is null: (" + key + ", " + value + ")");
+                    "Can't store domain value because at least one parameter is null: (" + key + ", " + value + ")");
         this.storedUserVariables.put(key, value);
     }
 
@@ -169,7 +170,7 @@ public class State implements Comparable<State> {
     public void storeAssertionResult(String key, Optional<Boolean> value) {
         if (value == null || key == null)
             throw new IllegalArgumentException(
-                    "Can't store DB Value because at least one parameter is null: (" + key + ", " + value + ")");
+                    "Can't store domain value because at least one parameter is null: (" + key + ", " + value + ")");
         this.storedAssertions.put(key, value);
     }
 
@@ -208,7 +209,7 @@ public class State implements Comparable<State> {
             return false;
         } else {
             State otherS = (State) other;
-            return this.timestamp.equals(otherS.timestamp) && this.storedDBValues.equals(otherS.storedDBValues)
+            return this.timestamp.equals(otherS.timestamp) && this.storedDomainValues.equals(otherS.storedDomainValues)
                     && this.storedAssertions.equals(otherS.storedAssertions)
                     && this.storedUserVariables.equals(otherS.storedUserVariables);
         }
@@ -223,8 +224,8 @@ public class State implements Comparable<State> {
     }
 
     private String storedDataToString() {
-        return "DBValues=" + this.storedDBValues.toString() + " UserVariables=" + this.storedUserVariables.toString()
-                + " Assertions=" + this.storedAssertions.toString();
+        return "DomainValues=" + this.storedDomainValues.toString() + " UserVariables="
+                + this.storedUserVariables.toString() + " Assertions=" + this.storedAssertions.toString();
     }
 
     public StateListHandler getStateListHandler() {

@@ -5,13 +5,15 @@ import javax.measure.unit.Unit;
 import bergmann.masterarbeit.generationtarget.utils.MonitorDeclaration;
 
 public class TestMonitorDeclaration extends MonitorDeclaration {
-	public void addDBBoolean(String name){
+	public void addDomainBoolean(String name) {
 		getRequiredDataBooleans().add(name);
 	}
-	public void addDBString(String name){
+
+	public void addDomainString(String name) {
 		getRequiredDataStrings().add(name);
 	}
-	public void addDBAmount(String name, Unit unit) {
+
+	public void addDomainAmount(String name, Unit unit) {
 		getRequiredDataNumbers().put(name, unit);
 	}
 }

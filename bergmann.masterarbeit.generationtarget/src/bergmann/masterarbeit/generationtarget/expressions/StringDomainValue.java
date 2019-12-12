@@ -5,19 +5,20 @@ import java.util.Optional;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 
-public class BooleanDatabaseAccess extends Expression<Boolean> {
+public class StringDomainValue extends Expression<String> {
     public String columnName;
 
-    public BooleanDatabaseAccess(String columnName) {
+    public StringDomainValue(String columnName) {
+        super();
         this.columnName = columnName;
     }
 
-    public Optional<Boolean> evaluate(State state) {
-        Optional<Boolean> retVal = state.getDBBoolean(this.columnName);
+    public Optional<String> evaluate(State state) {
+        Optional<String> retVal = state.getDomainString(this.columnName);
         return retVal;
     }
-    
+
     public String toString() {
-    	return "DB_BOOL[" + columnName + "]";
+        return "Domain_STRING[" + columnName + "]";
     }
 }

@@ -78,7 +78,6 @@ public class StandaloneDataController {
 		return this.isRealTime;
 	}
 
-
 	public void registerRequiredData(MonitorDeclaration monitors) {
 		this.dbWrapper.setMonitors(monitors);
 	}
@@ -124,16 +123,17 @@ public class StandaloneDataController {
 					System.out.println("Evaluation complete!");
 					everythingFW.flush();
 					onlyAssertionsFW.flush();
-				} else if(isRealTime) {
+				} else if (isRealTime) {
 					long delta = System.currentTimeMillis() - timestamp;
-					System.out.print("\rWaiting for new states in " + tableName + " (current amount: "+stateCounter+"). time since last update: " + delta + "ms");
+					System.out.print("\rWaiting for new states in " + tableName + " (current amount: " + stateCounter
+							+ "). time since last update: " + delta + "ms");
 					Thread.sleep(5);
 				}
 			} while (isRealTime);
 		} catch (Exception e) {
 			System.err.println("Interrupted! " + e);
 		}
-		
+
 	}
 
 	private void writeHeader(FileWriter fw, List<String> selectedDBValues, List<String> selectedUserVariables,
@@ -163,13 +163,13 @@ public class StandaloneDataController {
 		}
 	}
 
-	private void writeCSVRow(FileWriter fw, State state, List<String> selectedDBValues, List<String> selectedUserVariables,
-			List<String> selectedAssertions) {
+	private void writeCSVRow(FileWriter fw, State state, List<String> selectedDBValues,
+			List<String> selectedUserVariables, List<String> selectedAssertions) {
 		try {
 			String line = state.timestamp.toString() + ";";
 			if (selectedDBValues != null) {
 				for (String key : selectedDBValues) {
-					Optional data = state.getStoredDBValue(key);
+					Optional data = state.getDomainValue(key);
 					String dataString = data.isPresent() ? data.get().toString() : " ";
 					line += dataString + "; ";
 				}

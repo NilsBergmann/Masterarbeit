@@ -335,9 +335,9 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 					UserVariable: return ref.name
 					DomainValue:{
 							switch ref.type {
-							case BOOLEAN: return '''new BooleanDatabaseAccess("«ref.column»")'''
-							case NUMBER: return '''new NumberDatabaseAccess("«ref.column»")'''
-							case STRING: return '''new StringDatabaseAccess("«ref.column»")'''
+							case BOOLEAN: return '''new BooleanDomainValue("«ref.column»")'''
+							case NUMBER: return '''new NumberDomainValue("«ref.column»")'''
+							case STRING: return '''new StringDomainValue("«ref.column»")'''
 							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
 						 }
 						}
