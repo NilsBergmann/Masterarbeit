@@ -239,20 +239,6 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 	}
 
 	@Check
-	def IntervallAllowedCheck(LTL_Unary expr) {
-		if (expr.time == null) {
-			return
-		}
-		switch expr.op {
-			case NEXT,
-			case YESTERDAY,
-			case Z:
-				error("Time constraints are currently not supported for given operator " + expr.op,
-					MonitorDSLPackage.Literals.LTL_UNARY__TIME)
-		}
-	}
-
-	@Check
 	def checkNamesAreUnique(ImportMonitor imp) {
 		var containingMonitor = EcoreUtil.getRootContainer(imp) as Monitors
 		var importedNames = (EcoreUtil.getRootContainer(imp.ref) as Monitors).allNamedObjectsRecursive

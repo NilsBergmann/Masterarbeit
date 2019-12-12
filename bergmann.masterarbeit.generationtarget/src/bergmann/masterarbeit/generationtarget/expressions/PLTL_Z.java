@@ -5,6 +5,7 @@ import java.util.Optional;
 import bergmann.masterarbeit.generationtarget.dataaccess.State;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 import bergmann.masterarbeit.generationtarget.interfaces.UnaryExpression;
+import bergmann.masterarbeit.generationtarget.utils.AbsoluteTimeInterval;
 import bergmann.masterarbeit.generationtarget.utils.RelativeTimeInterval;
 
 public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
@@ -12,9 +13,14 @@ public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
     Expression<Boolean> helper;
 
     public PLTL_Z(Expression<Boolean> expr) {
-        super(expr);
+    	this(expr, null);
     }
-
+    
+    public PLTL_Z(Expression<Boolean> expr, RelativeTimeInterval interval) {
+    	super(expr);
+    	this.interval = interval;
+    }
+    
     @Override
     public Optional<Boolean> evaluate(State state) {
         State previous = state.stateListHandler.getPreviousState(state);
@@ -23,6 +29,11 @@ public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
             // the initial time instant is dealt with: at time zero, Yφ is false, while Zφ
             // is true. [Bounded Verification of Past LTL]
             return Optional.of(true);
+        }
+        if(this.interval != null) {
+        	AbsoluteTimeInterval absInterval = this.interval.addInstant(state.timestamp);
+        	if(!absInterval.contains(previous.timestamp))
+        		return Optional.empty();
         }
         return expr.evaluate(previous);
     }
