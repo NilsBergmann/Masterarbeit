@@ -47,30 +47,31 @@ public class LTL_Finally extends UnaryExpression<Boolean, Boolean> {
         }
         // No matching state found
 
-        // Handle different evaluation cases
+        if (atLeastOneUnknownInRange)
+            return Optional.empty();
         if (hasInterval) {
-            // Expr has interval (e.g F[0s, 20s](X))
+            // F has interval (e.g F[0s, 20s](X))
             if (realTime) {
                 // Realtime mode -> There might be future states coming
                 if (state.stateListHandler.intervalIsInRange(this.interval.addInstant(state.timestamp))) {
-                    // Interval is completely inside timeframe of known data when evaluating
-                    return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
+                    // Interval is completely inside timeframe of known data when evaluating, any additional states are not relevant
+                    return Optional.of(false);
                 } else {
-                    // There might be some future state where X evaluates to true
+                    // There might be some upcoming state where X evaluates to true
                     return Optional.empty();
                 }
             } else {
                 // Non realtime mode -> No more future states coming
-                return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
+                return Optional.of(false);
             }
         } else {
-            // Expr doesnt have interval
+            // F doesnt have interval
             if (realTime) {
-                // Realtime mode -> A future states might cause an evaluation to true
+                // Realtime mode -> A future state might evaluate to true
                 return Optional.empty();
             } else {
-                // Non realtime mode -> No more future states coming
-                return atLeastOneUnknownInRange ? Optional.empty() : Optional.of(false);
+                // Non-realtime mode -> No more future states coming
+                return Optional.of(false);
             }
         }
     }
