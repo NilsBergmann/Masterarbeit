@@ -105,7 +105,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 				* Required Data
 				*/
 				
-				«monitors.registerDomainColumns»
+				«monitors.registerDomainIDs»
 				
 				/**
 				* Init Assertions and UserVariables
@@ -161,7 +161,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		'''
 	}
 	
-	def static String registerDomainColumns(Monitors monitors){
+	def static String registerDomainIDs(Monitors monitors){
 		var s = ""
 		var domains = monitors.recursiveImportedDomains
 		for (currentDomain : domains) {
@@ -177,9 +177,9 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 	
 	def static String registerDomainColumn(DomainValue dv){
 		switch dv.type {
-			case BOOLEAN: return '''this.getRequiredDataBooleans().add("«dv.column»");'''
-			case NUMBER: return  '''this.getRequiredDataNumbers().put("«dv.column»", «dv.unit.toUnitString»);'''
-			case STRING: return '''this.getRequiredDataStrings().add("«dv.column»");'''
+			case BOOLEAN: return '''this.getRequiredDataBooleans().add("«dv.identifier»");'''
+			case NUMBER: return  '''this.getRequiredDataNumbers().put("«dv.identifier»", «dv.unit.toUnitString»);'''
+			case STRING: return '''this.getRequiredDataStrings().add("«dv.identifier»");'''
 			default:  throw new IllegalArgumentException("Can't parse type: " + dv.type)
 		}
 	}
@@ -335,9 +335,9 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 					UserVariable: return ref.name
 					DomainValue:{
 							switch ref.type {
-							case BOOLEAN: return '''new BooleanDomainValue("«ref.column»")'''
-							case NUMBER: return '''new NumberDomainValue("«ref.column»")'''
-							case STRING: return '''new StringDomainValue("«ref.column»")'''
+							case BOOLEAN: return '''new BooleanDomainValue("«ref.identifier»")'''
+							case NUMBER: return '''new NumberDomainValue("«ref.identifier»")'''
+							case STRING: return '''new StringDomainValue("«ref.identifier»")'''
 							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
 						 }
 						}

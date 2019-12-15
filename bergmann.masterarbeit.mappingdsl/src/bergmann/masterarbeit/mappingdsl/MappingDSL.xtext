@@ -81,7 +81,7 @@ DomainValue returns NamedDomainElement:
 		("type:" type=BASE_VALUETYPE) &
 		("unit:" unit=Unit)? &
 		("description:" description=STRING)? &
-		("identifier:" column=STRING) 
+		("identifier:" identifier=STRING) 
 	)
 	"}"
 ;
