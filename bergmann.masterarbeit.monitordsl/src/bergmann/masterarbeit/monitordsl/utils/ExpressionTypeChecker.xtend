@@ -143,7 +143,6 @@ class ExpressionTypeChecker {
 			case BOOLEAN: return BOOLEAN_JAVA_CLASS
 			case NUMBER: return NUMBER_JAVA_CLASS
 			case STRING: return STRING_JAVA_CLASS
-			case ANY: return OBJECT
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}
 	}
@@ -169,6 +168,7 @@ class ExpressionTypeChecker {
 		switch t{
 			JavaType : return t.type.ref.javaType.qualifiedName
 			BaseType: return t.type.toExpressionType
+			AnyType: return OBJECT
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}
 	}

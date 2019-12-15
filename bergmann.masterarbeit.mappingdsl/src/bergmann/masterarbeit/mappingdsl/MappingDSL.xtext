@@ -87,10 +87,10 @@ DomainValue returns NamedDomainElement:
 ;
 
 Type:
-	{JavaType} type=[JavaDataType] | {BaseType} type=BASE_VALUETYPE
+	{JavaType} type=[JavaDataType] | {BaseType} type=BASE_VALUETYPE | {AnyType} type="any"
 ;
 enum BASE_VALUETYPE:
-	NUMBER = "number" | STRING = "string" | BOOLEAN = "boolean" | ANY = "any"
+	NUMBER = "number" | STRING = "string" | BOOLEAN = "boolean" 
 ;
 
 Unit:

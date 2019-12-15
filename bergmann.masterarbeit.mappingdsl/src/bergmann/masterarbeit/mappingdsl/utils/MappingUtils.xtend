@@ -8,6 +8,7 @@ import bergmann.masterarbeit.mappingdsl.mappingDSL.CustomJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
 import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.AnyType
 
 class MappingUtils {
 	static var BOOLEAN_JAVA_CLASS = "java.lang.Boolean"
@@ -22,6 +23,7 @@ class MappingUtils {
 		switch t{
 			JavaType : return t.type.ref.javaType.qualifiedName
 			BaseType: return t.type.toClassName
+			AnyType: return "T"
 			default: return "" 
 		}
 	}
@@ -31,7 +33,6 @@ class MappingUtils {
 			case BOOLEAN: return BOOLEAN_JAVA_CLASS
 			case NUMBER: return NUMBER_JAVA_CLASS
 			case STRING: return STRING_JAVA_CLASS
-			case ANY: return "T"
 			default: throw new IllegalArgumentException("Can't parse type: " + t)
 		}
 	}
