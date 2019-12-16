@@ -23,7 +23,7 @@ class MappingUtils {
 		switch t{
 			JavaType : return t.type.ref.javaType.qualifiedName
 			BaseType: return t.type.toClassName
-			AnyType: return "T"
+			AnyType: return ANY_JAVA_CLASS
 			default: return "" 
 		}
 	}
