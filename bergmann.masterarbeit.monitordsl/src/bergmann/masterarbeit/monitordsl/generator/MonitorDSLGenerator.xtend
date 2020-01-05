@@ -410,13 +410,13 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			}
 			TimeIntervalInequalityNotation:{
 				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
-				var zeroString = '''Duration.ofMillis(0)'''
-				var infinityString = if(interval.containsPositive) '''Duration.ofMillis(Long.MAX_VALUE)''' else '''Duration.ofMillis(Long.MIN_VALUE)'''
+				var lowerBound = if(interval.containsPositive) '''Duration.ofMillis(0)''' else '''Duration.ofMillis(Long.MIN_VALUE)'''
+				var upperBound = if(interval.containsPositive) '''Duration.ofMillis(Long.MAX_VALUE)''' else '''Duration.ofMillis(0)'''
 				switch interval.op{
-					case "<": return '''new RelativeTimeInterval(«zeroString», «timeString», true, false)'''
-					case "<=":return '''new RelativeTimeInterval(«zeroString», «timeString», true, true)'''
-					case ">": return '''new RelativeTimeInterval(«timeString», «infinityString», false, true)'''
-					case ">=":return '''new RelativeTimeInterval(«timeString», «infinityString», true, true)'''
+					case "<": return '''new RelativeTimeInterval(«lowerBound», «timeString», true, false)'''
+					case "<=":return '''new RelativeTimeInterval(«lowerBound», «timeString», true, true)'''
+					case ">": return '''new RelativeTimeInterval(«timeString», «upperBound», false, true)'''
+					case ">=":return '''new RelativeTimeInterval(«timeString», «upperBound», true, true)'''
 					default: throw new IllegalArgumentException("Unknown operator: " + interval.op)
 				}
 			}
