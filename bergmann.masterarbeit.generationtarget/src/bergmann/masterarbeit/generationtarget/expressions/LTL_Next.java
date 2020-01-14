@@ -22,14 +22,16 @@ public class LTL_Next extends UnaryExpression<Boolean, Boolean> {
 
     @Override
     public Optional<Boolean> evaluate(State state) {
+    	boolean realTime = state.stateListHandler.isRealTimeEvaluationMode();
         State next = state.stateListHandler.getFollowingState(state);
         if (next == null) {
-            return Optional.empty();
+        	// Return unknown if realTime, because a next state might be coming later
+            return realTime ? Optional.empty() : Optional.of(false);
         }
         if(this.interval != null) {
         	AbsoluteTimeInterval absInterval = this.interval.addInstant(state.timestamp);
         	if(!absInterval.contains(next.timestamp))
-        		return Optional.empty();
+        		return Optional.of(false);
         }
         return expr.evaluate(next);
     }

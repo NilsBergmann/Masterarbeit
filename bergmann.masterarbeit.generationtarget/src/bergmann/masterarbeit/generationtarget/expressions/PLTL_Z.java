@@ -33,7 +33,7 @@ public class PLTL_Z extends UnaryExpression<Boolean, Boolean> {
         if(this.interval != null) {
         	AbsoluteTimeInterval absInterval = this.interval.addInstant(state.timestamp);
         	if(!absInterval.contains(previous.timestamp))
-        		return Optional.empty();
+        		return Optional.of(false);
         }
         return expr.evaluate(previous);
     }
