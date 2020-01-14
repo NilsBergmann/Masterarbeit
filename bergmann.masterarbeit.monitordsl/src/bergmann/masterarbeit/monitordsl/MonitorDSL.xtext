@@ -93,8 +93,12 @@ AtomExpr returns Expression:
 	| {StringLiteral} value=STRING
 	// AVG, MIN, MAX
 	| {AggregateExpression} op=AGGREGATE_OPERATOR time=TimeInterval "("expr=Expression")"
+	//sqrt
+	| {Root} "root" "(" expr=Expression "," root=INT")"
+	| {SquareRoot} "sqrt" "(" expr=Expression ")"
 	// UserVar reference, Mapping reference
 	| {CrossReference} ref=[ecore::EObject] ("("optionalExpr=Expression")")?
+	
 	
 ;
 

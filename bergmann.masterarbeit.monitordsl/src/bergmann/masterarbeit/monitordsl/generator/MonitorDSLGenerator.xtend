@@ -51,6 +51,8 @@ import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.ImportUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.TimeUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.UnitUtils.*
+import bergmann.masterarbeit.monitordsl.monitorDSL.Root
+import bergmann.masterarbeit.monitordsl.monitorDSL.SquareRoot
 
 /**
  * Generates code from your model files on save.
@@ -327,7 +329,8 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
 			IfThenElse: return '''new IfThenElse<«expr.then.expressionType»>(«expr.condition.compile», «expr.then.compile», «expr.getElse.compile»)'''
 			TimeOffset: return compile(expr as TimeOffset)
-			
+			Root: return '''new NumberRoot(«expr.expr.compile», «expr.root»)'''
+			SquareRoot: return '''new NumberRoot(«expr.expr.compile», 2)'''
 			/* MappingDSL stuff */			
 			CrossReference: {
 				var ref = expr.ref

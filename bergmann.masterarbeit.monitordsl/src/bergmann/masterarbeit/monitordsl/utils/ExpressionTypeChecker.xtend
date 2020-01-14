@@ -117,6 +117,12 @@ class ExpressionTypeChecker {
 			CrossReference: return expr.handleCrossreference
 			MappingBinary: return expr.handleCustomJavaMapping
 			TimeOffset: return expr.expr.expressionType
+			Root: 
+				if(expr.expr.isNumber)	
+					t =  NUMBER_JAVA_CLASS
+			SquareRoot: 
+				if(expr.expr.isNumber)	
+					t =  NUMBER_JAVA_CLASS
 			IfThenElse: {
 				if(expr.condition.isBoolean){
 					var tThen = expr.then.expressionType
