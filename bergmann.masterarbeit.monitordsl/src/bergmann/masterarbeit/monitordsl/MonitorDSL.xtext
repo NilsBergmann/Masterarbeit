@@ -96,6 +96,8 @@ AtomExpr returns Expression:
 	//Root
 	| {Root} "root" "(" expr=Expression "," root=INT")"
 	| {SquareRoot} "sqrt" "(" expr=Expression ")"
+	// abs
+	| {Absolute} "abs" "(" expr=Expression ")"
 	// UserVar reference, Mapping reference: DomainValue, JavaUnary and JavaLiteral
 	| {CrossReference} ref=[ecore::EObject] ("("optionalExpr=Expression")")?
 	

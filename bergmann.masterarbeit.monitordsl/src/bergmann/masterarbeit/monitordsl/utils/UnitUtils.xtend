@@ -32,6 +32,7 @@ import javax.measure.unit.Unit
 import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionTypeChecker.*
 import bergmann.masterarbeit.monitordsl.monitorDSL.SquareRoot
 import bergmann.masterarbeit.monitordsl.monitorDSL.Root
+import bergmann.masterarbeit.monitordsl.monitorDSL.Absolute
 
 class UnitUtils {
 
@@ -77,6 +78,7 @@ class UnitUtils {
 			// MappingUnary: return (expr.ref as UnaryJava).unit.toJavaUnit 
 			SquareRoot: return expr.expr.unit.root(2)
 			Root: return expr.expr.unit.root(expr.root)
+			Absolute: return expr.expr.unit
 			IfThenElse: {
 				var uThen = expr.then.unit
 				var uElse = expr.getElse.unit

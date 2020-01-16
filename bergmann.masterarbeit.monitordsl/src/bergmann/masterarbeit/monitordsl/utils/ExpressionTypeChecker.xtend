@@ -123,6 +123,9 @@ class ExpressionTypeChecker {
 			SquareRoot: 
 				if(expr.expr.isNumber)	
 					t =  NUMBER_JAVA_CLASS
+			Absolute: 
+				if(expr.expr.isNumber)	
+					t =  NUMBER_JAVA_CLASS
 			IfThenElse: {
 				if(expr.condition.isBoolean){
 					var tThen = expr.then.expressionType

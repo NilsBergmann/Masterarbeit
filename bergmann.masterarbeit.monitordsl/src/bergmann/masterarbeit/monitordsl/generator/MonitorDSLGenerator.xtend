@@ -53,6 +53,7 @@ import static extension bergmann.masterarbeit.monitordsl.utils.TimeUtils.*
 import static extension bergmann.masterarbeit.monitordsl.utils.UnitUtils.*
 import bergmann.masterarbeit.monitordsl.monitorDSL.Root
 import bergmann.masterarbeit.monitordsl.monitorDSL.SquareRoot
+import bergmann.masterarbeit.monitordsl.monitorDSL.Absolute
 
 /**
  * Generates code from your model files on save.
@@ -330,6 +331,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			IfThenElse: return '''new IfThenElse<«expr.then.expressionType»>(«expr.condition.compile», «expr.then.compile», «expr.getElse.compile»)'''
 			TimeOffset: return compile(expr as TimeOffset)
 			Root: return '''new NumberRoot(«expr.expr.compile», «expr.root»)'''
+			Absolute: return '''new NumberAbsolute(«expr.expr.compile»)'''
 			SquareRoot: return '''new NumberRoot(«expr.expr.compile», 2)'''
 			/* MappingDSL stuff */			
 			CrossReference: {
