@@ -87,14 +87,14 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		«monitors.compileImports»
 		/* Imports end */
 		
-		/**
+		/** 
 		«FOR mon : monitors.recursiveImportedMonitors»
 		* Includes monitors «mon.getTargetClassname»
 		«ENDFOR» 
 		«FOR dom : monitors.recursiveImportedDomains»
 		* Includes domain «dom.package.name»
 		«ENDFOR»
-		*/
+		*/ 
 		
 		@SuppressWarnings("unused")
 		public class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
@@ -231,7 +231,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		'''
 	}
 	def static String compilePackage(Monitors monitors){
-		return '''package bergmann.masterarbeit.generated;'''; //TODO: PackageName
+		return '''package bergmann.masterarbeit.generated;''';
 	}
 	
 	def static String compileImports(Monitors monitors){
@@ -323,8 +323,8 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 					throw new Exception()
 			}
 			Subexpression: return expr.expr.compile
-			IntLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.toUnitString»)''' //TODO Add handling of units
-			FloatLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.toUnitString»)''' //TODO Add handling of units
+			IntLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.toUnitString»)''' 
+			FloatLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.toUnitString»)''' 
 			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
 			StringLiteral: return '''new StringLiteral("«expr.value»")'''
 			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
