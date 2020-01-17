@@ -24,7 +24,7 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
     @Override
     public Optional<Boolean> evaluate(State state) {
         /**
-         * Wikipedia: ψ R φ -> φ has to be true until and including the point where ψ
+         * ψ R φ -> φ has to be true until and including the point where ψ
          * first becomes true; if ψ never becomes true, φ must remain true forever.
          */
         List<State> relevantStates = null;
@@ -88,7 +88,7 @@ public class LTL_Release extends BinaryExpression<Boolean, Boolean, Boolean> {
             	throw new IllegalArgumentException("LTL_Release: Unexpected state");
             }
         }
-        
+
         if (leftWasTrueOnce.isPresent() && leftWasTrueOnce.get().equals(true)) {
             // left was released and the loop hasnt been cancelled by a conflicting right
             return Optional.of(true);
