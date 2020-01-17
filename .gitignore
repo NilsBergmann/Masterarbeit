@@ -93,3 +93,5 @@ bergmann.masterarbeit.generationtarget/.vscode/
 *.xtendbin
 
 bergmann.masterarbeit.monitordsl.tests/test-bin/
+
+.history/
