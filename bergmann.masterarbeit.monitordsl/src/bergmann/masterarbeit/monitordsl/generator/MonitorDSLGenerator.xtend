@@ -57,88 +57,88 @@ import bergmann.masterarbeit.monitordsl.monitorDSL.Absolute
 
 /**
  * Generates code from your model files on save.
- *
+ * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class MonitorDSLGenerator extends AbstractGenerator {
 
 override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' +
+//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
 //			resource.allContents
 //				.filter(Greeting)
 //				.map[name]
 //				.join(', '))
 		var monitors = resource.contents.head as Monitors
-		fsa.generateFile("bergmann/masterarbeit/generated/"+monitors.targetClassname + "_StandaloneRunner.java", monitors.createStandaloneRunner)
-		fsa.generateFile("bergmann/masterarbeit/generated/"+monitors.targetClassname + "_MonitorDeclaration.java", monitors.createEvaluationPackage)
+		fsa.generateFile("bergmann/masterarbeit/generated/"+monitors.targetClassname + "_StandaloneRunner.java", monitors.createStandaloneRunner)		
+		fsa.generateFile("bergmann/masterarbeit/generated/"+monitors.targetClassname + "_MonitorDeclaration.java", monitors.createEvaluationPackage)		
 	}
-
+	
 	def static String getTargetClassname(Monitors monitors){
 		return monitors.package.name
 	}
-
+	
 	def String createEvaluationPackage(Monitors monitors){
 		var assertions = monitors.recursiveAssertions
 		var userVars = monitors.recursiveUserVariables
 		return'''
-		ï¿½monitors.compilePackageï¿½
-
+		«monitors.compilePackage»
+		
 		/* Imports */
-		ï¿½monitors.compileImportsï¿½
+		«monitors.compileImports»
 		/* Imports end */
-
+		
 		/**
-		ï¿½FOR mon : monitors.recursiveImportedMonitorsï¿½
-		* Includes monitors ï¿½mon.getTargetClassnameï¿½
-		ï¿½ENDFORï¿½
-		ï¿½FOR dom : monitors.recursiveImportedDomainsï¿½
-		* Includes domain ï¿½dom.package.nameï¿½
-		ï¿½ENDFORï¿½
+		«FOR mon : monitors.recursiveImportedMonitors»
+		* Includes monitors «mon.getTargetClassname»
+		«ENDFOR» 
+		«FOR dom : monitors.recursiveImportedDomains»
+		* Includes domain «dom.package.name»
+		«ENDFOR»
 		*/
-
+		
 		@SuppressWarnings("unused")
-		public class ï¿½monitors.targetClassnameï¿½_MonitorDeclaration extends MonitorDeclaration {
+		public class «monitors.targetClassname»_MonitorDeclaration extends MonitorDeclaration {
 			@SuppressWarnings({"rawtypes", "unchecked"})
-			public ï¿½monitors.targetClassnameï¿½_MonitorDeclaration(){
+			public «monitors.targetClassname»_MonitorDeclaration(){
 				super();
-
-				this.setName("ï¿½monitors.package.nameï¿½");
-
+				
+				this.setName("«monitors.package.name»");
+				
 				/**
 				* Required Data
 				*/
-
-				ï¿½monitors.registerDomainIDsï¿½
-
+				
+				«monitors.registerDomainIDs»
+				
 				/**
 				* Init Assertions and UserVariables
 				*/
-
-				ï¿½FOR userVar : userVarsï¿½
-				UserVariable<ï¿½userVar.expr.expressionTypeï¿½> ï¿½userVar.nameï¿½ = new UserVariable<ï¿½userVar.expr.expressionTypeï¿½>("ï¿½userVar.nameï¿½");
-				ï¿½ENDFORï¿½
-
-				ï¿½FOR assertion : assertionsï¿½
-				Assertion ï¿½assertion.nameï¿½ = new Assertion("ï¿½assertion.nameï¿½");
-				ï¿½ENDFORï¿½
-
+				
+				«FOR userVar : userVars»
+				UserVariable<«userVar.expr.expressionType»> «userVar.name» = new UserVariable<«userVar.expr.expressionType»>("«userVar.name»");
+				«ENDFOR»
+				
+				«FOR assertion : assertions»
+				Assertion «assertion.name» = new Assertion("«assertion.name»");
+				«ENDFOR»
+				
 				/**
 				* Set UserVariable expressions
 				*/
-
-				ï¿½FOR userVar : userVarsï¿½
-				ï¿½userVar.compileï¿½
-
-				ï¿½ENDFORï¿½
-
+				
+				«FOR userVar : userVars»
+				«userVar.compile»
+				
+				«ENDFOR»
+				
 				/**
 				* Set Assertion expressions
 				*/
-
-				ï¿½FOR assertion : assertionsï¿½
-				ï¿½assertion.compileï¿½
-
-				ï¿½ENDFORï¿½
+				
+				«FOR assertion : assertions»
+				«assertion.compile»
+				
+				«ENDFOR»
 			}
 		}
 		'''
@@ -147,23 +147,23 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		var assertions = monitors.recursiveAssertions
 		var userVars = monitors.recursiveUserVariables
 		return '''
-		ï¿½monitors.compilePackageï¿½
-		ï¿½monitors.compileImportsï¿½
+		«monitors.compilePackage»
+		«monitors.compileImports»
 		@SuppressWarnings("unused")
-		public class ï¿½monitors.targetClassnameï¿½_StandaloneRunner {
-
+		public class «monitors.targetClassname»_StandaloneRunner {
+			
 			@SuppressWarnings("rawtypes")
 			public static void main(String args[]) {
-				ï¿½generateSetupï¿½
-
-				MonitorDeclaration monitors = new ï¿½monitors.targetClassnameï¿½_MonitorDeclaration();
-				dataControl.runEvaluation(monitors,tableSelection);
+				«generateSetup»
+				
+				MonitorDeclaration monitors = new «monitors.targetClassname»_MonitorDeclaration();
+				dataControl.runEvaluation(monitors,tableSelection); 
 			}
-
+		
 		}
 		'''
 	}
-
+	
 	def static String registerDomainIDs(Monitors monitors){
 		var s = ""
 		var domains = monitors.recursiveImportedDomains
@@ -172,17 +172,17 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			for (dv : EcoreUtil2.eAllOfType(currentDomain, DomainValue)) {
 				s+= if(dv.description != null) "// " +dv.description +"\n" else "// No Description given.\n"
 				s+= dv.registerDomainColumn + "\n"
-			}
+			}  
 			s+= "\n"
 		}
 		return s
 	}
-
+	
 	def static String registerDomainColumn(DomainValue dv){
 		switch dv.type {
-			case BOOLEAN: return '''this.getRequiredDataBooleans().add("ï¿½dv.identifierï¿½");'''
-			case NUMBER: return  '''this.getRequiredDataNumbers().put("ï¿½dv.identifierï¿½", ï¿½dv.unit.toUnitStringï¿½);'''
-			case STRING: return '''this.getRequiredDataStrings().add("ï¿½dv.identifierï¿½");'''
+			case BOOLEAN: return '''this.getRequiredDataBooleans().add("«dv.identifier»");'''
+			case NUMBER: return  '''this.getRequiredDataNumbers().put("«dv.identifier»", «dv.unit.toUnitString»);'''
+			case STRING: return '''this.getRequiredDataStrings().add("«dv.identifier»");'''
 			default:  throw new IllegalArgumentException("Can't parse type: " + dv.type)
 		}
 	}
@@ -199,7 +199,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			System.exit(0);
 		}
 		boolean isRealTime = realtimeSelection == 0;
-
+		
 		// -- Choose database
 		File dbFile = UIUtils.databaseSelection();
 		if (dbFile == null) {
@@ -207,7 +207,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			System.exit(1);
 		}
 		System.out.println("Selected " + dbFile.getAbsolutePath());
-
+		
 		// -- Try Database
 		StandaloneDataController dataControl = new StandaloneDataController(isRealTime);
 		dataControl.connectToDatabase(dbFile.getAbsolutePath());
@@ -215,7 +215,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			UIUtils.showError("Could not open database " + dbFile.getAbsolutePath());
 			System.exit(1);
 		}
-
+		
 		// -- Select Table
 		List<String> tables = dataControl.getTables();
 		if (tables.size() < 1) {
@@ -231,9 +231,9 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		'''
 	}
 	def static String compilePackage(Monitors monitors){
-		return '''package bergmann.masterarbeit.generated;''';
+		return '''package bergmann.masterarbeit.generated;'''; //TODO: PackageName
 	}
-
+	
 	def static String compileImports(Monitors monitors){
 		'''
 		import java.io.File;
@@ -241,115 +241,115 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 		import java.time.Instant;
 		import java.util.ArrayList;
 		import java.util.List;
-
+		
 		import javax.measure.unit.Unit;
-
+		
 		import org.jscience.physics.amount.Amount;
-
+		
 		import bergmann.masterarbeit.generationtarget.dataaccess.*;
 		import bergmann.masterarbeit.generationtarget.expressions.*;
 		import bergmann.masterarbeit.generationtarget.interfaces.*;
 		import bergmann.masterarbeit.generationtarget.utils.*;
 		'''
 	}
-
+	
 	def String compile(UserVariable userVar){
 		var javaType = userVar.expr.expressionType
 		if(javaType == null || javaType.equals(""))
 			throw new IllegalArgumentException("UserVariable has invalid type " + javaType)
 		return '''
-		ï¿½userVar.nameï¿½.setExpression(ï¿½userVar.expr.compileï¿½);
-		this.getUserVarExpressions().add(ï¿½userVar.nameï¿½);
+		«userVar.name».setExpression(«userVar.expr.compile»);
+		this.getUserVarExpressions().add(«userVar.name»); 
 		'''
 	}
-
+	
 	def String compile(Assertion assertion){
 		return '''
-		ï¿½assertion.nameï¿½.setExpression(ï¿½assertion.expr.compileï¿½);
-		this.getAssertionExpressions().add(ï¿½assertion.nameï¿½);
-		'''
+		«assertion.name».setExpression(«assertion.expr.compile»);
+		this.getAssertionExpressions().add(«assertion.name»); 
+		''' 
 	}
-
+	
 	def String positiveHash(Object obj){
 		return "" + (obj.hashCode.bitwiseAnd(0xfffffff)) // Removes -
 	}
-
+	
 	def String compile(Expression expr){
 		switch expr{
-			And: return '''new And(ï¿½expr.left.compileï¿½,ï¿½expr.right.compileï¿½)'''
-			Or: return '''new Or(ï¿½expr.left.compileï¿½,ï¿½expr.right.compileï¿½)'''
-			Implication: return '''new Implication(ï¿½expr.left.compileï¿½,ï¿½expr.right.compileï¿½)'''
+			And: return '''new And(«expr.left.compile»,«expr.right.compile»)'''
+			Or: return '''new Or(«expr.left.compile»,«expr.right.compile»)'''
+			Implication: return '''new Implication(«expr.left.compile»,«expr.right.compile»)'''
 			LTL_Unary: {
 				if(expr.time == null)
-					return '''new ï¿½expr.op.compileï¿½(ï¿½expr.expr.compileï¿½)'''
+					return '''new «expr.op.compile»(«expr.expr.compile»)'''
 				else
-					return  '''new ï¿½expr.op.compileï¿½(ï¿½expr.expr.compileï¿½, ï¿½expr.time.compileï¿½)'''
+					return  '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
 			}
 			LTL_Binary: {
 				if(expr.time == null)
-					return '''new ï¿½expr.op.compileï¿½(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new «expr.op.compile»(«expr.left.compile», «expr.right.compile»)'''
 				else
-					return '''new ï¿½expr.op.compileï¿½(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½, ï¿½expr.time.compileï¿½)'''
+					return '''new «expr.op.compile»(«expr.left.compile», «expr.right.compile», «expr.time.compile»)'''
 			}
 			Add: {
 				if(expr.op.equals("+"))
-					return '''new Addition(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Addition(«expr.left.compile», «expr.right.compile»)'''
 				else
-					return '''new Subtraction(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Subtraction(«expr.left.compile», «expr.right.compile»)'''
 			}
 			Mult: {
 				if(expr.op.equals("*"))
-					return '''new Multiplication(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Multiplication(«expr.left.compile», «expr.right.compile»)'''
 				else
-					return '''new Division(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Division(«expr.left.compile», «expr.right.compile»)'''	
 			}
 			Negation: {
 				if(expr.isBoolean)
-					return '''new BoolNegation(ï¿½expr.expr.compileï¿½)'''
+					return '''new BoolNegation(«expr.expr.compile»)'''
 				else if (expr.isNumber)
-					return '''new NumberNegation(ï¿½expr.expr.compileï¿½)'''
-				else
-					throw new Exception()
-
+					return '''new NumberNegation(«expr.expr.compile»)'''
+				else 
+					throw new Exception()	
+			
 			}
 			Rel:{
 				if(expr.op.equals("=="))
-					return '''new Equals<ï¿½expr.left.expressionTypeï¿½, ï¿½expr.right.expressionTypeï¿½>(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new Equals<«expr.left.expressionType», «expr.right.expressionType»>(«expr.left.compile», «expr.right.compile»)'''
 				if(expr.op.equals("!="))
-					return '''new NotEquals<ï¿½expr.left.expressionTypeï¿½, ï¿½expr.right.expressionTypeï¿½>(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+					return '''new NotEquals<«expr.left.expressionType», «expr.right.expressionType»>(«expr.left.compile», «expr.right.compile»)'''
 				else if (expr.left.isNumber && expr.right.isNumber)
-					return '''new NumberInequality(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½, "ï¿½expr.opï¿½")'''
-				else
+					return '''new NumberInequality(«expr.left.compile», «expr.right.compile», "«expr.op»")'''
+				else 
 					throw new Exception()
 			}
 			Subexpression: return expr.expr.compile
-			IntLiteral: return '''new NumberLiteral(ï¿½expr.valueï¿½, ï¿½expr.unit.toUnitStringï¿½)'''
-			FloatLiteral: return '''new NumberLiteral(ï¿½expr.valueï¿½, ï¿½expr.unit.toUnitStringï¿½)'''
-			BoolLiteral: return '''new BoolLiteral(ï¿½expr.valueï¿½)'''
-			StringLiteral: return '''new StringLiteral("ï¿½expr.valueï¿½")'''
-			AggregateExpression: return '''new ï¿½expr.op.compileï¿½(ï¿½expr.expr.compileï¿½, ï¿½expr.time.compileï¿½)'''
-			IfThenElse: return '''new IfThenElse<ï¿½expr.then.expressionTypeï¿½>(ï¿½expr.condition.compileï¿½, ï¿½expr.then.compileï¿½, ï¿½expr.getElse.compileï¿½)'''
+			IntLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.toUnitString»)''' //TODO Add handling of units
+			FloatLiteral: return '''new NumberLiteral(«expr.value», «expr.unit.toUnitString»)''' //TODO Add handling of units
+			BoolLiteral: return '''new BoolLiteral(«expr.value»)'''
+			StringLiteral: return '''new StringLiteral("«expr.value»")'''
+			AggregateExpression: return '''new «expr.op.compile»(«expr.expr.compile», «expr.time.compile»)'''
+			IfThenElse: return '''new IfThenElse<«expr.then.expressionType»>(«expr.condition.compile», «expr.then.compile», «expr.getElse.compile»)'''
 			TimeOffset: return compile(expr as TimeOffset)
-			Root: return '''new NumberRoot(ï¿½expr.expr.compileï¿½, ï¿½expr.rootï¿½)'''
-			Absolute: return '''new NumberAbsolute(ï¿½expr.expr.compileï¿½)'''
-			SquareRoot: return '''new NumberRoot(ï¿½expr.expr.compileï¿½, 2)'''
-			/* MappingDSL stuff */
+			Root: return '''new NumberRoot(«expr.expr.compile», «expr.root»)'''
+			Absolute: return '''new NumberAbsolute(«expr.expr.compile»)'''
+			SquareRoot: return '''new NumberRoot(«expr.expr.compile», 2)'''
+			/* MappingDSL stuff */			
 			CrossReference: {
 				var ref = expr.ref
 				switch ref{
 					UserVariable: return ref.name
 					DomainValue:{
 							switch ref.type {
-							case BOOLEAN: return '''new BooleanDomainValue("ï¿½ref.identifierï¿½")'''
-							case NUMBER: return '''new NumberDomainValue("ï¿½ref.identifierï¿½")'''
-							case STRING: return '''new StringDomainValue("ï¿½ref.identifierï¿½")'''
+							case BOOLEAN: return '''new BooleanDomainValue("«ref.identifier»")'''
+							case NUMBER: return '''new NumberDomainValue("«ref.identifier»")'''
+							case STRING: return '''new StringDomainValue("«ref.identifier»")'''
 							default: throw new IllegalArgumentException("Can't parse DomainValue: " + ref + " with type " + ref.type)
 						 }
 						}
-					LiteralJava: return '''new ï¿½ref.ref.classNameï¿½()'''
+					LiteralJava: return '''new «ref.ref.className»()'''
 					UnaryJava:{
 						var refMapping = expr.ref as UnaryJava
-						return '''new ï¿½refMapping.ref.classNameï¿½(ï¿½expr.optionalExpr.compileï¿½)'''
+						return '''new «refMapping.ref.className»(«expr.optionalExpr.compile»)'''
 					}
 					default: throw new IllegalArgumentException("Can't parse expr: " + expr + " referencing " + ref)
 				}
@@ -358,7 +358,7 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			default:  throw new IllegalArgumentException("Can't parse expr: " + expr)
 		}
 	}
-
+	
 	def static String getClassName(JavaClassReference ref){
 		return ref.javaType.qualifiedName
 	}
@@ -392,14 +392,14 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 			default: throw new IllegalArgumentException("Unknown operator: " + op)
 		}
 	}
-
-
+	
+	
 	def String compile(MappingBinary expr){
 		var refMapping = expr.ref as BinaryJava
-		return '''new ï¿½refMapping.ref.classNameï¿½(ï¿½expr.left.compileï¿½, ï¿½expr.right.compileï¿½)'''
+		return '''new «refMapping.ref.className»(«expr.left.compile», «expr.right.compile»)'''
 	}
 
-
+	
 	def String compile(TimeInterval interval){
 		switch interval{
 			TimeIntervalSimple:{
@@ -407,43 +407,43 @@ override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorCo
 				var includeRight = interval.right.equals("]")
 				var startMillisec = if (interval.start instanceof TimeLiteral) interval.start.toMillisec else "Long.MIN_VALUE"
 				var endMillisec = if (interval.end instanceof TimeLiteral) interval.end.toMillisec else "Long.MAX_VALUE"
-				return '''new RelativeTimeInterval(Duration.ofMillis(ï¿½startMillisecï¿½), Duration.ofMillis(ï¿½endMillisecï¿½), ï¿½includeLeftï¿½, ï¿½includeRightï¿½)'''
+				return '''new RelativeTimeInterval(Duration.ofMillis(«startMillisec»), Duration.ofMillis(«endMillisec»), «includeLeft», «includeRight»)'''
 			}
 			TimeIntervalSingleton:{
-				var timeString = '''Duration.ofMillis(ï¿½interval.value.toMillisecï¿½)'''
-				return '''new RelativeTimeInterval(ï¿½timeStringï¿½, ï¿½timeStringï¿½, true, true)'''
+				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
+				return '''new RelativeTimeInterval(«timeString», «timeString», true, true)'''
 			}
 			TimeIntervalInequalityNotation:{
-				var timeString = '''Duration.ofMillis(ï¿½interval.value.toMillisecï¿½)'''
+				var timeString = '''Duration.ofMillis(«interval.value.toMillisec»)'''
 				var lowerBound = if(interval.containsPositive) '''Duration.ofMillis(0)''' else '''Duration.ofMillis(Long.MIN_VALUE)'''
 				var upperBound = if(interval.containsPositive) '''Duration.ofMillis(Long.MAX_VALUE)''' else '''Duration.ofMillis(0)'''
 				switch interval.op{
-					case "<": return '''new RelativeTimeInterval(ï¿½lowerBoundï¿½, ï¿½timeStringï¿½, true, false)'''
-					case "<=":return '''new RelativeTimeInterval(ï¿½lowerBoundï¿½, ï¿½timeStringï¿½, true, true)'''
-					case ">": return '''new RelativeTimeInterval(ï¿½timeStringï¿½, ï¿½upperBoundï¿½, false, true)'''
-					case ">=":return '''new RelativeTimeInterval(ï¿½timeStringï¿½, ï¿½upperBoundï¿½, true, true)'''
+					case "<": return '''new RelativeTimeInterval(«lowerBound», «timeString», true, false)'''
+					case "<=":return '''new RelativeTimeInterval(«lowerBound», «timeString», true, true)'''
+					case ">": return '''new RelativeTimeInterval(«timeString», «upperBound», false, true)'''
+					case ">=":return '''new RelativeTimeInterval(«timeString», «upperBound», true, true)'''
 					default: throw new IllegalArgumentException("Unknown operator: " + interval.op)
 				}
 			}
 			default: throw new IllegalArgumentException("Unknown interval: " + interval)
 		}
 	}
-
+	
 	def String compile(TimeOffset expr){
 		var offset = expr.offset
 		switch offset{
 			StateOffset: {
 				var amount = if(offset.op == "+") offset.value else -offset.value
-				return '''new OffsetByStates<ï¿½expr.expr.expressionTypeï¿½>(ï¿½expr.expr.compileï¿½, ï¿½amountï¿½)'''
+				return '''new OffsetByStates<«expr.expr.expressionType»>(«expr.expr.compile», «amount»)'''
 				}
 			TimeOffset:{
 				var amount = if(offset.op == "+") offset.value else -offset.value
 				var millis = toMillisec(amount, offset.unit)
-				var durationString = '''Duration.ofMillis(ï¿½millisï¿½)'''
-				return '''new OffsetByTime<ï¿½expr.expr.expressionTypeï¿½>(ï¿½expr.expr.compileï¿½, ï¿½durationStringï¿½)'''
+				var durationString = '''Duration.ofMillis(«millis»)'''
+				return '''new OffsetByTime<«expr.expr.expressionType»>(«expr.expr.compile», «durationString»)'''
 			}
 			default: throw new IllegalArgumentException("Unknown Offset: " + offset)
 		}
 	}
-
+	
 }
