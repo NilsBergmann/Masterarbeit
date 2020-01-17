@@ -3,38 +3,29 @@
  */
 package bergmann.masterarbeit.monitordsl.validation
 
-import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionUtils.*
-import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionTypeChecker.*
-import static extension bergmann.masterarbeit.monitordsl.utils.UnitUtils.*
-import static extension bergmann.masterarbeit.monitordsl.utils.ImportUtils.*
-import static extension bergmann.masterarbeit.monitordsl.utils.TimeUtils.*
-
-import bergmann.masterarbeit.mappingdsl.mappingDSL.BinaryJava
-import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainElement
-import bergmann.masterarbeit.mappingdsl.mappingDSL.DomainValue
-import bergmann.masterarbeit.mappingdsl.mappingDSL.LiteralJava
-import bergmann.masterarbeit.mappingdsl.mappingDSL.UnaryJava
+import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
 import bergmann.masterarbeit.monitordsl.monitorDSL.Add
 import bergmann.masterarbeit.monitordsl.monitorDSL.Assertion
 import bergmann.masterarbeit.monitordsl.monitorDSL.Expression
 import bergmann.masterarbeit.monitordsl.monitorDSL.IfThenElse
+import bergmann.masterarbeit.monitordsl.monitorDSL.ImportDomain
+import bergmann.masterarbeit.monitordsl.monitorDSL.ImportMonitor
 import bergmann.masterarbeit.monitordsl.monitorDSL.LTL_Binary
 import bergmann.masterarbeit.monitordsl.monitorDSL.LTL_Unary
+import bergmann.masterarbeit.monitordsl.monitorDSL.MonitorDSLPackage
 import bergmann.masterarbeit.monitordsl.monitorDSL.Monitors
 import bergmann.masterarbeit.monitordsl.monitorDSL.Rel
 import bergmann.masterarbeit.monitordsl.monitorDSL.TimeIntervalSimple
 import bergmann.masterarbeit.monitordsl.monitorDSL.UserVariable
-import java.util.ArrayList
-import java.util.HashMap
-import javax.xml.bind.annotation.XmlElementDecl.GLOBAL
-import org.eclipse.emf.ecore.util.EcoreUtil
-import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.validation.Check
-import bergmann.masterarbeit.monitordsl.monitorDSL.MonitorDSLPackage
 import java.util.StringJoiner
-import bergmann.masterarbeit.monitordsl.monitorDSL.ImportDomain
-import bergmann.masterarbeit.mappingdsl.mappingDSL.Domain
-import bergmann.masterarbeit.monitordsl.monitorDSL.ImportMonitor
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtext.validation.Check
+
+import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionTypeChecker.*
+import static extension bergmann.masterarbeit.monitordsl.utils.ExpressionUtils.*
+import static extension bergmann.masterarbeit.monitordsl.utils.ImportUtils.*
+import static extension bergmann.masterarbeit.monitordsl.utils.TimeUtils.*
+import static extension bergmann.masterarbeit.monitordsl.utils.UnitUtils.*
 
 /**
  * This class contains custom validation rules.
@@ -71,7 +62,7 @@ class MonitorDSLValidator extends AbstractMonitorDSLValidator {
 		}
 	}
 
-	def markSubexpressions(Expression expr) {
+	def void markSubexpressions(Expression expr) {
 		if (!expr.isValid) {
 			var invalidSubexpressionFound = false
 			var subexpressions = expr.subexpressions
