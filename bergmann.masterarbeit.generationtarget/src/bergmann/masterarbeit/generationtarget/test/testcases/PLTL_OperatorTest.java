@@ -117,6 +117,7 @@ class PLTL_OperatorTest {
 
 	@Test
 	void TriggerTest() {
+		// TODO: Implement test cases
 		fail("Not implemented yet");
 	}
 }

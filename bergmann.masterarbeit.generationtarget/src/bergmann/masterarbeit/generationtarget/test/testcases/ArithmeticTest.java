@@ -19,8 +19,10 @@ import bergmann.masterarbeit.generationtarget.expressions.Addition;
 import bergmann.masterarbeit.generationtarget.expressions.Division;
 import bergmann.masterarbeit.generationtarget.expressions.IfThenElse;
 import bergmann.masterarbeit.generationtarget.expressions.Multiplication;
+import bergmann.masterarbeit.generationtarget.expressions.NumberAbsolute;
 import bergmann.masterarbeit.generationtarget.expressions.NumberLiteral;
 import bergmann.masterarbeit.generationtarget.expressions.NumberNegation;
+import bergmann.masterarbeit.generationtarget.expressions.NumberRoot;
 import bergmann.masterarbeit.generationtarget.expressions.Subtraction;
 import bergmann.masterarbeit.generationtarget.interfaces.Expression;
 import bergmann.masterarbeit.generationtarget.test.utils.Unknown;
@@ -147,6 +149,37 @@ class ArithmeticTest {
 		assertEquals(Optional.empty(), valueUnknown.evaluate(s));
 		//Nullcheck
 		assertThrows(IllegalArgumentException.class, ()->{new NumberNegation(null);});
-
+	}
+	
+	@Test
+	void rootTest() {
+		for (int n = 1; n <= 5; n++) {
+			Expression<Amount> expr = new NumberRoot(leftExpr, n);
+			Amount expected = leftAmount.root(n);
+			assertEquals(expected, expr.evaluate(s).get());
+			
+			//Unknown
+			Expression valueUnknown = new NumberRoot(unknown, n);
+			assertEquals(Optional.empty(), valueUnknown.evaluate(s));
+		}
+		//Nullcheck
+		assertThrows(IllegalArgumentException.class, ()->{new NumberRoot(null, 2);});	
+		//n = 0
+		Expression<Amount> expr = new NumberRoot(leftExpr, 0);
+		assertEquals(Optional.empty(), expr.evaluate(s));
+	}
+	
+	@Test
+	void absTest() {
+		Expression<Amount> n = new NumberLiteral(5, Unit.ONE);
+		Expression expr1 = new NumberAbsolute(n);
+		Expression expr2 = new NumberAbsolute(new NumberNegation(n));
+		assertEquals(expr1.evaluate(s), expr2.evaluate(s));
+		
+		//Unknown values
+		Expression valueUnknown = new NumberAbsolute(unknown);
+		assertEquals(Optional.empty(), valueUnknown.evaluate(s));
+		//Nullcheck
+		assertThrows(IllegalArgumentException.class, ()->{new NumberAbsolute(null);});
 	}
 }
