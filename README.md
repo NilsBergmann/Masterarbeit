@@ -1,4 +1,4 @@
-# Formalizing functional Requirements 
+# Formalizing functional requirements 
 **Author:** Nils Bergmann
 
 A formal language for specifying functional requirements using LTL, PLTL and/or MTL logic operators.
