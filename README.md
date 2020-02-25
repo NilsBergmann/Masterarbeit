@@ -1,7 +1,8 @@
-# MonitorDSL, MappingDSL and generationTarget
+# Formalizing functional Requirements 
 **Author:** Nils Bergmann
 
 A formal language for specifying functional requirements using LTL, PLTL and/or MTL logic operators.
+This formal specification can be used to generate runnable Java monitors.  
 
 - MappingDSL maps domain names to identifiers and Java classe.
 - MonitorDSL allows the user to formulate functional requirements.
